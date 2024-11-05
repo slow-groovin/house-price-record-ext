@@ -17,6 +17,12 @@
   "dependencies": {
     "@vueuse/core": "^11.2.0",
     "chrome-types": "^0.1.315",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.454.0",
+    "radix-vue": "^1.9.8",
+    "tailwind-merge": "^2.5.4",
+    "tailwindcss-animate": "^1.0.7",
     "vue": "^3.5.11",
     "vue-router": "^4.4.5",
     "webext-bridge": "^6.0.1"
