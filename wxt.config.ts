@@ -23,6 +23,8 @@ export default defineConfig({
 	manifest:{
 		permissions:[
 			'storage',
+			'declarativeNetRequestWithHostAccess',
+			'declarativeNetRequest',  //申请这个权限才能在dynamic rule中block发送到不同网站的资源, 否则只能block domain自身的
 			// 'activeTab'
 		],
 		// action:{},

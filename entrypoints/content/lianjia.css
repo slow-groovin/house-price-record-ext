@@ -1,0 +1,11 @@
+div.overview .content .price-container .price .total{
+	color: black !important;
+	font-size: 1em !important;
+	font-weight: unset !important;
+}
+
+div.overview .content .houseInfo .mainInfo{
+	color: black !important;
+	font-size: 1em !important;
+	font-weight: unset !important;
+}
