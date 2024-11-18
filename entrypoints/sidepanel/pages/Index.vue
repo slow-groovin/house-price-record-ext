@@ -3,6 +3,7 @@
 
 import {Switch} from "@/components/ui/switch";
 import TabsCreate from "@/components/debug/tabs-create.vue";
+import DexieIndexedDB from "@/components/debug/DexieIndexedDB.vue";
 
 async function log(){
   const oldRules=await browser.declarativeNetRequest.getDynamicRules()
@@ -17,9 +18,11 @@ async function log(){
     <div>
       <Switch id="airplane-mode" />
       <label for="airplane-mode">Airplane Mode</label>
-      <TabsCreate/>
     </div>
   </div>
+  <TabsCreate/>
+  <DexieIndexedDB/>
+
 </template>
 
 <style scoped>

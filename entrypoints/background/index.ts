@@ -9,8 +9,8 @@ import {updateRules} from "@/utils/block";
 
 
 export default defineBackground(() => {
-  console.log('Hello background!', { id: browser.runtime.id });
-	updateRules('debugRules')
+  console.log('Load background!', { id: browser.runtime.id });
+	updateRules('ljMetricRules')
 	updateRules('ljImgRules')
 	updateRules('debugRules')
 
