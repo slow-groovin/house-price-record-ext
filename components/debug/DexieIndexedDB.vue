@@ -1,34 +1,9 @@
 <script setup lang="ts">
-import Dexie, {EntityTable} from "dexie";
+import {db} from '@/utils/client/Dexie'
 import {random} from "radash";
+import {DexieSampleItem} from "@/types/sample-models";
 
-// class MyDatabase extends Dexie {
-//   items: Dexie.Table<Item, number>; // Table<Item, id>
-//
-//   constructor() {
-//     super('Database-Dexie-Sample');
-//     this.version(1).stores({
-//       items: '++id, name, price, createdAt', // Auto-increment id, and indexes for queries
-//     });
-//     this.items = this.table('items');
-//   }
-// }
-const db = new Dexie('Database-Dexie-Sample') as Dexie & {
-  items: EntityTable<
-      Item,
-      'id' // primary key "id" (for the typings only)
-  >;
-};
-db.version(1).stores({
-  items: '++id, name, price, createdAt', // Auto-increment id, and indexes for queries
-});
 
-interface Item {
-  id?: number;
-  name: string;
-  price: number;
-  createdAt: number; // Timestamp
-}
 
 const genNewItem = () => ({
   name: 'sample' + Date.now() % 100,
@@ -37,7 +12,7 @@ const genNewItem = () => ({
 })
 
 
-const newItem = ref<Item>(genNewItem());
+const newItem = ref<DexieSampleItem>(genNewItem());
 const query = ref({
   id: null,
   priceMin: 10,
@@ -46,7 +21,7 @@ const query = ref({
   createdAtMax: null,
   name: ''
 });
-const items = ref<Item[]>([]);
+const items = ref<DexieSampleItem[]>([]);
 
 // Add Item
 const addItem = async () => {

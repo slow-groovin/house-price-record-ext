@@ -9,3 +9,12 @@ div.overview .content .houseInfo .mainInfo{
 	font-size: 1em !important;
 	font-weight: unset !important;
 }
+
+
+
+html *, body * {
+	background-color: rgba(115, 92, 83, 0.56) !important;
+	font-size: 9px !important; /* 缩小字体 */
+	color: rgba(191, 189, 189, 0.38) !important;
+
+}

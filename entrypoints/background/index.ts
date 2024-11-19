@@ -1,11 +1,6 @@
-import { onMessage, sendMessage } from "webext-bridge/background"
-
-import { storage, StorageItemKey } from "wxt/storage";
+import {onMessage} from "webext-bridge/background"
 import {updateRules} from "@/utils/block";
-
-
-
-
+import {db} from "@/utils/client/Dexie";
 
 
 export default defineBackground(() => {
@@ -13,6 +8,15 @@ export default defineBackground(() => {
 	updateRules('ljMetricRules')
 	updateRules('ljImgRules')
 	updateRules('debugRules')
+
+
+	browser.sidePanel.setPanelBehavior({
+		openPanelOnActionClick:true,
+	})
+	db.debugInfo.add({
+		at: new Date().toLocaleString(), msg: " load background.js"
+	})
+
 
 	onMessage('block',(enable)=>{
 		if(enable){
@@ -22,11 +26,9 @@ export default defineBackground(() => {
 
 	} )
 
-	onMessage('houseItem',(house)=>{
-		storage.setItem(`local:house-${house.id}`,house.data)
-		console.log('house',house,house.data)
-		return {resp:"ok"}
-	})
+
+
+
 });
 
 

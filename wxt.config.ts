@@ -21,6 +21,9 @@ export default defineConfig({
 
 	},
 	manifest:{
+		// "web_accessible_resources": [
+		// 	"/*.html"
+		// ],
 		permissions:[
 			'storage',
 			'declarativeNetRequestWithHostAccess',

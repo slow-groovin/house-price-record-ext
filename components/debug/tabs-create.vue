@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Semaphore} from "@/utils/Semaphore";
+import {Semaphore} from "@/utils/lib/Semaphore";
 
 function openTabs() {
   const urls = [
