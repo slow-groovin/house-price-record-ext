@@ -97,19 +97,51 @@ const hoverDuration = ref<any | null>()
 
 
 function getMonthDesc(day: Date) {
-  let monthNumberStr = (day.getMonth() + 1).toString().padStart(2,'0');
-  let firstDayStr= day.getDate().toString().padStart(2,'0');
-  let lastDayStr= lastDayOfMonth(day).getDate().toString().padStart(2,' ');
+  let monthNumberStr = (day.getMonth() + 1).toString().padStart(2, '0');
+  let firstDayStr = day.getDate().toString().padStart(2, '0');
+  let lastDayStr = lastDayOfMonth(day).getDate().toString().padStart(2, ' ');
   return `${monthNumberStr}/${firstDayStr} ~ ${monthNumberStr}/${lastDayStr}`
 }
+
+/**tooltip**/
+const container = ref<HTMLDivElement | null>(null);
+const tooltipVisible = ref(false);
+const tooltipContent = ref('');
+const tooltipStyle = reactive({
+  top: '0px',
+  left: '0px',
+});
+
+const showTooltip = (event: MouseEvent, content: string) => {
+  tooltipContent.value = content;
+  tooltipVisible.value = true;
+
+  const target = event.currentTarget as HTMLElement;
+  const rect = target.getBoundingClientRect();
+
+  // 动态计算 tooltip 位置，设置到目标元素上方
+  tooltipStyle.top = `${rect.top - 20}px`; // 10px 上方间距
+  tooltipStyle.left = `${rect.left}px`;
+};
+
+const hideTooltip = () => {
+  tooltipVisible.value = false;
+};
 </script>
 
 <template>
+  <div
+      v-if="tooltipVisible"
+      :style="tooltipStyle"
+      class="tooltip"
+  >
+    {{ tooltipContent }}
+  </div>
   <div :class="cn('flex flex-col w-fit', props.class)">
     <SimpleTabsContainer :tabs="getYearsTab(years)">
       <template v-for="year in years" v-slot:[year]>
         <h2>{{ year }}</h2>
-        <div class="flex flex-col gap-y-3">
+        <div class="flex flex-col gap-y-3" ref="container">
           <div v-for="(month) in yearsData[year]" class="flex flex-row gap-2">
             <div class="border  ">
               {{ getMonthDesc(new Date(year, month.monthIndex, 1)) }}
@@ -117,9 +149,9 @@ function getMonthDesc(day: Date) {
 
             <div class="flex flex-row gap-x-0.5">
               <div
-                  v-for="(item) in month.data"
-                  @mouseenter="hoverDuration=item"
-                  @mouseleave="hoverDuration=null"
+                  v-for="(item,index) in month.data"
+                  @mouseenter="showTooltip($event, year+' '+(month.monthIndex+1)+'/'+(1+index))"
+                  @mouseleave="hideTooltip()"
                   :class="cn(
             'h-6 w-1.5 rounded hover:border border-neutral-700',
             item ? 'bg-green-500' : 'bg-gray-300'
@@ -136,3 +168,14 @@ function getMonthDesc(day: Date) {
 
   </div>
 </template>
+
+<style>
+.tooltip {
+  position: fixed;
+  padding: 3px 3px;
+  border: darkgoldenrod 1px solid;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+</style>

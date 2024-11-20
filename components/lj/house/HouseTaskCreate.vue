@@ -69,11 +69,15 @@ async function manualAddRecord(){
     return
   }
   const currentTask=HouseTask.fromHouseTask(queryResult)
+  currentTask.markAccess()
   houseTask.value=currentTask
 
+  await db.houseTasks.update(currentTask.id,{
+    lastRunningAt: Date.now(),
+    accessRecord:currentTask.accessRecord
+  })
 
   if(!currentTask.totalPrice){
-    //todo: store info initially
     return;
   }
 
@@ -86,12 +90,9 @@ async function manualAddRecord(){
       oldValue: currentTask.totalPrice,
       newValue: resp.totalPrice,
     })
-    currentTask.markAccess()
     await db.houseTasks.update(currentTask.id,{
       totalPrice:resp.totalPrice,
       unitPrice: resp.unitPrice,
-      lastRunningAt: Date.now(),
-      accessRecord:currentTask.accessRecord
     })
     await fetchLastRecord(resp.hid)
     await fetchLastRecords(resp.hid)

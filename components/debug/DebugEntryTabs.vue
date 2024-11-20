@@ -6,19 +6,13 @@ import DexieIndexedDB from "@/components/debug/DexieIndexedDB.vue";
 import UnovisSamples from "@/components/debug/UnovisSamples.vue";
 import WxtStorage from "@/components/debug/WxtStorage.vue";
 import CalendarGraphSample from "@/components/debug/CalendarGraphSample.vue";
+import {Button} from "@/components/ui/button";
+import {Switch} from "@/components/ui/switch";
+import {allBlockRuleKeys, updateRules} from "@/utils/block";
 
 /**
  * 非数据, 不用background的storage, 仅用页面的localStorage即可
  */
-// const firstDebugEntryIndexReady = ref(false)
-// const {state: debugEntryIndex, isReady, isLoading} = useWxtStorage('local:debugEntryIndex', 0,
-//     {
-//       immediate: true,
-//       onSuccess: (d) => {
-//         firstDebugEntryIndexReady.value = true
-//       }
-//     })
-
 const debugEntryIndex = useLocalStorage('debugEntryIndex', 0)
 const handleTabChange = (index: number) => {
   console.log('Active tab changed to:', index)
@@ -26,11 +20,30 @@ const handleTabChange = (index: number) => {
 
 }
 
+function queryTab(){// 获取当前活动的标签页信息
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {    console.log("当前标签页信息：", tabs[0]);  });
+}
+function toggleRules(payload:boolean){
+  if(payload){
+    allBlockRuleKeys.forEach(k=>updateRules(k))
+  }else{
+    allBlockRuleKeys.forEach(k=>removeRules(k))
+  }
+}
+
+
 const components = [TabsCreate, DexieIndexedDB, UnovisSamples, WxtStorage,CalendarGraphSample]
 </script>
 
 
 <template>
+  <div class="flex flex-row flex-wrap p-3 gap-4 bg-red-100 border" id="debug-button-group">
+    <button @click="queryTab">queryTab</button>
+    <div class="flex flex-row border">
+      <label for="block-rules">block-rules</label>
+      <Switch id="block-rules" @update:checked="toggleRules" />  
+    </div>
+  </div>
   <SimpleTabsContainer
       :tabs="components.map(t=>({name:t.__name??'',label:t.__name??''}))"
       class="p-4 bg-gray-100"

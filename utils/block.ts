@@ -170,11 +170,14 @@ const ljImgRules = [
 
 ];
 
+
 const rules = {
 	debugRules,
 	ljImgRules,
 	ljMetricRules
 }
+
+export const allBlockRuleKeys: (keyof typeof rules)[]=['debugRules','ljImgRules','ljMetricRules']
 
 
 export async function toggleRules(key: keyof typeof rules) {
@@ -216,3 +219,4 @@ export function removeRules(key: keyof typeof rules) {
 		removeRuleIds: rules[key].map(rule => rule.id)
 	});
 }
+

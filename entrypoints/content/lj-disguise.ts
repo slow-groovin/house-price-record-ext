@@ -2,7 +2,7 @@ import {deleteBySelector, hiddenAndReplace} from "@/utils/document";
 import overlayText from '~/public/overlay.html.txt';
 import overlayImg from '~/public/overlay.png';
 
-export function overlayDisguise() {
+export function injectCoverModal() {
 
 	const overlayHtml = atob(overlayText.split(',')[1])
 	// console.log(overlayHtml)
@@ -32,8 +32,8 @@ export function overlayDisguise() {
 	toggleButton.style.padding = '10px 20px';
 	toggleButton.style.backgroundColor = 'white';
 	toggleButton.style.border = '2px solid #333';
-	toggleButton.style.cursor = 'pointer';
-	toggleButton.style.marginBottom = '10px';  // 可选：设置按钮与其他页面内容的间隔
+	toggleButton.style.cursor = 'help';
+	// toggleButton.style.marginBottom = '10px';  // 可选：设置按钮与其他页面内容的间隔
 
 // 将按钮插入到页面的第一个元素之前
 	document.body.insertBefore(toggleButton, document.body.firstChild);
@@ -51,10 +51,29 @@ export function overlayDisguise() {
 
 // 将覆盖层添加到页面 body 中
 	document.body.appendChild(overlayDiv);
-
 }
 
-export function houseDisguise() {
+export function injectFuzzyStyle() {
+	// 定义 CSS 样式
+	const css = `
+html *, body * {
+    background-color: rgba(115, 92, 83, 0.56) !important;
+    font-size: 9px !important; /* 缩小字体 */
+    color: rgba(191, 189, 189, 0.38) !important;
+}
+`;
+
+	// 创建一个 <style> 标签
+	const style = document.createElement('style');
+
+	// style.type = 'text/css';
+	style.innerHTML = css;
+
+// 将 <style> 标签插入到 <head> 中
+	document.head.appendChild(style);
+}
+
+export function housePageElementsDisguise() {
 	document.title = "CSDN";
 
 	const oldIcon = document.querySelector("link[rel='icon']");
@@ -102,7 +121,6 @@ export function houseDisguise() {
 		{source: '万', target: 'WLAN'},
 	])
 
-	overlayDisguise()
 
 }
 
