@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import {Button} from "@/components/ui/button";
-import {sendMessage,onMessage} from "webext-bridge/popup";
+import {sendMessage} from "webext-bridge/popup";
 import {db} from "@/utils/client/Dexie";
-import {HouseItem, HouseChange, HouseTask} from "@/types/lj";
-import {random} from "radash";
+import {HouseChange, HouseItem, HouseTask} from "@/types/lj";
+import CalendarGraph from "@/components/lj/CalendarGraph.vue";
 
 const props=defineProps<{tabId:number}>()
 const isTaskExist=ref(false)
 // const isLastRecordIntervalGtMin=ref(false)
 const houseItem=ref<HouseItem|null>(null)
 const changes=ref<HouseChange[]>([])
+const houseTask=ref<HouseTask|null>()
 const tempHid=ref('')
-const MIN_INTERVAL=24*60*60*1000
+
 
 onMounted(()=>{
   fetchHouseItem()
@@ -61,11 +62,16 @@ async function createTask(){
 
 async function manualAddRecord(){
   const resp = await sendMessage('parseHouse', {}, 'content-script@'+props.tabId)
-  const currentTask=await db.houseTasks.where('hid').equals(resp.hid).first()
-  if(!currentTask){
+  const queryResult=await db.houseTasks.where('hid').equals(resp.hid).first()
+
+  if(!queryResult){
     console.error('task not create:'+resp.hid)
     return
   }
+  const currentTask=HouseTask.fromHouseTask(queryResult)
+  houseTask.value=currentTask
+
+
   if(!currentTask.totalPrice){
     //todo: store info initially
     return;
@@ -124,6 +130,10 @@ async function deleteRecordItem(id:number){
           <button @click="deleteRecordItem(item.id)">Delete</button>
         </li>
       </ul>
+    </div>
+
+    <div>
+      <CalendarGraph v-if="houseTask?.accessRecord" :access-record="houseTask?.accessRecord"/>
     </div>
   </div>
 </div>

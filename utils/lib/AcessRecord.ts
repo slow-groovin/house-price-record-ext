@@ -1,6 +1,7 @@
 const MAX_BIT: 32 = 32
 const START_DATE = new Date(2024, 0, 1, 0, 0, 0)
 const EIGHT_HOUR= 8 * 60 * 60 * 1000
+const DAY= 24 * 60 * 60 * 1000
 export class AccessRecord {
 
 	constructor(
@@ -11,11 +12,17 @@ export class AccessRecord {
 		// this.bitmap = [] // 存储位图数组
 	}
 
+
+
 	// 计算天数差
 	getDaysSinceStart(date: Date) {
 		//clip date到当天的23点59分, 这样无论是任何时区都是相同下标
 		const diffTime = date.setHours(0,0,0,0) - this.startDate.getTime()
 		return Math.floor(diffTime / (1000 * 60 * 60 * 24))
+	}
+
+	getEndDate():Date {
+		return new Date(this.startDate.getTime()+this.bitmap.length*MAX_BIT*DAY)
 	}
 
 	// 获取某一天的访问状态 (true 表示有访问，false 表示没有访问)

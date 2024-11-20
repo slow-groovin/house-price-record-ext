@@ -53,19 +53,19 @@ export class HouseTask implements HouseItem{
 	public roomType?: string;
 	public roomSubType?: string;
 	public orientation?: string;
-	public accessRecord: AccessRecord;
 
 	constructor(
 		public hid: string,
 		public cid: string,
 		public city: string,
 		public state: HouseTaskStatus = HouseTaskStatus.running,
+		public accessRecord=new AccessRecord(),
 		public createdAt: number = Date.now(),
 		public autoRecord: boolean = false,
 		public addedType: TaskAddedType = TaskAddedType.manual,
 	) {
 		this.lastRunningAt = this.createdAt
-		this.accessRecord=new AccessRecord()
+		console.log('init', hid)
 	}
 
 	static newFromItem(item:HouseItem){
@@ -83,11 +83,16 @@ export class HouseTask implements HouseItem{
 
 		return task;
 	}
+	static fromHouseTask(variable:HouseTask){
+		const task= Object.assign(new HouseTask('','',''),variable)
+		task.accessRecord=Object.assign(new AccessRecord(),variable.accessRecord)
+		return task
+	}
 
 	/**
 	 * 记录今天的访问
 	 */
-	markAccess(){
+	public markAccess(){
 		this.accessRecord.setAccessStatus(new Date(),true)
 	}
 }

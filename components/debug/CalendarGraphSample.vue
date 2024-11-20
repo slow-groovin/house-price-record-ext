@@ -1,14 +1,13 @@
 <template>
-  <CalendarGraph :data="contributionData" class="my-4" />
+  <CalendarGraph :access-record="ar" class="my-4" />
 </template>
 
 <script setup lang="ts">
 
 
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
+import {AccessRecord} from "@/utils/lib/AcessRecord";
+import {random,list} from "radash";
 
-const contributionData = {
-  startDate: new Date('2024-11-01'),
-  array: [true, false, true, true, false, /* ... 更多数据 */],
-};
+const ar=new AccessRecord(list(random(1,15)).map(i=>i+random(0,2^31)),new Date(2024,random(0,4),1))
 </script>
