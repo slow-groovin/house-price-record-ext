@@ -17,8 +17,9 @@ export default defineContentScript({
 		ctx.addEventListener(window,'load',()=>{
 			console.log('load')
 		})
-		houseDisguise()
 
+		houseDisguise()
+		console.log('process.env.NODE_ENV',process.env.NODE_ENV)
 
 
 		onMessage('parseHouse',async ({}) => {
@@ -84,25 +85,6 @@ export default defineContentScript({
 			return {respMsg:"OK"}
 		})
 
-		// const name = document.querySelector('h1.main')?.textContent??""
-		//
-		// //fetch info
-		// const totalPrice=document.querySelector('span.total')?.textContent
-		// const unitPrice=getDirectTextContent(document.querySelector('span.unitPriceValue'))
-		// const id=getDirectTextContent(document.querySelector('.houseRecord .info'))
-		// const area=document.querySelector('.area .mainInfo')?.textContent?.trim().replace('平米','')
-		//
-		// console.log({totalPrice,unitPrice})
-		// const resp = await sendMessage('houseItem', {
-		// 	id: id,
-		// 	totalPrice:Number(totalPrice),
-		// 	unitPrice:Number(unitPrice),
-		// 	name:name,
-		// 	area:Number(area)
-		//
-		// }, 'background')
-		// console.log(resp)
-		// console.log("send message done.")
 	},
 });
 

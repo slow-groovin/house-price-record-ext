@@ -12,6 +12,7 @@ import Tab = chrome.tabs.Tab;
 import {isHousePage} from "@/utils/lj-url";
 import TaskCreate from "@/components/lj/house/HouseTaskCreate.vue";
 import UnovisSamples from "@/components/debug/UnovisSamples.vue";
+import DebugEntryTabs from "@/components/debug/DebugEntryTabs.vue";
 
 
 function queryTab(){
@@ -95,12 +96,13 @@ onMounted(()=>{
     </div>
   </div>
 
-  <TabsCreate/>
-  <DexieIndexedDB/>
-  <UnovisSamples/>
+
+  <DebugEntryTabs/>
+
+
 
 </template>
 
-<style scoped>
+<style>
 
 </style>
