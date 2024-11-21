@@ -2,7 +2,7 @@
   <div v-if="data" :class="cn('border border-gray-200 rounded-lg overflow-hidden', props.class)">
     <div v-for="(value, key) in props.data" :key="key" class="flex">
       <div class="flex-1 p-2 border-b border-r border-gray-200">{{ key }}</div>
-      <div class="flex-1 p-2 border-b border-gray-200">{{ value?.toString() }}</div>
+      <div class="flex-1 p-2 border-b border-gray-200">{{ JSON.stringify(value) }}</div>
     </div>
   </div>
   <div v-else>

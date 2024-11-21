@@ -104,7 +104,11 @@ export function waitForElement(selector:string, timeout = 10000) {
 		// 超时处理
 		setTimeout(() => {
 			observer.disconnect();
-			reject(new Error(`Timeout: Element ${selector} not found`));
+			if(document.querySelector(selector)){
+				resolve(document.querySelector(selector))
+			}else{
+				reject(new Error(`Timeout: Element ${selector} not found`));
+			}
 		}, timeout);
 	});
 }

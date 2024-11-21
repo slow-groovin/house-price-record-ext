@@ -6,8 +6,8 @@ import {parseAllOfCommunity} from "@/entrypoints/content/community-dom-parse";
 export async function communityListPageEntry(ctx:ContentScriptContext) {
 	registerMessage()
 
-	injectFuzzyStyle()
-	communityElementDisguise()
+	// injectFuzzyStyle()
+	// communityElementDisguise()
 
 	const ui=await createShadowRootUi(ctx, {
 		name: 'example-ui',
@@ -48,5 +48,10 @@ function registerMessage(){
 		// }
 
 
+	})
+
+	onMessage('parseOneCommunityListOnePage',async (data)=>{
+		console.log('RECEIVE parseOneCommunityListOnePage msg')
+		return await parseAllOfCommunity()
 	})
 }

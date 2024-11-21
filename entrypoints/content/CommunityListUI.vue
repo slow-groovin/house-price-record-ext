@@ -3,17 +3,17 @@
 import SimpleDrawer from "@/components/layout/SimpleDrawer.vue";
 import {parseAllOfCommunity} from "@/entrypoints/content/community-dom-parse";
 import {Button} from "@/components/ui/button";
-import {db} from "@/utils/client/Dexie";
-import {CommunityBasic, CommunityListItem, CommunityModelUtil, CommunityTask} from "@/types/lj";
+import {CommunityBasic, CommunityList, CommunityModelUtil, CommunityTask} from "@/types/lj";
 import ObjectTable from "@/components/table/ObjectTable.vue";
 import {beginCrawl} from "@/entrypoints/content/community-crawl";
 import {extractCidFromHomePageUrl} from "@/utils/lj-url";
 import {injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
+import {sendMessage} from 'webext-bridge/content-script';
 
 // 使用示例
 
 
-const item = ref<CommunityBasic & CommunityListItem>()
+const item = ref<CommunityBasic & CommunityList>()
 const cid=ref<string|undefined>()
 const isTaskCreated=ref(false)
 const taskInDb=ref<CommunityTask>()
@@ -41,14 +41,17 @@ async function createTask(){
     throw new Error('item not exist')
   }
   const newTask=CommunityModelUtil.newCommunityTaskFromItem(item.value)
-  await db.communityTasks.add(newTask)
+  const resp=await sendMessage('addCommunityTask', newTask, 'background')
+  console.log('addTask throw message suc.',resp)
+  // await db.communityTasks.add(newTask)
   await queryTask(newTask.cid)
 }
 
 async function queryTask(cid:string){
   const start=Date.now()
-  const queryTask = await db.communityTasks.where('cid').equals(cid).toArray()
-  console.debug('query Task cost:',Date.now()-start,'ms')
+  const queryTask =await  sendMessage('queryCommunityTask', {cid},'background')
+
+  console.debug('query Task throw message suc. cost:',Date.now()-start,'ms')
   if (queryTask.length > 1){
     console.warn('duplicate task',cid)
   }else if (queryTask.length === 0) {
@@ -65,7 +68,7 @@ async function queryTask(cid:string){
 </script>
 
 <template>
-  <SimpleDrawer id="ui-container" class="fixed top-0 right-0 max-w-fit max-h-full text-sm bg-white" :default-open="true">
+  <SimpleDrawer id="ui-container" class="fixed top-0 right-0 max-w-96 max-h-full text-sm bg-white" :default-open="true">
     <h1 class="text-gray-500 font-extrabold">
       Community List Page
     </h1>

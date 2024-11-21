@@ -1,9 +1,9 @@
 import {extractCidFromHomePageUrl, extractCityAndHidFromHouseUrl, extractPageNumberFromListUrl} from "@/utils/lj-url";
 import {extractNumber, waitForElement} from "@/utils/document";
-import {CommunityBasic, CommunityListItem} from "@/types/lj";
+import {CommunityListPageItem, HousePriceItemInCommunityList} from "@/types/lj";
 import {removeNull} from "@/types/generic";
 
-export async function parseAllOfCommunity():Promise<CommunityBasic & CommunityListItem>{
+export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 	/**
 	 * 判断小区是否存在
 	 */
@@ -29,7 +29,8 @@ export async function parseAllOfCommunity():Promise<CommunityBasic & CommunityLi
 	const pageNo=extractPageNumberFromListUrl(window.location.href)??1
 
 	const pageData=JSON.parse(document.querySelector('.page-box.house-lst-page-box')?.getAttribute('page-data')??"") as {totalPage:number,curPage:number}
-	console.log(pageData)
+	// console.log(pageData)
+
 	const maxPageNo = pageData.totalPage
 	if(pageNo!==pageData.curPage){
 		console.warn('pageNo is not curPage',pageNo,pageData.curPage)
@@ -42,17 +43,16 @@ export async function parseAllOfCommunity():Promise<CommunityBasic & CommunityLi
 
 
 	// 列表中的所有id
-	const houseIds:string[] = [];
-	document.querySelectorAll('.info.clear > .title > a').forEach((element) => {
-		const houseLink = element.getAttribute('href')?.trim();
-		if (houseLink) {
-			const { city, hid } = extractCityAndHidFromHouseUrl(houseLink); // 假设 parseHouseUrl 是一个外部定义的函数
-			if(!hid){
-				console.warn('hid is undefined',hid,houseLink)
-				return
-			}
-			houseIds.push(hid);
+	const houseItems:HousePriceItemInCommunityList[] = [];
+	// .info.clear > .title > a .info.clear > .priceInfo > .totalPrice
+	document.querySelectorAll('.info.clear ').forEach((element) => {
+		const {city,hid}=extractCityAndHidFromHouseUrl(element.querySelector('.title > a')?.getAttribute('href'))
+		const price=extractNumber(element.querySelector('.priceInfo > .totalPrice')?.textContent)
+		if(!hid || !price){
+			console.warn('hid or price is undefined',`hid:${hid},price:${price}}`)
+			return
 		}
+		houseItems.push({hid,price})
 	});
 
 
@@ -60,7 +60,7 @@ export async function parseAllOfCommunity():Promise<CommunityBasic & CommunityLi
 	 * 显示的 总套数 成交量 价格 带看数量
 	 */
 	let showedOnSellCount=NaN,showedAvgPrice=NaN,showedDoneCountIn90Days=NaN,showedVisitCountIn90Days=NaN;
-	await waitForElement('.agentCardDetailItem')
+	await waitForElement('.agentCardDetailItem',30_000)
 		.then((element) => {
 			showedAvgPrice = Number(extractNumber(document.querySelector('.agentCardDetailItem:nth-child(1)>.agentCardDetailInfo')?.textContent));
 			showedOnSellCount=Number(extractNumber(document.querySelector('.agentCardDetailItem:nth-child(2)>.agentCardDetailInfo')?.textContent));
@@ -70,6 +70,7 @@ export async function parseAllOfCommunity():Promise<CommunityBasic & CommunityLi
 
 		})
 		.catch((error) => {
+			console.log(document.querySelector('.agentCardDetailItem'))
 			console.error(error.message);
 		});
 
@@ -81,10 +82,10 @@ export async function parseAllOfCommunity():Promise<CommunityBasic & CommunityLi
 		maxPageNo,
 		name: communityName,
     onSellCount:showedOnSellCount,
-		avgPrice:showedAvgPrice,
+		avgUnitPrice:showedAvgPrice,
 		doneCountIn90Days:showedDoneCountIn90Days,
 		visitCountIn90Days:showedVisitCountIn90Days,
-		houseList: []
+		houseList: houseItems
 		// houseIds
 	};
 }

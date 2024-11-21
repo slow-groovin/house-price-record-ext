@@ -1,4 +1,3 @@
-import {Maybe} from "@/types/generic";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
 
 /**
@@ -20,13 +19,13 @@ export interface HouseItem {
 }
 
 
-export interface HouseChange{
-	id:number,
-	hid:string,
-	cid:string,
+export interface HouseChange {
+	id: number,
+	hid: string,
+	cid: string,
 
 	oldValue: number,
-	newValue:number
+	newValue: number
 	at: number,
 }
 
@@ -36,17 +35,17 @@ export enum HouseTaskStatus {
 	miss = 3, out = 4
 }
 
-export enum TaskAddedType{manual=1, scan=2}
+export enum TaskAddedType {manual = 1, scan = 2}
 
-export class HouseTask implements HouseItem{
+export class HouseTask implements HouseItem {
 	public lastRunningAt: number;
-	public name?:string;
+	public name?: string;
 	public id?: number;
-	public totalPrice?:number;
-	public unitPrice?:number;
-	public area?:number;
-	public realArea?:number;
-	public realUnitPrice?:number;
+	public totalPrice?: number;
+	public unitPrice?: number;
+	public area?: number;
+	public realArea?: number;
+	public realUnitPrice?: number;
 
 	public buildingType?: string;
 	public yearBuilt?: string;
@@ -59,7 +58,7 @@ export class HouseTask implements HouseItem{
 		public cid: string,
 		public city: string,
 		public status: HouseTaskStatus = HouseTaskStatus.running,
-		public accessRecord=new AccessRecord(),
+		public accessRecord = new AccessRecord(),
 		public createdAt: number = Date.now(),
 		public autoRecord: boolean = false,
 		public addedType: TaskAddedType = TaskAddedType.manual,
@@ -68,60 +67,66 @@ export class HouseTask implements HouseItem{
 		console.log('init', hid)
 	}
 
-	static newFromItem(item:HouseItem){
-		const task=new HouseTask(item.hid, item.cid, item.city)
+	static newFromItem(item: HouseItem) {
+		const task = new HouseTask(item.hid, item.cid, item.city)
 
-		task.totalPrice=item.totalPrice
-		task.unitPrice=item.unitPrice
-		task.area=item.area
-		task.name=item.name
-		task.buildingType=item.buildingType
-		task.yearBuilt=item.yearBuilt
-		task.roomType=item.roomType
-		task.roomSubType=item.roomSubType
-		task.orientation=item.orientation
+		task.totalPrice = item.totalPrice
+		task.unitPrice = item.unitPrice
+		task.area = item.area
+		task.name = item.name
+		task.buildingType = item.buildingType
+		task.yearBuilt = item.yearBuilt
+		task.roomType = item.roomType
+		task.roomSubType = item.roomSubType
+		task.orientation = item.orientation
 
 		return task;
 	}
-	static fromHouseTask(variable:HouseTask){
-		const task= Object.assign(new HouseTask('','',''),variable)
-		task.accessRecord=Object.assign(new AccessRecord(),variable.accessRecord)
+
+	static fromHouseTask(variable: HouseTask) {
+		const task = Object.assign(new HouseTask('', '', ''), variable)
+		task.accessRecord = Object.assign(new AccessRecord(), variable.accessRecord)
 		return task
 	}
 
 	/**
 	 * 记录今天的访问
 	 */
-	public markAccess(){
-		this.accessRecord.setAccessStatus(new Date(),true)
+	public markAccess() {
+		this.accessRecord.setAccessStatus(new Date(), true)
 	}
 }
 
-export type CommunityBasic={
+export type CommunityBasic = {
 	cid: string,
-	name?:string;
+	name?: string;
 
 	city?: string,
 
-	avgPrice?: number;
+	avgUnitPrice?: number;
 	onSellCount?: number;
 	visitCountIn90Days?: number;
 	doneCountIn90Days?: number;
 
-	calcAvgPrice?:number;
-	calcOnSellCount?:number;
 }
 
-export interface CommunityListItem{
+export interface HousePriceItemInCommunityList {
+	hid: string,
+	price: number
+}
+
+
+export interface CommunityList {
 	pageNo: number,
-	maxPageNo:number,
-	houseList: {hid:string,price:number}[]
+	maxPageNo: number,
+	houseList: HousePriceItemInCommunityList[]
 }
 
+export type CommunityListPageItem = CommunityBasic & CommunityList
 
-export enum CommunityTaskStatus {	running = 1,	pause = 2}
+export enum CommunityTaskStatus { running = 1, pause = 2}
 
-export type CommunityTask ={
+export type CommunityTask = {
 	id?: number,
 
 	status: CommunityTaskStatus,
@@ -130,14 +135,30 @@ export type CommunityTask ={
 	lastRunningAt: number;
 
 	runningCount: number; //
-
-
-
-
 } & CommunityBasic
 
-export const CommunityModelUtil={
-	newCommunityTaskFromItem(item:CommunityBasic):CommunityTask{
+/**
+ * 所有page页面结果组成的一个record
+ */
+export type CommunityRecord = CommunityListPageItem & {
+	id?: number,
+	at: number,
+
+	avgTotalPrice?: number;
+	calcOnSellCount?: number;
+
+	houseList?: HousePriceItemInCommunityList[];
+
+
+	removedItem?: HousePriceItemInCommunityList[];
+	addedItem?: HousePriceItemInCommunityList[];
+	priceUpList?: HousePriceItemInCommunityList[];
+	priceDownList?: HousePriceItemInCommunityList[];
+}
+
+
+export const CommunityModelUtil = {
+	newCommunityTaskFromItem(item: CommunityBasic): CommunityTask {
 		return {
 			cid: item.cid,
 			name: item.name,
@@ -145,13 +166,11 @@ export const CommunityModelUtil={
 			status: CommunityTaskStatus.running,
 			accessRecord: new AccessRecord(),
 
-			avgPrice: item.avgPrice,
+			avgUnitPrice: item.avgUnitPrice,
 			onSellCount: item.onSellCount,
 			visitCountIn90Days: item.visitCountIn90Days,
 			doneCountIn90Days: item.doneCountIn90Days,
 
-			calcAvgPrice: item.calcAvgPrice,
-			calcOnSellCount: item.calcOnSellCount,
 
 			createdAt: Date.now(),
 			lastRunningAt: Date.now(),

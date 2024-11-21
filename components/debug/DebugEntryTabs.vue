@@ -9,6 +9,7 @@ import CalendarGraphSample from "@/components/debug/CalendarGraphSample.vue";
 import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
 import {allBlockRuleKeys, updateRules} from "@/utils/block";
+import CommunityDebug from "@/components/debug/CommunityDebug.vue";
 
 /**
  * 非数据, 不用background的storage, 仅用页面的localStorage即可
@@ -32,7 +33,7 @@ function toggleRules(payload:boolean){
 }
 
 
-const components = [TabsCreate, DexieIndexedDB, UnovisSamples, WxtStorage,CalendarGraphSample]
+const components = [TabsCreate, DexieIndexedDB, UnovisSamples, WxtStorage,CalendarGraphSample,CommunityDebug]
 </script>
 
 

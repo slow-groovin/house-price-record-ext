@@ -1,15 +1,18 @@
-export function isHousePage(url?:string){
-	if(!url) return false
+export function isHousePage(url?: string) {
+	if (!url) return false
 	return /ershoufang\/\d+.html/.test(url)
 }
 
-export function isCommunityListPage(url?:string){
-	if(!url) return false
-	return /ershoufang\/(c\d+|pg\d+c\d+)\//.test(url)
+export function isCommunityListPage(url?: string) {
+	if (!url) return false
+	return /ershoufang\/(pg\d+)?(co\d+)?c\d+\//.test(url)
 }
 
 
-export function extractCityAndHidFromHouseUrl(url: string | undefined): { city: string | undefined, hid: string | undefined } {
+export function extractCityAndHidFromHouseUrl(url: string | undefined | null): {
+	city: string | undefined,
+	hid: string | undefined
+} {
 	const empty = {city: undefined, hid: undefined}
 	if (!url) return empty
 	// 定义正则表达式来匹配URL中的city和houseId
@@ -47,7 +50,7 @@ export function extractCidFromHomePageUrl(url?: string | null): string | null {
 	}
 	const regex = /ershoufang\/\w*(c\d+)\//;
 	const match = url.match(regex);
-	return match ? match[1].replace('c','') : null;
+	return match ? match[1].replace('c', '') : null;
 }
 
 export function extractCidFromListUrl(url?: string | null): string | null {
@@ -97,13 +100,12 @@ export function extractCityFromUrl(urlStr: string) {
  * @param city 城市简称，用于生成URL的域名部分，例如"bj"代表北京
  * @param cid 社区ID，用于生成URL的路径部分
  * @param page 页码，表示需要生成URL的页面位置
+ * @param order 排序方式，默认为"time"，可选值包括"time"、"area"和"price"
  * @returns 返回生成的社区页面URL字符串
  */
-export function genCommunityPageUrl(city: string, cid: string, page: number): string {
-    // 当页码为1时，生成社区第一页的URL
-    if(page===1)
-        return `https://${city}.lianjia.com/ershoufang/c${cid}/`
-    // 当页码大于1时，生成社区指定页码的URL
-    return `https://${city}.lianjia.com/ershoufang/pg${page}c${cid}/`;
+export function genCommunityPageUrl(city: string, cid: string, page: number, order: 'time' | 'default'  = "time"): string {
+	const orderFlag=order==='default'?'':'co32'
+	const pageFlag=page===1?'':`pg${page}`
+	return `https://${city}.lianjia.com/ershoufang/${pageFlag}${orderFlag}c${cid}/`;
 }
 

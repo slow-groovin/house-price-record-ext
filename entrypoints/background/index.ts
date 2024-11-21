@@ -1,6 +1,9 @@
 import {onMessage, sendMessage} from "webext-bridge/background"
 import {updateRules} from "@/utils/block";
 import {db} from "@/utils/client/Dexie";
+import {CommunityListPageItem, CommunityRecord} from "@/types/lj";
+import {registerCommunityTaskManualRunCrawlOne} from "@/entrypoints/background/community-control";
+import {registerDaoMessage} from "@/entrypoints/background/dao";
 
 
 export default defineBackground(() => {
@@ -26,32 +29,8 @@ export default defineBackground(() => {
 
 	})
 
-	onMessage('manualRunOneCommunityTask', async (msg) => {
-		const promises:Promise<any>[]=[]
-		for (const url of msg.data.urlList) {
-			let promise = new Promise(async (resolve, reject)=> {
-				browser.tabs.create({url}, async (tab) => {
-					console.log('manualRunOneCommunityTask open:', url, tab.id, tab.status)
-
-
-					//等待爬取结果
-					const resp = await sendMessage('simple', 'createRecord', 'content-script@' + tab.id)
-					console.log('one tab record resp:',resp)
-					browser.tabs.remove([tab.id as number])
-					resolve(resp)
-				})
-
-			});
-			promises.push(promise)
-		}
-
-		//结果汇总, records -> snapshot  存储
-		await Promise.all(promises).then(rs=>{
-			console.log('manualRunOneCommunityTask:','all done.',rs)
-		})
-
-		return {resp:'manualRunOneCommunityTask open urls done.'}
-	})
+	registerCommunityTaskManualRunCrawlOne()
+	registerDaoMessage()
 
 
 });
