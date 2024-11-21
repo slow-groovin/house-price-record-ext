@@ -2,9 +2,9 @@ import {ContentScriptContext} from "wxt/client";
 import {removeNull} from "@/types/generic";
 import {random} from "radash";
 import {onMessage} from "webext-bridge/content-script";
-import {getAttrHref, getDirectTextContent} from "@/utils/document";
-import {extractCidFromUrl, extractCityFromUrl} from "@/utils/lj-dom";
+import {extractNumber, getAttrHref, getDirectTextContent} from "@/utils/document";
 import {housePageElementsDisguise, injectFuzzyStyle, injectCoverModal} from "@/entrypoints/content/lj-disguise";
+import {extractCidFromHomePageUrl, extractCityFromUrl} from "@/utils/lj-url";
 
 export function housePageEntry(ctx:ContentScriptContext){
 
@@ -30,7 +30,7 @@ function onParseHouseMessage(){
 		const hid=getDirectTextContent(document.querySelector('.houseRecord .info'))
 
 		const _communityUrl=getAttrHref(document.querySelector('.communityName .info'))
-		const cid=extractCidFromUrl(_communityUrl)??""
+		const cid=extractCidFromHomePageUrl(_communityUrl)??""
 		const city=extractCityFromUrl(window.location.href)??'unknown'
 
 		const areaText=document.querySelector('.area .mainInfo')?.textContent
@@ -62,7 +62,7 @@ function onParseHouseMessage(){
 			city,
 			totalPrice: Number(totalPrice),
 			unitPrice: Number(unitPrice),
-			area: extractPrefixNumericValueFromText(areaText) ?? 0,
+			area: extractNumber(areaText) ?? 0,
 			buildingType,
 			yearBuilt: yearBuilt,
 			roomType: removeNull(roomType),

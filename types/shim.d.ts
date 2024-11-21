@@ -9,5 +9,10 @@ declare module "webext-bridge" {
 		// to specify the return type of the message,
 		// use the `ProtocolWithReturn` type wrapper
 		bar: ProtocolWithReturn<{}, {}>;
+
+		/**
+		 * Auto Run  content -> background to control
+		 */
+		manualRunOneCommunityTask: ProtocolWithReturn<{urlList:string[]}, {resp:string}>;
 	}
 }

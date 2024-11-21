@@ -58,7 +58,7 @@ export class HouseTask implements HouseItem{
 		public hid: string,
 		public cid: string,
 		public city: string,
-		public state: HouseTaskStatus = HouseTaskStatus.running,
+		public status: HouseTaskStatus = HouseTaskStatus.running,
 		public accessRecord=new AccessRecord(),
 		public createdAt: number = Date.now(),
 		public autoRecord: boolean = false,
@@ -96,3 +96,66 @@ export class HouseTask implements HouseItem{
 		this.accessRecord.setAccessStatus(new Date(),true)
 	}
 }
+
+export type CommunityBasic={
+	cid: string,
+	name?:string;
+
+	city?: string,
+
+	avgPrice?: number;
+	onSellCount?: number;
+	visitCountIn90Days?: number;
+	doneCountIn90Days?: number;
+
+	calcAvgPrice?:number;
+	calcOnSellCount?:number;
+}
+
+export interface CommunityListItem{
+	pageNo: number,
+	maxPageNo:number,
+	houseList: {hid:string,price:number}[]
+}
+
+
+export enum CommunityTaskStatus {	running = 1,	pause = 2}
+
+export type CommunityTask ={
+	id?: number,
+
+	status: CommunityTaskStatus,
+	accessRecord: AccessRecord,
+	createdAt: number;
+	lastRunningAt: number;
+
+	runningCount: number; //
+
+
+
+
+} & CommunityBasic
+
+export const CommunityModelUtil={
+	newCommunityTaskFromItem(item:CommunityBasic):CommunityTask{
+		return {
+			cid: item.cid,
+			name: item.name,
+			city: item.city,
+			status: CommunityTaskStatus.running,
+			accessRecord: new AccessRecord(),
+
+			avgPrice: item.avgPrice,
+			onSellCount: item.onSellCount,
+			visitCountIn90Days: item.visitCountIn90Days,
+			doneCountIn90Days: item.doneCountIn90Days,
+
+			calcAvgPrice: item.calcAvgPrice,
+			calcOnSellCount: item.calcOnSellCount,
+
+			createdAt: Date.now(),
+			lastRunningAt: Date.now(),
+			runningCount: 0,
+		}
+	}
+} as const

@@ -70,12 +70,42 @@ export function getAttrHref(element?:Element|null){
 }
 
 /**
- * 从以数字开头的字符串中(如 '83.11m','45个')中提取开头的数字
+ * 从包含数字的字符串中(如 '83.11m','有45个')中提取第一个出现的的数字
  * @param areaText
  */
-export function extractPrefixNumericValueFromText(areaText?:string|null){
+export function extractNumber(areaText?:string|null){
 	if(!areaText) return null
 	const regex = /\d+(\.\d+)?/; // 匹配数字（带小数或不带小数）
 	const match = areaText.match(regex);
 	return match ? Number(match[0]) : null;
 }
+
+
+/**
+ * 类似playwright的等待元素出现
+ * @param selector
+ * @param timeout
+ */
+export function waitForElement(selector:string, timeout = 10000) {
+	if(document.querySelector(selector)){
+		return Promise.resolve(document.querySelector(selector))
+	}
+	return new Promise((resolve, reject) => {
+		const observer = new MutationObserver((mutations) => {
+			const element = document.querySelector(selector);
+			if (element) {
+				observer.disconnect(); // 停止观察
+				resolve(element);
+			}
+		});
+
+		observer.observe(document.body, { childList: true, subtree: true });
+
+		// 超时处理
+		setTimeout(() => {
+			observer.disconnect();
+			reject(new Error(`Timeout: Element ${selector} not found`));
+		}, timeout);
+	});
+}
+
