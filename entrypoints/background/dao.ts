@@ -18,4 +18,5 @@ export function registerDaoMessage(){
 			resp:queryResult+''
 		}
 	})
+
 }

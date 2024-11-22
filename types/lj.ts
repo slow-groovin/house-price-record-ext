@@ -110,16 +110,20 @@ export type CommunityBasic = {
 
 }
 
-export interface HousePriceItemInCommunityList {
+export interface HousePriceItem {
 	hid: string,
 	price: number
+}
+
+export interface HousePriceChangeItem extends HousePriceItem{
+	oldPrice:number
 }
 
 
 export interface CommunityList {
 	pageNo: number,
 	maxPageNo: number,
-	houseList: HousePriceItemInCommunityList[]
+	houseList: HousePriceItem[]
 }
 
 export type CommunityListPageItem = CommunityBasic & CommunityList
@@ -147,13 +151,13 @@ export type CommunityRecord = CommunityListPageItem & {
 	avgTotalPrice?: number;
 	calcOnSellCount?: number;
 
-	houseList?: HousePriceItemInCommunityList[];
+	houseList?: HousePriceItem[];
 
 
-	removedItem?: HousePriceItemInCommunityList[];
-	addedItem?: HousePriceItemInCommunityList[];
-	priceUpList?: HousePriceItemInCommunityList[];
-	priceDownList?: HousePriceItemInCommunityList[];
+	removedItem?: HousePriceItem[];
+	addedItem?: HousePriceItem[];
+	priceUpList?: HousePriceChangeItem[];
+	priceDownList?: HousePriceChangeItem[];
 }
 
 
@@ -170,7 +174,6 @@ export const CommunityModelUtil = {
 			onSellCount: item.onSellCount,
 			visitCountIn90Days: item.visitCountIn90Days,
 			doneCountIn90Days: item.doneCountIn90Days,
-
 
 			createdAt: Date.now(),
 			lastRunningAt: Date.now(),

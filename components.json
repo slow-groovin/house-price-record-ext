@@ -13,6 +13,6 @@
   "framework": "vite",
   "aliases": {
     "components": "@/components",
-    "utils": "@/utils/shadcn-util"
+    "utils": "@/utils/shadcn-utils"
   }
 }

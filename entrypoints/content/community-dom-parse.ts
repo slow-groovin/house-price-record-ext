@@ -1,6 +1,6 @@
 import {extractCidFromHomePageUrl, extractCityAndHidFromHouseUrl, extractPageNumberFromListUrl} from "@/utils/lj-url";
 import {extractNumber, waitForElement} from "@/utils/document";
-import {CommunityListPageItem, HousePriceItemInCommunityList} from "@/types/lj";
+import {CommunityListPageItem, HousePriceItem} from "@/types/lj";
 import {removeNull} from "@/types/generic";
 
 export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
@@ -43,7 +43,7 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 
 
 	// 列表中的所有id
-	const houseItems:HousePriceItemInCommunityList[] = [];
+	const houseItems:HousePriceItem[] = [];
 	// .info.clear > .title > a .info.clear > .priceInfo > .totalPrice
 	document.querySelectorAll('.info.clear ').forEach((element) => {
 		const {city,hid}=extractCityAndHidFromHouseUrl(element.querySelector('.title > a')?.getAttribute('href'))

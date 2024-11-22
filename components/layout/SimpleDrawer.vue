@@ -1,23 +1,16 @@
 <template>
-  <div :class="cn('flex overflow-auto', props.class)">
-    <div v-if="!isOpen" @click="open" :class="cn('cursor-pointer p-2 h-fit  hover:bg-gray-300', toggleClass)">
-      👉
+  <div :class="cn('flex overflow-auto ', props.class)">
+
+    <div :class="{'w-0 overflow-hidden':!isOpen}" >
+      <slot name="default"></slot>
     </div>
-    <div v-else @click="close" :class="cn('cursor-pointer p-2  hover:bg-gray-300', toggleClass)">
-      ❌
+
+    <div class="self-center">
+      <Icon v-if="!isOpen" @click="open" icon="lets-icons:expand-right-light"
+            :class="cn('cursor-pointer  hover:bg-gray-300 w-4 h-8 border text-gray-800 stroke-2', toggleClass)"/>
+      <Icon v-else @click="close" icon="lets-icons:expand-left-light" :class="cn('cursor-pointer hover:bg-gray-300  w-4 h-8 border text-gray-800 stroke-2', toggleClass)">
+      </Icon>
     </div>
-    <transition
-        enter-active-class="transition ease-in-out duration-300 transform"
-        enter-from-class="translate-x-full"
-        enter-to-class="translate-x-0"
-        leave-active-class="transition ease-in-out duration-300 transform"
-        leave-from-class="translate-x-0"
-        leave-to-class="translate-x-full"
-    >
-      <div v-if="isOpen" >
-        <slot name="default"></slot>
-      </div>
-    </transition>
 
   </div>
 </template>
@@ -26,6 +19,7 @@
 import { ref } from 'vue'
 import type { HTMLAttributes } from 'vue'
 import type { ClassValue } from 'clsx'
+import {Icon } from '@iconify/vue'
 
 interface Props {
   class?: HTMLAttributes['class']

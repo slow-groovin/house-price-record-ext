@@ -74,6 +74,7 @@ async function queryTask(cid:string){
     </h1>
     <div>
       <Button @click="initParseAndQuery">parse</Button>
+
       <Button @click="injectFuzzyStyle">injectStyle</Button>
     </div>
 

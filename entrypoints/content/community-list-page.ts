@@ -6,8 +6,8 @@ import {parseAllOfCommunity} from "@/entrypoints/content/community-dom-parse";
 export async function communityListPageEntry(ctx:ContentScriptContext) {
 	registerMessage()
 
-	// injectFuzzyStyle()
-	// communityElementDisguise()
+	injectFuzzyStyle()
+	communityElementDisguise()
 
 	const ui=await createShadowRootUi(ctx, {
 		name: 'example-ui',
@@ -31,9 +31,6 @@ export async function communityListPageEntry(ctx:ContentScriptContext) {
 	});
 	// 4. Mount the UI
 	ui.mount();
-
-
-
 }
 
 function registerMessage(){
