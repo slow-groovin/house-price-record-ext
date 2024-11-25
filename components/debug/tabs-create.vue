@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {Semaphore} from "@/utils/lib/Semaphore";
+import {Button} from "@/components/ui/button";
 
 function openTabs() {
   const urls = [
@@ -41,11 +42,18 @@ function openTabs() {
   });
   console.log('DONE')
 }
+
+function logObj(){
+  console.log('browser:',browser)
+  console.log('chrome:',chrome)
+
+}
 </script>
 
 <template>
-  <div class="c-block">
+  <div class="c-block gap-4">
     <h1>Open Tabs</h1>
+    <Button @click="logObj">logBrowser</Button>
     <button @click="openTabs">Once Multiple Tabs</button>
   </div>
 </template>

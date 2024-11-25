@@ -18,5 +18,7 @@ export function registerDaoMessage(){
 			resp:queryResult+''
 		}
 	})
-
+}
+export async function isHouseTaskExist(hid:string){
+	return await db.houseTasks.where('hid').equals(hid).count()>0
 }

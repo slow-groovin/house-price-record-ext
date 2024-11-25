@@ -4,7 +4,15 @@ import {Button} from "@/components/ui/button";
 import houseTaskJson from './data/mongo-output.json'
 import houseChangesJson from './data/mongo-h-changes-output.json'
 import communityTaskJson from './data/mongo-c-task-output.json'
-import {CommunityTask, CommunityTaskStatus, HouseChange, HouseTask, HouseTaskStatus, TaskAddedType} from "@/types/lj";
+import {
+  CommunityRecord,
+  CommunityTask,
+  CommunityTaskStatus,
+  HouseChange,
+  HouseTask,
+  HouseTaskStatus,
+  TaskAddedType
+} from "@/types/lj";
 import {db} from "@/utils/client/Dexie";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
 
@@ -61,6 +69,10 @@ async function addCommunityRecordData(){
       city: 'bj',
       status: CommunityTaskStatus.running,
       houseList:undefined,
+      accessRecord: new AccessRecord(),
+      createdAt: item.at,
+      lastRunningAt: item.at,
+      runningCount: 1,
     }as CommunityTask
   })
   const rs1=await db.communityTasks.bulkAdd(tasks)
@@ -69,7 +81,7 @@ async function addCommunityRecordData(){
       ...item,
       cid: item.cid+'',
       city: 'bj',
-    }
+    }as CommunityRecord
   })
   const rs2=await db.communityRecords.bulkAdd(records)
   alert(rs1+' '+rs2)
@@ -77,9 +89,10 @@ async function addCommunityRecordData(){
 
 async function deleteCommunityRecordData(){
   const data=communityTaskJson.forEach(item=>{
-    db.communityTasks.where('cid').equals(item.cid).delete()
-    db.communityRecords.where('cid').equals(item.cid).delete()
+    db.communityTasks.where('cid').equals(item.cid+'').delete()
+    db.communityRecords.where('cid').equals(item.cid+'').delete()
   })
+  alert('delete community task done')
 }
 </script>
 

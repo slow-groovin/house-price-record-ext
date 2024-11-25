@@ -1,11 +1,42 @@
-import {db} from "@/utils/client/Dexie";
-import {HouseItem, HouseTask} from "@/types/lj";
-import {sendMessage} from "webext-bridge/popup";
+import {isHouseTaskExist} from "@/entrypoints/background/dao";
+import {CommunityListPageItem, HouseItem, HouseTask} from "@/types/lj";
+import {sendMessage} from "webext-bridge/background";
+import {genHousePageUrl} from "@/utils/lj-url";
 
+import {db} from "@/utils/client/Dexie";
+
+export async function runHouseTaskManualRunCrawlOne(hid: string) {
+	//verify task
+	let task = await db.houseTasks.where('hid').equals(hid).first();
+	if(!task){
+		throw new Error(`hTask ${hid} not exist!`)
+	}
+	const url=genHousePageUrl(task.city,task.hid)
+	//open Page
+	let promise = new Promise<CommunityListPageItem>(async (resolve, reject) => {
+		browser.tabs.create({url}, async (tab) => {
+			console.log('runHouseTaskManualRunCrawlOne open:', url, tab.id, tab.status)
+
+			const rs=await crawlHouse(tab.id)
+			console.log('rs',rs)
+			resolve(true)
+			//打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
+			// const resp = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
+			// console.log('one tab record resp:', resp)
+			// browser.tabs.remove([tab.id as number])
+			// resolve(resp)
+		})
+	})
+}
+
+/**
+ * 开启一次爬取, 向content发送message, 根据页面抓取结果更新任务自身,以及新建changes
+ * @param pageTabId
+ */
 export async function crawlHouse(pageTabId:number){
 	//发送message ,让页面进行parse item
 	const respParsedItem = await sendMessage('parseHouse', {}, 'content-script@'+pageTabId)
-
+	console.log('respParsedItem:',respParsedItem)
 	//查询任务 in db
 	const queryResult=await db.houseTasks.where('hid').equals(respParsedItem.hid).first()
 
@@ -27,6 +58,7 @@ export async function crawlHouse(pageTabId:number){
 
 	//更新task, 如果有字段更新, 构建更新对象
 	const {dexieUpdateChanges,commonFieldChanges}=genTaskUpdateChanges(houseTask,respParsedItem)
+	console.log('dexieUpdateChanges',dexieUpdateChanges)
 	await db.houseTasks.update(houseTask.id,{
 		...dexieUpdateChanges,
 		lastRunningAt: sameAt,
@@ -104,10 +136,9 @@ export function genTaskUpdateChanges(
 		const newValue = respParsedItem[field];
 
 		// 仅在新值和旧值不相等时记录
-		if (newValue !== undefined && newValue !== null && oldValue!==undefined && oldValue!=null
-			&& oldValue !== newValue) {
+		if (newValue !== undefined && newValue !== null && oldValue !== newValue) {
 			dexieUpdateChanges[field] = newValue; // 添加到更新结构
-			if(!fieldsExcludeInCommonChange.includes(field)){
+			if(oldValue!==undefined && oldValue!=null && !fieldsExcludeInCommonChange.includes(field)){
 				commonFieldChanges.push({ name: field, newValue, oldValue }); // 添加到变更记录
 			}
 		}

@@ -114,3 +114,6 @@ export function genCommunityPageUrl(city: string, cid: string, page: number, ord
 	return `https://${city}.lianjia.com/ershoufang/${pageFlag}${orderFlag}c${cid}/`;
 }
 
+export function genHousePageUrl(city: string, hid: string): string {
+	return `https://${city}.lianjia.com/ershoufang/${hid}.html`;
+}

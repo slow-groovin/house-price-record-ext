@@ -56,7 +56,7 @@ import {sendMessage} from "webext-bridge/popup";
 import {db} from "@/utils/client/Dexie";
 import {HouseChange, HouseItem, HouseTask} from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
-import {crawlHouse} from '@/entrypoints/sidepanel/task'
+import {crawlHouse} from '@/entrypoints/reuse/house-control'
 import ObjectTable from "@/components/table/ObjectTable.vue";
 
 const props=defineProps<{tabId:number}>()
@@ -90,6 +90,7 @@ async function fetchLast10Changes(hid:string){
 async function refreshPageCrawlAndTaskInDb(){
   const resp = await sendMessage('parseHouse', {}, 'content-script@'+props.tabId)
   const task=await db.houseTasks.where('hid').equals(resp.hid).first()
+  // console.log('task',task)
   if(task)
     houseTask.value=HouseTask.fromHouseTask(task)
   isTaskExist.value=!!task

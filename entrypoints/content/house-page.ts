@@ -67,10 +67,13 @@ function onParseHouseMessage() {
 			const partArea = extractNumber(element.textContent)
 			if (partArea) totalRealArea += partArea
 		})
-		totalRealArea %= 0.1 // 避免出现小数点后两位以上
+		totalRealArea = Number(totalRealArea.toFixed(2)) // 避免出现小数点后两位以上
 		//real unit price
 		let realUnitPrice: undefined | number
-		if (totalPrice) realUnitPrice = (totalPrice*10000) / totalRealArea
+		if (totalPrice){
+			realUnitPrice = (totalPrice*10000) / totalRealArea
+			realUnitPrice=Number(realUnitPrice.toFixed(0))
+		}
 
 		return {
 			name,

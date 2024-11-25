@@ -7,6 +7,9 @@
 		h1{
 			@apply text-2xl font-bold text-center
 		}
+		h2{
+			@apply text-xl font-semibold
+		}
 		a {
 			font-weight: 500;
 			color: #646cff;
