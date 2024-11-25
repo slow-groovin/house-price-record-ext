@@ -41,25 +41,30 @@ export function extractCommunityListPageNumber(str: string): number | null {
 }
 
 /**
- * 从  https://city.lianjia.com/ershoufang/c<cid>.html 中提取cid
+ * 从 /xiaoqu url中提取cid
  * @param url
  */
 export function extractCidFromHomePageUrl(url?: string | null): string | null {
 	if (!url) {
 		return null
 	}
-	const regex = /ershoufang\/\w*(c\d+)\//;
-	const match = url.match(regex);
-	return match ? match[1].replace('c', '') : null;
-}
-
-export function extractCidFromListUrl(url?: string | null): string | null {
-	if (!url) {
-		return null
-	}
 	const regex = /xiaoqu\/(\d+)/;
 	const match = url.match(regex);
 	return match ? match[1] : null;
+}
+
+/**
+ * 从  https://city.lianjia.com/ershoufang/c<cid>.html 中提取cid
+ * @param url
+ */
+export function extractCidFromListUrl(url?: string | null): string | null {
+
+	if (!url) {
+		return null
+	}
+	const regex = /ershoufang\/\w*(c\d+)\//;
+	const match = url.match(regex);
+	return match ? match[1].replace('c', '') : null;
 }
 
 

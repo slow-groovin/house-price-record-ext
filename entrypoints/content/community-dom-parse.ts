@@ -1,6 +1,6 @@
-import {extractCidFromHomePageUrl, extractCityAndHidFromHouseUrl, extractPageNumberFromListUrl} from "@/utils/lj-url";
+import {extractCidFromListUrl, extractCityAndHidFromHouseUrl, extractPageNumberFromListUrl} from "@/utils/lj-url";
 import {extractNumber, waitForElement} from "@/utils/document";
-import {CommunityListPageItem, HousePriceItem} from "@/types/lj";
+import {CommunityListPageItem, HouseListDetailItem, HousePriceItem} from "@/types/lj";
 import {removeNull} from "@/types/generic";
 
 export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
@@ -20,7 +20,7 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 	/**
 	 * cid,city,pageNo
 	 */
-	const cid=extractCidFromHomePageUrl(window.location.href)
+	const cid=extractCidFromListUrl(window.location.href)
 	if (!cid) {
 		console.warn(`cid is undefined.`)
 		throw new Error(`cid is undefined.`)
@@ -43,16 +43,28 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 
 
 	// 列表中的所有id
-	const houseItems:HousePriceItem[] = [];
+	const houseItems:HouseListDetailItem[] = [];
 	// .info.clear > .title > a .info.clear > .priceInfo > .totalPrice
 	document.querySelectorAll('.info.clear ').forEach((element) => {
 		const {city,hid}=extractCityAndHidFromHouseUrl(element.querySelector('.title > a')?.getAttribute('href'))
 		const price=extractNumber(element.querySelector('.priceInfo > .totalPrice')?.textContent)
+		const name=element.querySelector('.title > a')?.textContent??undefined
+		const info=element.querySelector('.houseInfo ')?.textContent?.split('|')??[]
+		//2室1厅 ', ' 79平米 ', ' 西 ', ' 精装 ', ' 顶层(共26层) ', ' 2023年 ', ' 板楼'
+		const roomType=info[0]?.trim()
+		const area=extractNumber(info[1]?.trim())??undefined
+		const orientation=info[2]?.trim()
+		const roomSubType=info[4]?.trim()
+		const yearBuilt= info[5]?.trim()
+		const buildingType=info[6]?.trim()
+
+
+		// console.log(name,info)
 		if(!hid || !price){
 			console.warn('hid or price is undefined',`hid:${hid},price:${price}}`)
 			return
 		}
-		houseItems.push({hid,price})
+		houseItems.push({hid,price, roomType, area, orientation, roomSubType, yearBuilt, buildingType, name})
 	});
 
 

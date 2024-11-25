@@ -10,7 +10,9 @@ export default defineContentScript({
 	],
 	cssInjectionMode: 'ui',
 	async main(ctx) {
+
 		console.log('process.env.NODE_ENV',process.env.NODE_ENV)
+		console.log('import.meta.env.VITE_HIDE',import.meta.env.VITE_HIDE)
 
 		// ctx.block
 		console.log('hit lj page.',window.location.href);

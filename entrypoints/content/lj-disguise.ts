@@ -122,11 +122,11 @@ export function housePageElementsDisguise() {
 	]
 	classes.forEach((k: string) => deleteBySelector(k))
 
-	replaceBodyText([
-		{source: '平米', target: 'Token'},
-		{source: '元', target: 'Text'},
-		{source: '万', target: 'WLAN'},
-	])
+	// replaceBodyText([
+	// 	{source: '平米', target: 'Token'},
+	// 	{source: '元', target: 'Text'},
+	// 	{source: '万', target: 'WLAN'},
+	// ])
 
 
 }

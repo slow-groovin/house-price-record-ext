@@ -26,3 +26,4 @@ web-ext.config.ts
 *.sw?
 /public/overlay.png
 /temp.json
+/components/debug/data/

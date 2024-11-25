@@ -1,4 +1,4 @@
-import {CommunityListPageItem, CommunityRecord, HousePriceChangeItem, HousePriceItem} from "@/types/lj";
+import {CommunityListPageItem, CommunityRecord, HousePriceChangeItem, HousePriceItem, HouseTask} from "@/types/lj";
 import {onMessage, sendMessage} from "webext-bridge/background"
 import {db} from "@/utils/client/Dexie";
 import {stabilizeFields} from "@/utils/variable";
@@ -36,7 +36,16 @@ async function runCommunityTaskManualRunCrawlOne(urlList: string[]) {
 
 	verifyDiffPagesItem(recordsOfAllPage)
 
+
 	const record = pageItemResults2Record(recordsOfAllPage)
+	const sameAt = Date.now()
+	record.at = sameAt
+
+
+	//如果设置了"自动创建/更新house任务", 则自动创建不存在的任务
+	await autoUpdateOrCreateHouseTask(record)
+
+
 	//查询上一个record
 	const lastRecord = await db.communityRecords.where('cid').equals(record.cid).last()
 	//如果存在, 计算priceUp,priceDown, added,removed,
@@ -54,9 +63,10 @@ async function runCommunityTaskManualRunCrawlOne(urlList: string[]) {
 		record.addedItem = addedItem
 	}
 
-	const sameAt = Date.now()
-	record.at = sameAt
+
+
 	// record 入库
+	record.houseList=record.houseList.map(({price,hid})=>({hid,price}))
 	const insertId = await db.communityRecords.add(record)
 	console.log('record insertId:', insertId)
 
@@ -78,6 +88,7 @@ function pageItemResults2Record(recordsOfAllPage: CommunityListPageItem[]) {
 	for (let item of recordsOfAllPage) {
 		houseList.push(...item.houseList)
 	}
+
 
 	const {result: mergeResult, diff, hasDiff} = stabilizeFields(recordsOfAllPage, {excludeFields: ['pageNo']})
 	if (hasDiff) {
@@ -164,3 +175,43 @@ export function calculateListDifferences(target: HousePriceItem[], toCompare: Ho
 	return {priceUpList, priceDownList, removedItem, addedItem};
 }
 
+/**
+ * 为record中的houseList中的所有item自动创建任务或更新
+ * @param record
+ */
+async function autoUpdateOrCreateHouseTask(record:CommunityRecord){
+	for (let item of record.houseList) {
+		const task=await db.houseTasks.where('hid').equals(item.hid).first()
+		if(task){
+			//update price
+			//如果price发生变动, 增加houseChanges记录
+			if(item.price && task?.totalPrice!==item.price){
+				await db.houseChanges.add({
+
+					hid: item.hid,
+					cid: record.cid,
+					at: record.at,
+					oldValue: task.totalPrice??-1,
+					newValue: item.price,
+				})
+			}
+			const taskObj=HouseTask.fromHouseTask(task)
+			taskObj.markAccess()
+
+			await db.houseTasks.where('id').equals(task!.id as number).modify(taskObj)
+
+
+		}else{
+			//create task
+			if(!record.city){
+				console.error('record has no city!', record.city)
+				return
+			}
+
+			let houseTask = HouseTask.newFromItem({...item,city:record.city,cid:record.cid});
+			houseTask.markAccess()
+			await db.houseTasks.add(houseTask)
+
+		}
+	}
+}

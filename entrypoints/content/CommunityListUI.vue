@@ -6,11 +6,13 @@ import {Button} from "@/components/ui/button";
 import {CommunityBasic, CommunityList, CommunityModelUtil, CommunityTask} from "@/types/lj";
 import ObjectTable from "@/components/table/ObjectTable.vue";
 import {beginCrawl} from "@/entrypoints/content/community-crawl";
-import {extractCidFromHomePageUrl} from "@/utils/lj-url";
+import {extractCidFromListUrl} from "@/utils/lj-url";
 import {injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
 import {sendMessage} from 'webext-bridge/content-script';
 
-// 使用示例
+if (import.meta.env.VITE_HIDE === 'true') {
+  import('~/assets/disguise.css');
+}
 
 
 const item = ref<CommunityBasic & CommunityList>()
@@ -24,7 +26,7 @@ onMounted(async () => {
 
 })
 async function initParseAndQuery(){
-  const cidFromUrl=extractCidFromHomePageUrl(window.location.href)
+  const cidFromUrl=extractCidFromListUrl(window.location.href)
   if(!cidFromUrl){
     throw new Error('cid not exist: '+window.location.href)
   }
@@ -100,8 +102,5 @@ async function queryTask(cid:string){
 </template>
 
 <style scoped>
-#ui-container * {
-  background-color: rgba(115, 92, 83, 0.56) !important;
-  color: rgba(191, 189, 189, 0.38) !important;
-}
+
 </style>

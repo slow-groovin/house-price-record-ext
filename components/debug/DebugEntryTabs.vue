@@ -10,6 +10,7 @@ import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
 import {allBlockRuleKeys, updateRules} from "@/utils/block";
 import CommunityDebug from "@/components/debug/CommunityDebug.vue";
+import FakeDataInsert from "@/components/debug/FakeDataInsert.vue";
 
 /**
  * 非数据, 不用background的storage, 仅用页面的localStorage即可
@@ -33,7 +34,7 @@ function toggleRules(payload:boolean){
 }
 
 
-const components = [TabsCreate, DexieIndexedDB, UnovisSamples, WxtStorage,CalendarGraphSample,CommunityDebug]
+const components = [TabsCreate, DexieIndexedDB, UnovisSamples, WxtStorage,CalendarGraphSample,CommunityDebug,FakeDataInsert]
 </script>
 
 

@@ -50,6 +50,14 @@ const menuGroups = ref<MenuGroup[]>([
 ])
 
 if(process.env.NODE_ENV=='development'){
+  menuGroups.value.unshift({
+    name: 'DEBUG',
+    menus: [
+      { name: 'debug',  link: '/debug' },
+    ]
+  })
+}
+if(import.meta.env.VITE_HIDE==='true'){
   menuGroups.value.forEach(v=>v.name=random(1,100)+'')
 }
 

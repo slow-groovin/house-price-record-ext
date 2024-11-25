@@ -16,11 +16,16 @@ export interface HouseItem {
 	roomType?: string,
 	roomSubType?: string,
 	orientation?: string;
+
+	onSellDate?: number
+
+	realArea?: number;
+	realUnitPrice?: number;
 }
 
 
 export interface HouseChange {
-	id: number,
+	id?: number,
 	hid: string,
 	cid: string,
 
@@ -35,7 +40,7 @@ export enum HouseTaskStatus {
 	miss = 3, out = 4
 }
 
-export enum TaskAddedType {manual = 1, scan = 2}
+export enum TaskAddedType {manual = 1, scan = 2, forDebug = 11}
 
 export class HouseTask implements HouseItem {
 	public lastRunningAt: number;
@@ -52,6 +57,8 @@ export class HouseTask implements HouseItem {
 	public roomType?: string;
 	public roomSubType?: string;
 	public orientation?: string;
+
+	public onSellDate?: number;
 
 	constructor(
 		public hid: string,
@@ -86,6 +93,7 @@ export class HouseTask implements HouseItem {
 	static fromHouseTask(variable: HouseTask) {
 		const task = Object.assign(new HouseTask('', '', ''), variable)
 		task.accessRecord = Object.assign(new AccessRecord(), variable.accessRecord)
+
 		return task
 	}
 
@@ -115,15 +123,28 @@ export interface HousePriceItem {
 	price: number
 }
 
-export interface HousePriceChangeItem extends HousePriceItem{
-	oldPrice:number
+export interface HousePriceChangeItem extends HousePriceItem {
+	oldPrice: number
+}
+
+/**
+ * 列表项中的item, 但是包含详细的信息作为字段
+ */
+export interface HouseListDetailItem extends HousePriceItem {
+	name?: string;
+	area?: number;
+	buildingType?: string;
+	yearBuilt?: string;
+	roomType?: string;
+	roomSubType?: string;
+	orientation?: string;
 }
 
 
 export interface CommunityList {
 	pageNo: number,
 	maxPageNo: number,
-	houseList: HousePriceItem[]
+	houseList: HouseListDetailItem[]
 }
 
 export type CommunityListPageItem = CommunityBasic & CommunityList
@@ -151,7 +172,6 @@ export type CommunityRecord = CommunityListPageItem & {
 	avgTotalPrice?: number;
 	calcOnSellCount?: number;
 
-	houseList?: HousePriceItem[];
 
 
 	removedItem?: HousePriceItem[];
@@ -181,3 +201,13 @@ export const CommunityModelUtil = {
 		}
 	}
 } as const
+
+export interface CommonFieldChange {
+	id?: number,
+	hid: string,
+	cid: string,
+	name: string,
+	newValue: any,
+	oldValue: any,
+	at: number
+}
