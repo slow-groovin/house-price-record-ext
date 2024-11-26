@@ -50,9 +50,13 @@ function registerMessage(){
 
 
 	})
-
+	/**
+	 * 解析当前列表页面, 并返回解析结果
+	 */
 	onMessage('parseOneCommunityListOnePage',async (data)=>{
 		console.log('RECEIVE parseOneCommunityListOnePage msg')
 		return await parseAllOfCommunity()
 	})
+
+
 }

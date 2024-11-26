@@ -78,8 +78,7 @@ function accessRecord2GraphData(accessRecord: AccessRecord) {
         data: rangeResult
       })
     }
-    // console.log(yearData)
-    return yearData
+    return yearData.reverse()
   }
 
 }

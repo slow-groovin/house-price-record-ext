@@ -71,7 +71,7 @@ export class HouseTask implements HouseItem {
 		public addedType: TaskAddedType = TaskAddedType.manual,
 	) {
 		this.lastRunningAt = this.createdAt
-		console.log('init', hid)
+		// console.log('init', hid)
 	}
 
 	static newFromItem(item: HouseItem) {
@@ -110,6 +110,8 @@ export type CommunityBasic = {
 	name?: string;
 
 	city?: string,
+
+	avgTotalPrice?:number;
 
 	avgUnitPrice?: number;
 	onSellCount?: number;

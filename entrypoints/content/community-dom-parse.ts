@@ -82,8 +82,8 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 
 		})
 		.catch((error) => {
-			console.log(document.querySelector('.agentCardDetailItem'))
-			console.error(error.message);
+			//do nothing
+			console.log("[content.js] '.agentCardDetailItem'  not loaded")
 		});
 
 

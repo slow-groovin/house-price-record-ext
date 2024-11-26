@@ -20,7 +20,7 @@ const debugEntryIndex = useLocalStorage('debugEntryIndex', 0)
 const handleTabChange = (index: number) => {
   console.log('Active tab changed to:', index)
   debugEntryIndex.value = index
-
+  title.value=components[index].__name
 }
 
 function queryTab(){// 获取当前活动的标签页信息
@@ -33,7 +33,7 @@ function toggleRules(payload:boolean){
     allBlockRuleKeys.forEach(k=>removeRules(k))
   }
 }
-
+const title=useTitle()
 
 const components = [TabsCreate, DexieIndexedDB, UnovisSamples, WxtStorage,CalendarGraphSample,CommunityDebug,FakeDataInsert,TanstackTable]
 </script>

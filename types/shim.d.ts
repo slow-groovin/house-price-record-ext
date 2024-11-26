@@ -11,10 +11,17 @@ declare module "webext-bridge" {
 		// use the `ProtocolWithReturn` type wrapper
 		bar: ProtocolWithReturn<{}, {}>;
 
+
 		/**
-		 * Auto Run  content -> background to control
+		 * Auto Run  contentUI/options -> background to control
+		 * fromStart: 是否新打开页面获取总页数再开始抓取步骤
 		 */
-		manualRunOneCommunityTask: ProtocolWithReturn<{urlList:string[]}, {resp:string}>;
+		manualRunOneCommunityTask: ProtocolWithReturn<{city:string,cid:string,maxPage:number,fromStart?:boolean}, {resp:string}>;
+
+
+		/**
+		 * background/side panel  -> content to parse
+		 */
 		parseOneCommunityListOnePage: ProtocolWithReturn<{}, CommunityListPageItem>;
 		/**
 		 * DAO

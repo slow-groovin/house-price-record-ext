@@ -13,10 +13,13 @@ export async function runHouseTaskManualRunCrawlOne(hid: string) {
 	}
 	const url=genHousePageUrl(task.city,task.hid)
 	//open Page
-	let promise = new Promise<CommunityListPageItem>(async (resolve, reject) => {
-		browser.tabs.create({url}, async (tab) => {
+	let promise = new Promise<any>(async (resolve, reject) => {
+		browser.tabs.create({url,active:false}, async (tab) => {
 			console.log('runHouseTaskManualRunCrawlOne open:', url, tab.id, tab.status)
-
+			if(!tab.id) {
+				reject(false)
+				return
+			}
 			const rs=await crawlHouse(tab.id)
 			console.log('rs',rs)
 			resolve(true)

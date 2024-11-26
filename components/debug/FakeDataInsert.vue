@@ -81,6 +81,7 @@ async function addCommunityRecordData(){
       ...item,
       cid: item.cid+'',
       city: 'bj',
+      maxPageNo: Math.floor(item.houseList.length/30)+1,
     }as CommunityRecord
   })
   const rs2=await db.communityRecords.bulkAdd(records)

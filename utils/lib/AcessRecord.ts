@@ -8,15 +8,13 @@ export class AccessRecord {
 		public startDate: Date = START_DATE,
 		public bitmap: Uint32Array = new Uint32Array(0),
 	) {
-		console.log(this.startDate, typeof this.startDate)
-		this.startDate = new Date(this.startDate.setHours(0, 0, 0, 0));
+		this.startDate = new Date( new Date(this.startDate).setHours(0, 0, 0, 0));
 	}
 
 	static fromAccessRecord(anotherAccessRecord: AccessRecord) {
 		return new AccessRecord(
 			anotherAccessRecord.startDate,
 			new Uint32Array(anotherAccessRecord.bitmap),
-
 		);
 	}
 

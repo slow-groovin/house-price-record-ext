@@ -15,22 +15,22 @@ import {
   useVueTable,
   VisibilityState,
 } from '@tanstack/vue-table'
-import {db} from "@/utils/client/Dexie";
-import {CommunityTask, HouseChange, HouseTask} from "@/types/lj";
+import {HouseTask} from "@/types/lj";
 import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {valueUpdater} from "@/utils/shadcn-utils";
-import {calcOffset, PageState} from "@/utils/table-utils";
-
-
 
 /*
 ref definition
  */
 const sorting = ref<SortingState>([])
 const columnFilters = ref<ColumnFiltersState>([])
-const columnVisibility = useLocalStorage<VisibilityState>('community-list-column-visibility', {})
+const columnVisibility = useLocalStorage<VisibilityState>('house-tasks-column-visibility', {})
 const rowSelection = ref({})
+const {data, rowCount} = defineProps<{
+  data: HouseTask[],
+  rowCount: number
+}>()
 /*
 ref definition DONE
  */
@@ -39,64 +39,54 @@ ref definition DONE
 /**
  * pagination
  */
+const emit = defineEmits<{
+  (e: 'onPaginationChange', pageIndex: number, pageSize: number): void
+}>()
+// const pagination = defineModel<PageState>('pagination')
+const pagination = ref( {pageIndex: 1, pageSize: 10})
 
-const pagination = ref<PageState>({
-  pageSize: 10,
-  pageIndex: 1,
-})
-
+//初始化默认查询
+emit('onPaginationChange',pagination.value.pageIndex,pagination.value.pageSize)
 /**
  * pagination end
  */
 
-/*
-data
- */
-const data = ref<CommunityTask[]>([])
-const rowCount=ref(0)
 
-async function queryData() {
-  //changes
-  const tasks = await db.communityTasks.offset(calcOffset(pagination.value.pageIndex, pagination.value.pageSize)).limit(pagination.value.pageSize).toArray()
-  rowCount.value= await db.communityTasks.count()
-  //communities info
-  data.value = tasks
-
-
-}
-
-/*
-data END
- */
 
 /*
 column BEGIN
  */
-const columnHelper = createColumnHelper<CommunityTask>()
-const columnDef: (ColumnDef<CommunityTask> | AccessorKeyColumnDef<CommunityTask, any>)[] = [
+const columnHelper = createColumnHelper<HouseTask>()
+const columnDef: (ColumnDef<HouseTask> | AccessorKeyColumnDef<HouseTask, any>)[] = [
   columnHelper.accessor('id', {}),
 
   {
     accessorKey: 'cid',
     id: 'cid',
     header: 'cid header',
-    cell: ({cell}) => h('a', {'class': 'text-green-500', 'href':'#/c/task/detail?id='+cell.getValue()}, cell.getValue() as string)
-  } as ColumnDef<CommunityTask>,
+    cell: ({cell}) => h('a', {href: '#' + cell.getValue()}, cell.getValue() as string)
+  } as ColumnDef<HouseTask>,
+  columnHelper.accessor('hid', {
+    header: 'id',
+    cell: ({cell}) => h('a', {'class': 'text-green-500','href': '#/h/task/detail?id=' + cell.getValue()}, cell.getValue())
+  }) as ColumnDef<HouseTask>,
   columnHelper.accessor('name', {}),
-  columnHelper.accessor('city', {}),
-  columnHelper.accessor('runningCount', {}),
-  columnHelper.accessor('visitCountIn90Days', {}),
-  columnHelper.accessor('doneCountIn90Days', {}),
-  columnHelper.accessor('avgUnitPrice', {}),
-  columnHelper.accessor('status', {}),
+  columnHelper.accessor('area', {}),
+  columnHelper.accessor('realArea', {}),
+  columnHelper.accessor('unitPrice', {}),
+  columnHelper.accessor('realUnitPrice', {}),
+  columnHelper.accessor('totalPrice', {}),
   columnHelper.accessor('createdAt', {
     cell: ({cell}) => new Date(cell.getValue()).toLocaleString()
   }),
+
   columnHelper.accessor('lastRunningAt', {
     cell: ({cell}) => new Date(cell.getValue()).toLocaleString()
   }),
 
-
+  columnHelper.accessor('buildingType', {}),
+  columnHelper.accessor('roomSubType', {}),
+  columnHelper.accessor('roomType', {}),
 ]
 /*
 column END
@@ -106,9 +96,9 @@ column END
 /*
 table BEGIN
  */
-let options: TableOptions<CommunityTask> = {
+let options: TableOptions<HouseTask> = {
   get data() {
-    return data.value
+    return data
   },
   get columns() {
     return columnDef
@@ -144,13 +134,13 @@ let options: TableOptions<CommunityTask> = {
   // autoResetPageIndex:false,
   manualPagination: true,
   // pageCount:30,
-  rowCount: 0,
+  rowCount: rowCount,
 
   onPaginationChange: updaterOrValue => {
+    // console.log('updaterOrValue',updaterOrValue ,'before:',pagination.value)
     valueUpdater(updaterOrValue, pagination)
-    console.log(toRaw(pagination.value))
-    queryData()
-
+    // console.log('after:',pagination.value)
+    emit('onPaginationChange',pagination.value.pageIndex, pagination.value.pageSize)
   }
 }
 const table = useVueTable(options)
@@ -160,22 +150,26 @@ table END
 
 
 onMounted(() => {
-  queryData()
+
+  watch(() => rowCount, () => {
+    console.log('rowCount changed.')
+    options.rowCount = rowCount
+
+  })
 })
 
 
 </script>
 
 <template>
-  <h1>Community tasks</h1>
   <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility"/>
   <Table>
     <TableHeader>
       <TableRow v-for="headerGroup in table.getHeaderGroups()">
         <TableHead v-for="header in headerGroup.headers">
           <FlexRender
-              v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
-              :props="header.getContext()"
+            v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+            :props="header.getContext()"
           />
         </TableHead>
 
@@ -192,10 +186,10 @@ onMounted(() => {
   </Table>
 
   <PaginationComponent
-      :set-page-index="table.setPageIndex"
-      :set-page-size="table.setPageSize"
-      :pagination="pagination"
-      :row-count="rowCount"/>
+    :set-page-index="table.setPageIndex"
+    :set-page-size="table.setPageSize"
+    :pagination="pagination"
+    :row-count="table.getRowCount()"/>
 
 
 </template>

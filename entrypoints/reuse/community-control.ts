@@ -1,27 +1,64 @@
 import {CommunityListPageItem, CommunityRecord, HousePriceChangeItem, HousePriceItem, HouseTask} from "@/types/lj";
-import {onMessage, sendMessage} from "webext-bridge/background"
+import {sendMessage} from "webext-bridge/background"
 import {db} from "@/utils/client/Dexie";
 import {stabilizeFields} from "@/utils/variable";
 import {removeRepeat} from "@/utils/array";
+import {list} from "radash";
+import {genCommunityPageUrl} from "@/utils/lj-url";
+import {undefined} from "zod";
+import {AccessRecord} from "@/utils/lib/AcessRecord";
 
-export function registerCommunityTaskManualRunCrawlOne() {
-	//通过message接受这个命令:manualRunOneCommunityTask
-	onMessage('manualRunOneCommunityTask', async (msg) => {
-		return runCommunityTaskManualRunCrawlOne(msg.data.urlList)
+/**
+ * 先打开标签页并获取页面信息, 再调用 execManualRunCrawlOne
+ * @param city
+ * @param cid
+ */
+export async function execManualRunCrawlOneFromStart(city:string,cid:string){
+	//先打开标签页并获取页面信息
+	return  new Promise<{ resp: string }>((resolve, reject) => {
+		const url = genCommunityPageUrl(city, cid, 1)
+		console.debug('[execManualRunCrawlOneFromStart], 1. start url: ', url)
+		browser.tabs.create({url, active: false}, async (tab) => {
+			console.debug('[execManualRunCrawlOneFromStart], 2. opened url suc: ', url)
+			const pageItem = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
+			browser.tabs.remove([tab.id as number])
+
+			if (!pageItem.city) {
+				throw new Error('pageItem.city not exist! ' + pageItem)
+			}
+			/**
+			 * begin execManualRunCrawlOne()
+			 */
+			console.debug('[execManualRunCrawlOneFromStart], 3. get pageItem suc: ', pageItem)
+			const resp = await execManualRunCrawlOne({
+				cid: pageItem.cid, city: pageItem.city, maxPage: pageItem.maxPageNo
+			})
+			console.debug('[execManualRunCrawlOneFromStart], 4. crawl done. return :', resp)
+			resolve(resp)
+		})
+
 	})
 }
 
-async function runCommunityTaskManualRunCrawlOne(urlList: string[]) {
+/**
+ * 抓取,解析,新增record, 更新task
+ * @param input
+ */
+export async function execManualRunCrawlOne(input:{city:string,cid:string,maxPage:number}) {
+	const {city,cid,maxPage}=input
+
+
 	const promises: Promise<CommunityListPageItem>[] = []
+	const urlList=list(1,maxPage).map(page=>genCommunityPageUrl(city,cid,page))
 	//依次打开所有参数中的所有url
 	for (const url of urlList) {
 		let promise = new Promise<CommunityListPageItem>(async (resolve, reject) => {
-			browser.tabs.create({url}, async (tab) => {
-				console.log('manualRunOneCommunityTask open:', url, tab.id, tab.status)
+			browser.tabs.create({url,active:false}, async (tab) => {
+				console.debug('[execManualRunCrawlOne] open:', url, tab.id, tab.status)
 
 				//打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
 				const resp = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
-				console.log('one tab record resp:', resp)
+				console.debug(`[execManualRunCrawlOne] one tab[${url}] record resp:`, resp)
 				browser.tabs.remove([tab.id as number])
 				resolve(resp)
 			})
@@ -32,7 +69,7 @@ async function runCommunityTaskManualRunCrawlOne(urlList: string[]) {
 
 	//等待所有的promise结果,
 	const recordsOfAllPage = await Promise.all(promises)
-	console.log('manualRunOneCommunityTask:', 'all done.', recordsOfAllPage)
+	console.debug('[execManualRunCrawlOne]:', 'all done.', recordsOfAllPage)
 
 	verifyDiffPagesItem(recordsOfAllPage)
 
@@ -56,7 +93,7 @@ async function runCommunityTaskManualRunCrawlOne(urlList: string[]) {
 			removedItem,
 			addedItem
 		} = calculateListDifferences(record.houseList, lastRecord.houseList)
-		console.log('priceDownList:',priceDownList)
+
 		record.priceUpList = priceUpList
 		record.priceDownList = priceDownList
 		record.removedItem = removedItem
@@ -68,13 +105,36 @@ async function runCommunityTaskManualRunCrawlOne(urlList: string[]) {
 	// record 入库
 	record.houseList=record.houseList.map(({price,hid})=>({hid,price}))
 	const insertId = await db.communityRecords.add(record)
-	console.log('record insertId:', insertId)
+	console.log('[execManualRunCrawlOne]record insertId:', insertId)
 
-	//更新task lastRunningAt
-	await db.communityTasks.where('cid').equals(record.cid).modify({
+	/**
+	 * 更新task: 字段  lastRunningAt
+	 */
+
+	let task=await db.communityTasks.where('cid').equals(record.cid).first()
+	if(!task)
+		throw new Error('task should exist! :',record.cid)
+
+	let accessRecord = AccessRecord.fromAccessRecord(task.accessRecord);
+	accessRecord.setAccessStatus(new Date(),true)
+
+	await db.communityTasks.update(task.id,{
 		lastRunningAt: sameAt,
+		accessRecord: accessRecord,
+		avgTotalPrice: record.avgTotalPrice,
+
+		avgUnitPrice: record.avgUnitPrice,
+		doneCountIn90Days: record.doneCountIn90Days,
+		visitCountIn90Days: record.visitCountIn90Days,
+		onSellCount: record.onSellCount,
+
+		runningCount: task.runningCount+1,
+
 	})
-	return {resp: 'manualRunOneCommunityTask open urls done. ' + lastRecord}
+	/**
+	 * 更新task 完毕
+	 */
+	return {resp: 'execManualRunCrawlOne open urls done. ' + JSON.stringify(lastRecord)}
 }
 
 /**

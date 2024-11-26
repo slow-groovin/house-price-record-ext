@@ -1,8 +1,7 @@
-import {onMessage, sendMessage} from "webext-bridge/background"
+import {onMessage} from "webext-bridge/background"
 import {updateRules} from "@/utils/block";
 import {db} from "@/utils/client/Dexie";
-import {CommunityListPageItem, CommunityRecord} from "@/types/lj";
-import {registerCommunityTaskManualRunCrawlOne} from "@/entrypoints/background/community-control";
+import {registerCommunityTaskManualRunCrawlOne} from "@/entrypoints/background/message";
 import {registerDaoMessage} from "@/entrypoints/background/dao";
 
 
