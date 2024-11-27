@@ -19,6 +19,8 @@ import {HouseTask} from "@/types/lj";
 import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {valueUpdater} from "@/utils/shadcn-utils";
+import {onMounted, ref, h,watch} from "vue";
+import {useLocalStorage} from "@vueuse/core";
 
 /*
 ref definition
@@ -64,7 +66,7 @@ const columnDef: (ColumnDef<HouseTask> | AccessorKeyColumnDef<HouseTask, any>)[]
     accessorKey: 'cid',
     id: 'cid',
     header: 'cid header',
-    cell: ({cell}) => h('a', {href: '#' + cell.getValue()}, cell.getValue() as string)
+    cell: ({cell}) => h('a', {href: '#/c/task/detail?id=' + cell.getValue()}, cell.getValue() as string)
   } as ColumnDef<HouseTask>,
   columnHelper.accessor('hid', {
     header: 'id',

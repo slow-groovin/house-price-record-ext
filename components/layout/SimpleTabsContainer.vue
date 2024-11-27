@@ -29,9 +29,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import type { HTMLAttributes } from 'vue'
-import {Maybe} from "@/types/generic";
+import type {HTMLAttributes} from 'vue'
+import {ref, watch} from 'vue'
+import {cn} from '@/utils/shadcn-utils'
 
 interface Tab {
   name: string
@@ -58,7 +58,5 @@ watch(activeTab, (newValue) => {
   emit('tabChange', newValue)
 })
 
-// 注意：这里假设 cn 函数已经在其他地方定义并导入
-// 如果没有，您需要实现或导入这个函数
-declare function cn(...inputs: any[]): string
+
 </script>

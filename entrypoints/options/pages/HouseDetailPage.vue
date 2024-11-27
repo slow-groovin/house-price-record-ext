@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import {useRouter,useRoute} from "vue-router";
+import {useRoute} from "vue-router";
 import {db} from "@/utils/client/Dexie";
 import ObjectTable from "@/components/table/ObjectTable.vue";
 import {HouseChange, HouseTask} from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
-import {AccessRecord} from "../../../utils/lib/AcessRecord";
+import {AccessRecord} from "@/utils/lib/AcessRecord";
 import {Button} from "@/components/ui/button";
 import {runHouseTaskManualRunCrawlOne} from "@/entrypoints/reuse/house-control";
+import {onMounted, ref} from "vue";
+import {genHousePageUrl} from "@/utils/lj-url";
 
-const {query,params}=useRoute()
-const hid=query['id']
+const {query}=useRoute()
+const hid=query['id'] as string
 
 const task=ref<HouseTask>()
 const changes=ref<HouseChange[]>()
@@ -36,15 +38,15 @@ onMounted(()=>{
 
   <div class="c-block">
     <h2>actions</h2>
-    <div>
-      <Button @click="runHouseTaskManualRunCrawlOne(task.hid)">crawl</Button>
-      <a :href="genHousePageUrl(task?.city,task?.hid)" target="_blank"  rel="noreferrer">link</a>
+    <div v-if="task">
+      <Button v-if="task.hid" @click="runHouseTaskManualRunCrawlOne(hid)">crawl</Button>
+      <a v-if="task.city && task.hid" :href="genHousePageUrl(task?.city,task?.hid)" target="_blank"  rel="noreferrer">link</a>
     </div>
   </div>
 
   <div class="c-block">
     <h2> task </h2>
-    <ObjectTable :data="task2ObjectTableData(task)"/>
+    <ObjectTable v-if="task" :data="task2ObjectTableData(task)"/>
   </div>
 
 

@@ -3,6 +3,7 @@ import {db} from "@/utils/client/Dexie";
 import {HouseTask} from "@/types/lj";
 import {calcOffset} from "@/utils/table-utils";
 import HouseTasksTable from "@/entrypoints/options/components/HouseTasksTable.vue";
+import {onMounted, ref, watchEffect} from "vue";
 
 /*
 ref definition

@@ -4,13 +4,15 @@ import {db} from "@/utils/client/Dexie";
 import ObjectTable from "@/components/table/ObjectTable.vue";
 import {CommunityRecord, CommunityTask, HouseChange, HouseTask} from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
-import {AccessRecord} from "../../../utils/lib/AcessRecord";
+import {AccessRecord} from "@/utils/lib/AcessRecord";
 import {Button} from "@/components/ui/button";
 import {execManualRunCrawlOneFromStart} from "@/entrypoints/reuse/community-control";
 import HouseChangesTable from "@/entrypoints/options/components/HouseChangesTable.vue";
 import {calcOffset} from "@/utils/table-utils";
 import HouseTasksTable from "@/entrypoints/options/components/HouseTasksTable.vue";
 import CommunityRecordTable from "@/entrypoints/options/components/CommunityRecordTable.vue";
+import {onMounted, ref, toRaw} from "vue";
+import {genCommunityPageUrl} from "@/utils/lj-url";
 
 const {query}=useRoute()
 const cid=query['id'] as string

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type {HTMLAttributes} from 'vue';
+import {HTMLAttributes, reactive} from 'vue';
+import {ref} from "vue";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
 import {
   eachMonthOfInterval,
@@ -10,6 +11,7 @@ import {
   min,
   startOfMonth
 } from "date-fns";
+import {cn} from '@/utils/shadcn-utils'
 
 import SimpleTabsContainer from "@/components/layout/SimpleTabsContainer.vue";
 
@@ -90,10 +92,6 @@ function getYearsTab(years: number[]) {
     label: year.toString()
   }))
 }
-
-
-const hoverDuration = ref<any | null>()
-
 
 function getMonthDesc(day: Date) {
   let monthNumberStr = (day.getMonth() + 1).toString().padStart(2, '0');

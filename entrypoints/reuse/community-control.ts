@@ -5,38 +5,37 @@ import {stabilizeFields} from "@/utils/variable";
 import {removeRepeat} from "@/utils/array";
 import {list} from "radash";
 import {genCommunityPageUrl} from "@/utils/lj-url";
-import {undefined} from "zod";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
+import {browser} from "wxt/browser";
 
 /**
  * 先打开标签页并获取页面信息, 再调用 execManualRunCrawlOne
  * @param city
  * @param cid
  */
-export async function execManualRunCrawlOneFromStart(city:string,cid:string){
+export async function execManualRunCrawlOneFromStart(city: string, cid: string) {
 	//先打开标签页并获取页面信息
-	return  new Promise<{ resp: string }>((resolve, reject) => {
+	return new Promise<{ resp: string }>(async (resolve, reject) => {
 		const url = genCommunityPageUrl(city, cid, 1)
 		console.debug('[execManualRunCrawlOneFromStart], 1. start url: ', url)
-		browser.tabs.create({url, active: false}, async (tab) => {
-			console.debug('[execManualRunCrawlOneFromStart], 2. opened url suc: ', url)
-			const pageItem = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
-			browser.tabs.remove([tab.id as number])
+		const tab = await browser.tabs.create({url, active: false})
 
-			if (!pageItem.city) {
-				throw new Error('pageItem.city not exist! ' + pageItem)
-			}
-			/**
-			 * begin execManualRunCrawlOne()
-			 */
-			console.debug('[execManualRunCrawlOneFromStart], 3. get pageItem suc: ', pageItem)
-			const resp = await execManualRunCrawlOne({
-				cid: pageItem.cid, city: pageItem.city, maxPage: pageItem.maxPageNo
-			})
-			console.debug('[execManualRunCrawlOneFromStart], 4. crawl done. return :', resp)
-			resolve(resp)
+		console.debug('[execManualRunCrawlOneFromStart], 2. opened url suc: ', url)
+		const pageItem = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
+		await browser.tabs.remove([tab.id as number])
+
+		if (!pageItem.city) {
+			throw new Error('pageItem.city not exist! ' + pageItem)
+		}
+		/**
+		 * begin execManualRunCrawlOne()
+		 */
+		console.debug('[execManualRunCrawlOneFromStart], 3. get pageItem suc: ', pageItem)
+		const resp = await execManualRunCrawlOne({
+			cid: pageItem.cid, city: pageItem.city, maxPage: pageItem.maxPageNo
 		})
-
+		console.debug('[execManualRunCrawlOneFromStart], 4. crawl done. return :', resp)
+		resolve(resp)
 	})
 }
 
@@ -44,24 +43,23 @@ export async function execManualRunCrawlOneFromStart(city:string,cid:string){
  * 抓取,解析,新增record, 更新task
  * @param input
  */
-export async function execManualRunCrawlOne(input:{city:string,cid:string,maxPage:number}) {
-	const {city,cid,maxPage}=input
+export async function execManualRunCrawlOne(input: { city: string, cid: string, maxPage: number }) {
+	const {city, cid, maxPage} = input
 
 
 	const promises: Promise<CommunityListPageItem>[] = []
-	const urlList=list(1,maxPage).map(page=>genCommunityPageUrl(city,cid,page))
+	const urlList = list(1, maxPage).map(page => genCommunityPageUrl(city, cid, page))
 	//依次打开所有参数中的所有url
 	for (const url of urlList) {
 		let promise = new Promise<CommunityListPageItem>(async (resolve, reject) => {
-			browser.tabs.create({url,active:false}, async (tab) => {
-				console.debug('[execManualRunCrawlOne] open:', url, tab.id, tab.status)
+			const tab = await browser.tabs.create({url, active: false})
+			console.debug('[execManualRunCrawlOne] open:', url, tab.id, tab.status)
 
-				//打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
-				const resp = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
-				console.debug(`[execManualRunCrawlOne] one tab[${url}] record resp:`, resp)
-				browser.tabs.remove([tab.id as number])
-				resolve(resp)
-			})
+			//打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
+			const resp = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
+			console.debug(`[execManualRunCrawlOne] one tab[${url}] record resp:`, resp)
+			await browser.tabs.remove([tab.id as number])
+			resolve(resp)
 
 		});
 		promises.push(promise)
@@ -101,9 +99,8 @@ export async function execManualRunCrawlOne(input:{city:string,cid:string,maxPag
 	}
 
 
-
 	// record 入库
-	record.houseList=record.houseList.map(({price,hid})=>({hid,price}))
+	record.houseList = record.houseList.map(({price, hid}) => ({hid, price}))
 	const insertId = await db.communityRecords.add(record)
 	console.log('[execManualRunCrawlOne]record insertId:', insertId)
 
@@ -111,14 +108,14 @@ export async function execManualRunCrawlOne(input:{city:string,cid:string,maxPag
 	 * 更新task: 字段  lastRunningAt
 	 */
 
-	let task=await db.communityTasks.where('cid').equals(record.cid).first()
-	if(!task)
-		throw new Error('task should exist! :',record.cid)
+	let task = await db.communityTasks.where('cid').equals(record.cid).first()
+	if (!task)
+		throw new Error('task should exist! :'+record.cid)
 
 	let accessRecord = AccessRecord.fromAccessRecord(task.accessRecord);
-	accessRecord.setAccessStatus(new Date(),true)
+	accessRecord.setAccessStatus(new Date(), true)
 
-	await db.communityTasks.update(task.id,{
+	await db.communityTasks.update(task.id, {
 		lastRunningAt: sameAt,
 		accessRecord: accessRecord,
 		avgTotalPrice: record.avgTotalPrice,
@@ -128,7 +125,7 @@ export async function execManualRunCrawlOne(input:{city:string,cid:string,maxPag
 		visitCountIn90Days: record.visitCountIn90Days,
 		onSellCount: record.onSellCount,
 
-		runningCount: task.runningCount+1,
+		runningCount: task.runningCount + 1,
 
 	})
 	/**
@@ -239,36 +236,36 @@ export function calculateListDifferences(target: HousePriceItem[], toCompare: Ho
  * 为record中的houseList中的所有item自动创建任务或更新
  * @param record
  */
-async function autoUpdateOrCreateHouseTask(record:CommunityRecord){
+async function autoUpdateOrCreateHouseTask(record: CommunityRecord) {
 	for (let item of record.houseList) {
-		const task=await db.houseTasks.where('hid').equals(item.hid).first()
-		if(task){
+		const task = await db.houseTasks.where('hid').equals(item.hid).first()
+		if (task) {
 			//update price
 			//如果price发生变动, 增加houseChanges记录
-			if(item.price && task?.totalPrice!==item.price){
+			if (item.price && task?.totalPrice !== item.price) {
 				await db.houseChanges.add({
 
 					hid: item.hid,
 					cid: record.cid,
 					at: record.at,
-					oldValue: task.totalPrice??-1,
+					oldValue: task.totalPrice ?? -1,
 					newValue: item.price,
 				})
 			}
-			const taskObj=HouseTask.fromHouseTask(task)
+			const taskObj = HouseTask.fromHouseTask(task)
 			taskObj.markAccess()
 
 			await db.houseTasks.where('id').equals(task!.id as number).modify(taskObj)
 
 
-		}else{
+		} else {
 			//create task
-			if(!record.city){
+			if (!record.city) {
 				console.error('record has no city!', record.city)
 				return
 			}
 
-			let houseTask = HouseTask.newFromItem({...item,city:record.city,cid:record.cid});
+			let houseTask = HouseTask.newFromItem({...item, city: record.city, cid: record.cid});
 			houseTask.markAccess()
 			await db.houseTasks.add(houseTask)
 

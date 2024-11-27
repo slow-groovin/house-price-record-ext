@@ -1,4 +1,4 @@
-import {onMessage, sendMessage} from "webext-bridge/background"
+import {onMessage} from "webext-bridge/background"
 import {db} from "@/utils/client/Dexie";
 
 export function registerDaoMessage(){

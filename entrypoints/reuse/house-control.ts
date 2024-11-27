@@ -1,45 +1,64 @@
-import {isHouseTaskExist} from "@/entrypoints/background/dao";
-import {CommunityListPageItem, HouseItem, HouseTask} from "@/types/lj";
+import {HouseItem, HouseTask} from "@/types/lj";
 import {sendMessage} from "webext-bridge/background";
-import {genHousePageUrl} from "@/utils/lj-url";
-
+import {genHousePageUrl, isCaptchaPage, isSoldHousePage} from "@/utils/lj-url";
 import {db} from "@/utils/client/Dexie";
 
+import {browser} from "wxt/browser";
+
+/**
+ * 从background/popup调用, 对一个house进行抓取,更新
+ * @param hid
+ */
 export async function runHouseTaskManualRunCrawlOne(hid: string) {
-	//verify task
+	/*
+	 * verify task in db
+	 */
 	let task = await db.houseTasks.where('hid').equals(hid).first();
 	if(!task){
 		throw new Error(`hTask ${hid} not exist!`)
 	}
 	const url=genHousePageUrl(task.city,task.hid)
-	//open Page
-	let promise = new Promise<any>(async (resolve, reject) => {
-		browser.tabs.create({url,active:false}, async (tab) => {
-			console.log('runHouseTaskManualRunCrawlOne open:', url, tab.id, tab.status)
-			if(!tab.id) {
-				reject(false)
-				return
-			}
-			const rs=await crawlHouse(tab.id)
-			console.log('rs',rs)
-			resolve(true)
-			//打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
-			// const resp = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
-			// console.log('one tab record resp:', resp)
-			// browser.tabs.remove([tab.id as number])
-			// resolve(resp)
-		})
-	})
+	/*
+	verify status
+	 */
+	const fetchRs=await fetch(url)
+	if(fetchRs.status===404){
+		//update status: miss
+		updateTaskMiss()
+	}else if(fetchRs.status===302){
+		if(isCaptchaPage(fetchRs.url)){
+			throw new Error('counter captcha!')
+		}else if(isSoldHousePage(fetchRs.url)){
+			handleSoldPage()
+		}else{
+			throw new Error('unknown redirect!:'+fetchRs.url)
+		}
+
+	}else if(fetchRs.status===200){
+		const tab=await browser.tabs.create({url})
+		if(!tab.id){
+			throw new Error('tab id is undefined.')
+		}
+		await handleNormalPage(tab.id)
+	}
+
+
 }
+async function updateTaskMiss(){
+
+}
+async function handleSoldPage(){
+
+}
+
 
 /**
  * 开启一次爬取, 向content发送message, 根据页面抓取结果更新任务自身,以及新建changes
  * @param pageTabId
  */
-export async function crawlHouse(pageTabId:number){
+export async function handleNormalPage(pageTabId:number){
 	//发送message ,让页面进行parse item
 	const respParsedItem = await sendMessage('parseHouse', {}, 'content-script@'+pageTabId)
-	console.log('respParsedItem:',respParsedItem)
 	//查询任务 in db
 	const queryResult=await db.houseTasks.where('hid').equals(respParsedItem.hid).first()
 

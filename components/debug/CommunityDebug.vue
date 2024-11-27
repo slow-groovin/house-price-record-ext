@@ -3,12 +3,13 @@
 import {db} from "@/utils/client/Dexie";
 import {CommunityRecord} from "@/types/lj";
 import ObjectTable from "@/components/table/ObjectTable.vue";
-import {list, random, toInt, uid} from "radash";
+import {list, random, uid} from "radash";
 import {Checkbox} from "@/components/ui/checkbox";
-import {CheckboxRoot, Label} from "radix-vue";
+import {Label} from "radix-vue";
 import {Button} from "@/components/ui/button";
 import {doubleRand, ratioRand} from "@/utils/rand";
-
+import {onMounted, ref, toRaw} from "vue";
+import {useLocalStorage} from "@vueuse/core";
 
 
 const recordIdOfToChange = ref<number | undefined>(-1)
@@ -25,11 +26,8 @@ const checkVisitCountIn90Days=useLocalStorage(PREFIX+'visit-count',false)
 const checkHouseList=useLocalStorage(PREFIX+'house-list',false)
 const houseListChangeCount=useLocalStorage('community-input-house-list-count',5)
 
-
-
 onMounted(async () => {
-
-  refreshLastRecord()
+  await refreshLastRecord()
 })
 async function refreshLastRecord(){
   const lastRecord = await db.communityRecords.toCollection().last()
@@ -73,8 +71,7 @@ async function randChange() {
       }else if(rand<100){ //price up/down
         console.log('rand houseList change: change price')
 
-        const randVal=ratioRand(recordToChange.value?.houseList[randIndex].price,0.1)
-        recordToChange.value.houseList![randIndex].price=randVal
+        recordToChange.value.houseList![randIndex].price=ratioRand(recordToChange.value?.houseList[randIndex].price, 0.1)
       }
     }
 
@@ -84,7 +81,7 @@ async function randChange() {
   console.log("changes",changes)
   const record = await db.communityRecords.update(recordIdOfToChange.value, changes)
   console.log(record)
-  queryRecord()
+  await queryRecord()
 }
 
 

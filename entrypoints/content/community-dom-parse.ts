@@ -1,4 +1,9 @@
-import {extractCidFromListUrl, extractCityAndHidFromHouseUrl, extractPageNumberFromListUrl} from "@/utils/lj-url";
+import {
+	extractCidFromListUrl,
+	extractCityAndHidFromHouseUrl,
+	extractCityFromUrl,
+	extractPageNumberFromListUrl
+} from "@/utils/lj-url";
 import {extractNumber, waitForElement} from "@/utils/document";
 import {CommunityListPageItem, HouseListDetailItem, HousePriceItem} from "@/types/lj";
 import {removeNull} from "@/types/generic";

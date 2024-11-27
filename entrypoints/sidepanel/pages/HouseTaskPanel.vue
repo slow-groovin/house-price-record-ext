@@ -32,7 +32,7 @@
           <ul>
             <li v-for="item in changes" :key="item.id">
               [{{ item.id }}]  {{ item.oldValue }} -> {{item.newValue}}    {{ new Date(item.at).toLocaleString() }}
-              <button @click="deleteRecordItem(item.id)">Delete</button>
+              <button v-if="item.id" @click="deleteRecordItem(item.id)">Delete</button>
             </li>
           </ul>
         </div>
@@ -56,8 +56,9 @@ import {sendMessage} from "webext-bridge/popup";
 import {db} from "@/utils/client/Dexie";
 import {HouseChange, HouseItem, HouseTask} from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
-import {crawlHouse} from '@/entrypoints/reuse/house-control'
+import {handleNormalPage} from '@/entrypoints/reuse/house-control'
 import ObjectTable from "@/components/table/ObjectTable.vue";
+import {onMounted, ref, watchEffect} from "vue";
 
 const props=defineProps<{tabId:number}>()
 const isTaskExist=ref(false)
@@ -117,7 +118,7 @@ async function createTask(){
 }
 
 async function manualCrawl(){
-  const {houseTask:task,respParsedItem}=await crawlHouse(props.tabId)
+  const {houseTask:task,respParsedItem}=await handleNormalPage(props.tabId)
   await fetchLast10Changes(task.hid)
   houseTask.value=task
   houseItem.value=respParsedItem

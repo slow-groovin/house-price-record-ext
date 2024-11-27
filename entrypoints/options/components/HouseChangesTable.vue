@@ -20,8 +20,9 @@ import {CommunityTask, HouseChange, HouseTask} from "@/types/lj";
 import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {valueUpdater} from "@/utils/shadcn-utils";
-import {PageState} from "@/utils/table-utils";
 import {QueryCache} from "@/utils/lib/QueryCache";
+import {h, onMounted, ref, watch} from "vue";
+import {useLocalStorage} from "@vueuse/core";
 
 // type CrossKey=Extract<keyof HouseTask,keyof CommunityTask>
 type CrossKey = "lastRunningAt" | "name" | "id" | "cid" | "status" | "accessRecord" | "createdAt" | 'markAccess'
@@ -63,10 +64,10 @@ const emit = defineEmits({
   }
 })
 // const pagination = defineModel<PageState>('pagination')
-const pagination = ref( {pageIndex: 1, pageSize: 10})
+const pagination = ref({pageIndex: 1, pageSize: 10})
 
 //初始化默认查询
-emit('onPaginationChange',pagination.value.pageIndex,pagination.value.pageSize)
+emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
 /**
  * pagination end
  */
@@ -213,7 +214,7 @@ let options: TableOptions<HouseChangeWithDetail> = {
     // console.log('updaterOrValue',updaterOrValue ,'before:',pagination.value)
     valueUpdater(updaterOrValue, pagination)
     // console.log('after:',pagination.value)
-    emit('onPaginationChange',pagination.value.pageIndex, pagination.value.pageSize)
+    emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
   }
 }
 const table = useVueTable(options)

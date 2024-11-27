@@ -37,10 +37,11 @@ export interface HouseChange {
 export enum HouseTaskStatus {
 	running = 1,
 	pause = 2,
-	miss = 3, out = 4
+	miss = 3,
+	sold = 4
 }
 
-export enum TaskAddedType {manual = 1, scan = 2, forDebug = 11}
+export enum TaskAddedType {manual = 1, autoByCommunity = 2, forDebug = 11}
 
 export class HouseTask implements HouseItem {
 	public lastRunningAt: number;

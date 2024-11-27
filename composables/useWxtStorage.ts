@@ -1,7 +1,7 @@
 import { computed, onMounted, onUnmounted } from "vue";
 import { storage, StorageItemKey } from "wxt/storage";
 
-import {UseAsyncStateOptions} from '@vueuse/core'
+import {useAsyncState, UseAsyncStateOptions} from '@vueuse/core'
 
 /**
  * https://github.com/wxt-dev/examples/blob/main/examples/vue-storage-composable/entrypoints/popup/App.vue

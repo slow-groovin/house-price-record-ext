@@ -9,6 +9,7 @@ import {beginCrawl} from "@/entrypoints/content/community-crawl";
 import {extractCidFromListUrl} from "@/utils/lj-url";
 import {injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
 import {sendMessage} from 'webext-bridge/content-script';
+import {onMounted, ref, watchEffect} from "vue";
 
 if (import.meta.env.VITE_HIDE === 'true') {
   import('~/assets/disguise.css');

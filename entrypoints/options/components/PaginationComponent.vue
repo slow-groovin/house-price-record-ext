@@ -3,6 +3,7 @@
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {list} from "radash";
+import {computed} from "vue";
 
 const props=defineProps<{
   setPageIndex: (index: number) => void
@@ -66,7 +67,7 @@ function calcShowedPageNumbers(curPage: number, maxPage: number): (number | '...
   return result;
 }
 function gotoPage(){
-  props.setPageIndex(Number(document.getElementById('input-pageIndex')?.value))
+  props.setPageIndex(Number((document.getElementById('input-pageIndex') as HTMLInputElement)?.value))
 }
 </script>
 

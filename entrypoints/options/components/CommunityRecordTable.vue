@@ -19,6 +19,8 @@ import {CommunityRecord} from "@/types/lj";
 import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {valueUpdater} from "@/utils/shadcn-utils";
+import {h, onMounted, ref, watch,} from "vue";
+import {useLocalStorage} from "@vueuse/core";
 
 /*
 ref definition

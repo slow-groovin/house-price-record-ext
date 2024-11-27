@@ -1,7 +1,19 @@
 export function isHousePage(url?: string) {
 	if (!url) return false
-	return /ershoufang\/\d+.html/.test(url)
+	return /lianjia.com\/ershoufang\/\d+.html/.test(url)
 }
+
+
+export function isSoldHousePage(url?: string) {
+	if (!url) return false
+	return /lianjia.com\/chengjiao\/\d+.html/.test(url)
+}
+
+export function isCaptchaPage(url?: string) {
+	if (!url) return false
+	return /lianjia.com\/captcha/.test(url)
+}
+
 
 export function isCommunityListPage(url?: string) {
 	if (!url) return false

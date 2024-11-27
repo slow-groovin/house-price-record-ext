@@ -5,6 +5,7 @@ import {CommunityTask, HouseChange, HouseTask} from "@/types/lj";
 import {calcOffset, PageState} from "@/utils/table-utils";
 import {QueryCache} from "@/utils/lib/QueryCache";
 import HouseChangesTable from "@/entrypoints/options/components/HouseChangesTable.vue";
+import {onMounted, ref, watchEffect} from "vue";
 
 
 /**

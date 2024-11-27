@@ -2,6 +2,9 @@
 import {Button} from "@/components/ui/button";
 import useWxtStorage from "@/composables/useWxtStorage";
 import {useLocalStorage} from "@vueuse/core";
+import {ref} from "vue";
+
+
 const options = ["local:", "session:", "sync:", "managed:"];
 const selectedOption = ref<"local:"| "session:"| "sync:"| "managed:" >("local:");
 

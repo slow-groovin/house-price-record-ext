@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import type {HTMLAttributes} from 'vue'
-import type {ClassValue} from 'clsx'
+import {cn} from '@/utils/shadcn-utils'
 
 interface Props {
   data?: any
@@ -23,7 +23,5 @@ const props = withDefaults(defineProps<Props>(), {
   class: undefined
 })
 
-// 假设 cn 函数已经在其他地方定义并导入
-declare function cn(...inputs: ClassValue[]): string
 
 </script>

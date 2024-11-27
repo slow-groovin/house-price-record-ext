@@ -20,6 +20,7 @@ import { ref } from 'vue'
 import type { HTMLAttributes } from 'vue'
 import type { ClassValue } from 'clsx'
 import {Icon } from '@iconify/vue'
+import {cn} from '@/utils/shadcn-utils'
 
 interface Props {
   class?: HTMLAttributes['class']

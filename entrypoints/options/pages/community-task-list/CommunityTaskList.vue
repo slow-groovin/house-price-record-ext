@@ -16,12 +16,13 @@ import {
   VisibilityState,
 } from '@tanstack/vue-table'
 import {db} from "@/utils/client/Dexie";
-import {CommunityTask, HouseChange, HouseTask} from "@/types/lj";
+import {CommunityTask} from "@/types/lj";
 import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {valueUpdater} from "@/utils/shadcn-utils";
 import {calcOffset, PageState} from "@/utils/table-utils";
-
+import {h, onMounted, ref, toRaw} from "vue";
+import {useLocalStorage} from "@vueuse/core";
 
 
 /*

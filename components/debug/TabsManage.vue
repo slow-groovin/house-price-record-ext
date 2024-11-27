@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import {Semaphore} from "@/utils/lib/Semaphore";
 import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {ref} from "vue";
+import {browser} from "wxt/browser";
+import {random} from "radash";
 
 function openTabs() {
   const urls = [
@@ -24,21 +28,18 @@ function openTabs() {
     console.log("forEach:",url)
     new Promise(async (resolve) => {
       await semaphore.take()
-      const a = browser.tabs.create({url},(tab)=>{
-        console.log('tab',tab)
-        const wait=rand(1000, 6000)
-        setTimeout(async () => {
+      const tab=await browser.tabs.create({url,active:false})
+
+      console.log('tab',tab)
+      const wait=random(1000, 6000)
+      setTimeout(async () => {
           console.log(`after ${wait}ms free:`, url)
-          browser.tabs.remove([tab.id as number])
+          await browser.tabs.remove(tab.id as number)
           semaphore.free()
+          console.log('take suc', url)
           resolve(true)
         }, wait)
       });
-
-      console.log('take suc', url,a)
-
-
-    })
   });
   console.log('DONE')
 }
@@ -48,13 +49,26 @@ function logObj(){
   console.log('chrome:',chrome)
 
 }
+
+
+const url=ref('')
+async  function testFetch(){
+  console.log('fetch:',url.value)
+  const rs=await fetch(url.value)
+  console.log((await rs.text()).substring(0,100),rs.status,rs.url)
+}
+
+
 </script>
 
 <template>
   <div class="c-block gap-4">
     <h1>Open Tabs</h1>
     <Button @click="logObj">logBrowser</Button>
-    <button @click="openTabs">Once Multiple Tabs</button>
+    <Button @click="openTabs">Once Multiple Tabs With Semaphore </Button>
+    <Input v-model="url" placeholder="Enter url"/>
+    <Button @click="testFetch">testFetch</Button>
+
   </div>
 </template>
 

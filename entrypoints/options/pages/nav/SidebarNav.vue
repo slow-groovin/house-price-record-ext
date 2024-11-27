@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Icon } from '@iconify/vue'
-import { RouterLink } from 'vue-router'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn } from '@/utils/shadcn-utils'
+import {ref} from 'vue'
+import {Icon} from '@iconify/vue'
+import {RouterLink} from 'vue-router'
+import {Button} from '@/components/ui/button'
+import {cn} from '@/utils/shadcn-utils'
 import {random} from "radash";
 import SimpleDrawer from "@/components/layout/SimpleDrawer.vue";
 

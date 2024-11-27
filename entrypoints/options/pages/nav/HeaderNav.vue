@@ -24,8 +24,8 @@
 </template>
 
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import type { ClassValue } from 'clsx'
+import type {HTMLAttributes} from 'vue'
+import {cn} from '@/utils/shadcn-utils'
 
 interface Link {
   text: string
