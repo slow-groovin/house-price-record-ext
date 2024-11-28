@@ -35,6 +35,5 @@ declare module "webext-bridge" {
 		 */
 		addCommunityTask: ProtocolWithReturn<CommunityTask, {resp:string}>;
 		queryCommunityTask: ProtocolWithReturn<{cid:string}, CommunityTask[]>;
-
 	}
 }

@@ -4,8 +4,9 @@ import {Button} from "@/components/ui/button";
 import {browser} from "wxt/browser";
 import {random, sleep} from "radash";
 import {BatchQueueExecutor, Job, JobContext, NoRetryError, PauseError} from "@/utils/lib/BatchQueueExecutor";
-import {computed, reactive, ref} from "vue";
+import {reactive, ref, shallowRef} from "vue";
 import ObjectTable from "@/components/table/ObjectTable.vue";
+import BatchJobRunningStatusBar from "@/components/lj/BatchJobRunningStatusBar.vue";
 
 const urls = [
   'https://www.example.com',
@@ -78,29 +79,38 @@ function logObj() {
 /**
  * Batch executor
  */
-const doneCount = ref(0)
-const runningCount = ref(0)
-const doneCost = ref(0)
-
-const avgCost = computed(() => (doneCost.value / doneCount.value).toFixed(0))
-const estimateCost = computed(() => (doneCost.value / doneCount.value * urls.length).toFixed(0))
+// const doneCount = ref(0)
+// const runningCount = ref(0)
+// const doneCost = ref(0)
+//
+// const avgCost = computed(() => (doneCost.value / doneCount.value).toFixed(0))
+// const estimateCost = computed(() => (doneCost.value / doneCount.value * urls.length).toFixed(0))
 const batchExecuteResult = ref<any[]>([])
 
 
-const PREFIX='[BatchQueueExecutorSample]'
-let windowId=0
-let pauseOnce=true
+const PREFIX = '[BatchQueueExecutorSample]'
+let windowId = 0
+let pauseOnce = true
+
 function* generator(): IterableIterator<Job> {
   for (let url of urls) {
-    console.log(PREFIX+'[generator]generate promise job:', url)
-    const promiseGetter: () => Promise<any> = () => (new Promise(async (resolve,reject) => {
+    console.log(PREFIX + '[generator]generate promise job:', url)
+    async function newTabProcess(){
+      await sleep(random(300, 600))
+      if(url===urls[6]){
+        throw new NoRetryError('url 6: throw NoRetryError')
+      }
+      return 'ok'
+    }
+    const promiseGetter: () => Promise<any> = () => (new Promise(async (resolve, reject) => {
       const tab = await browser.tabs.create({url, active: true, windowId: windowId})
-      await sleep(random(100, 3000))
+      await sleep(random(300, 600))
       await browser.tabs.remove(tab.id as number)
+
       if(url===urls[5]){
         reject(new NoRetryError('url 5: reject NoRetryError'))
       }else if(url===urls[6]){
-        throw new NoRetryError('url 6: throw NoRetryError')
+        // throw new NoRetryError('url 6: throw NoRetryError') //throw in promise async WILL not be CAUGHT!!!!
       }else if(url===urls[1] && pauseOnce){
         pauseOnce=false
         reject(new PauseError('url 1: reject PauseError'))
@@ -109,60 +119,61 @@ function* generator(): IterableIterator<Job> {
       }
       resolve('ok')
     }))
+    const promiseGetter2=()=>newTabProcess()
     yield {
-      context:{
-        id:url,
+      context: {
+        id: url,
       },
-      promiseGetter
+      promiseGetter: promiseGetter
     }
   }
 }
 
-const executor = new BatchQueueExecutor(generator(),{
+const executor = ref<BatchQueueExecutor>(new BatchQueueExecutor(generator(), {
   interval: 1000,
   retryTimes: 3,
   // timeout: 0,
-  log:true,
+  log: true,
   maxConcurrent: 3,
   onDoneCountUpdateHook(): void {
-    console.log(PREFIX,'onDoneCountUpdateHook', executor.doneCount)
-    doneCount.value = executor.doneCount
-    doneCost.value = executor.doneCost
+    console.log(PREFIX, 'onDoneCountUpdateHook', executor.value.doneCount)
+    // doneCount.value = executor.doneCount
+    // doneCost.value = executor.doneCost
   },
   onRunCountUpdateHook(): void {
-    runningCount.value = executor.runCount
+    // runningCount.value = executor.runCount
   },
   onFinishedHook(): void {
-    console.log(PREFIX,'on finished')
+    console.log(PREFIX, 'on finished')
   },
   onJobStartHook(context: JobContext): void {
-    batchExecuteResult.value.push({id:context.id,start:new Date(),end:undefined})
+    batchExecuteResult.value.push({id: context.id, start: new Date(), end: undefined})
     console.log(PREFIX, 'onJobStartHook', context.id)
   },
   onJobEndHook(context: JobContext): void {
-    const i= batchExecuteResult.value.findIndex(i=>i.id===context.id)
-    if(batchExecuteResult.value[i]){
-      batchExecuteResult.value[i]={
+    const i = batchExecuteResult.value.findIndex(i => i.id === context.id)
+    if (batchExecuteResult.value[i]) {
+      batchExecuteResult.value[i] = {
         ...batchExecuteResult.value[i],
-        end:new Date(),
+        end: new Date(),
       }
     }
     console.log(PREFIX, 'onJobEndHook', context.id)
   },
-  onJobFailHook(context: JobContext,e): void {
+  onJobFailHook(context: JobContext, e): void {
     console.warn(PREFIX, 'onJobFailHook', context.id, e)
   },
-  onJobRetryHook(context: JobContext,e): void {
-    console.warn(PREFIX, 'onJobRetryHook', context.id,e)
+  onJobRetryHook(context: JobContext, e): void {
+    console.warn(PREFIX, 'onJobRetryHook', context.id, e)
   },
 
-  onPauseHook(context: JobContext | undefined,e): void {
-    console.warn(PREFIX, 'onPauseHook', context?.id,e)
-    alert('Paused, please solve the problem and resume!'+context?.id)
+  onPauseHook(context: JobContext | undefined, e): void {
+    console.warn(PREFIX, 'onPauseHook', context?.id, e)
+    alert('Paused, please solve the problem and resume!' + context?.id)
   }
-})
+}))
 
-const batchExecutor = reactive<BatchQueueExecutor>(executor)
+
 
 
 async function BatchQueueExecutorSample() {
@@ -171,9 +182,9 @@ async function BatchQueueExecutorSample() {
   await browser.windows.create({}).then(window=>{
     windowId=window.id as number
   })
-  await executor.run()
+  await executor.value.run()
   console.log(PREFIX, 'after await executor.run()')
-  alert(PREFIX+"Done!")
+  alert(PREFIX + "Done!")
 }
 
 
@@ -188,21 +199,10 @@ async function BatchQueueExecutorSample() {
 
     <div class="border p-2 m-3">
       <Button @click="BatchQueueExecutorSample">Once Multiple Tabs With BatchQueueExecutor</Button>
-      <Button @click="batchExecutor?.manualPause()">pause</Button>
-      <Button @click="batchExecutor?.resume()">resume</Button>
-      <div id="process-bar-area" v-if="runningCount>0">
-        <div>status: {{ batchExecutor?.isPaused ? 'Paused' : 'RUNNING' }}</div>
+      <Button @click="executor?.manualPause()">pause</Button>
+      <Button @click="executor?.resume()">resume</Button>
+      <BatchJobRunningStatusBar v-if="executor" :executor="executor" :total="urls.length"/>
 
-        <div> runCount: {{ runningCount }}</div>
-        <div> doneCount: {{ doneCount }}</div>
-        <div> failCount: {{ batchExecutor.failedCount }}</div>
-        <div> pauseCount: {{ batchExecutor.pauseCount }}</div>
-        <div> avgCost: {{ avgCost }} ms</div>
-        <div> estimateCost: {{ estimateCost }} ms</div>
-        <div> doneCost: {{ doneCost }} ms</div>
-        <ObjectTable :data="batchExecutor"/>
-        <pre>{{ batchExecuteResult }}</pre>
-      </div>
     </div>
 
 

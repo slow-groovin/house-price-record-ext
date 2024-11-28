@@ -34,6 +34,9 @@ export type ExecutorConfig = {
 export class BatchQueueExecutor {
 
 	public doneCost: number = 0;
+	public isInit: boolean = true;
+	public isRunning: boolean = false;
+	public isFinished: boolean =false;
 	public isPaused: boolean = false;
 	public retryCount: number = 0;
 	public failedCount: number = 0;
@@ -74,6 +77,7 @@ export class BatchQueueExecutor {
 
 	public manualPause() {
 		this.isPaused = true
+		this.isRunning = false
 		noThrowRun(() => this.config.onPauseHook?.())
 	}
 
@@ -82,6 +86,7 @@ export class BatchQueueExecutor {
 	 */
 	public pause(context: JobContext, err: Error) {
 		this.isPaused = true
+		this.isRunning = false
 		this.pauseCount++
 		noThrowRun(() => this.config.onPauseHook?.(context, err))
 
@@ -93,23 +98,14 @@ export class BatchQueueExecutor {
 
 	public async resume() {
 		this.isPaused = false
-		this.pauseQueue.forEach(f=>{
+		this.isRunning = true
+		this.pauseQueue.forEach(f => {
 			f('ok')
 		})
 	}
 
-	/**
-	 * 运行中如果遇到pause,则等待
-	 */
-	private async waitResume(){
-		if(!this.isPaused) return
-		return new Promise((resolve) => {
-			this.pauseQueue.push(resolve)
-		})
-	}
-
-
 	public async run() {
+		this.isRunning = true
 		let finishResolve = (value: unknown): void => {
 			throw new Error('unset finish resolve')
 		};
@@ -144,7 +140,7 @@ export class BatchQueueExecutor {
 
 				let retryTime = 0
 				let isJobSuc = false
-				let lastError:Error=new Error("empty error")
+				let lastError: Error = new Error("empty error")
 				const {context, promiseGetter} = curJob
 				noThrowRun(() => this.config.onJobStartHook?.(context))
 
@@ -156,24 +152,24 @@ export class BatchQueueExecutor {
 						isJobSuc = true
 						break
 					} catch (e) {
-						lastError=e as Error
+						lastError = e as Error
 						//match stop error
 						if (e instanceof NoRetryError) {
 							this.canLog && console.error(this.LOG_PREFIX, '[no retry]', e)
 							break
 						}
 						if (e instanceof PauseError) { //pause exception
-							this.canLog && console.log(this.LOG_PREFIX, '[pause]',context.id, e)
+							this.canLog && console.log(this.LOG_PREFIX, '[pause]', context.id, e)
 
-							await this.pause(context,e) //pause ,wait resume
-							this.canLog && console.log(this.LOG_PREFIX, '[resume]',context.id)
+							await this.pause(context, e) //pause ,wait resume
+							this.canLog && console.log(this.LOG_PREFIX, '[resume]', context.id)
 							retryTime--
 						}
 						//no match stop error, mark retry and go next loop
 						this.canLog && console.log(this.LOG_PREFIX, '[retry]', retryTime, e)
 						retryTime++
 						this.retryCount++ //global retry count
-						noThrowRun(() => this.config.onJobRetryHook?.(context,lastError))
+						noThrowRun(() => this.config.onJobRetryHook?.(context, lastError))
 					}
 				}
 
@@ -181,7 +177,7 @@ export class BatchQueueExecutor {
 					noThrowRun(() => this.config.onJobEndHook?.(context))
 				} else {
 					this.failedCount++
-					noThrowRun(() => this.config.onJobFailHook?.(context,lastError))
+					noThrowRun(() => this.config.onJobFailHook?.(context, lastError))
 				}
 
 				this.doneCount++
@@ -199,7 +195,19 @@ export class BatchQueueExecutor {
 		return finishPromise
 	}
 
+	/**
+	 * 运行中如果遇到pause,则等待
+	 */
+	private async waitResume() {
+		if (!this.isPaused) return
+		return new Promise((resolve) => {
+			this.pauseQueue.push(resolve)
+		})
+	}
+
 	private finish() {
+		this.isRunning = false
+		this.isFinished = true
 		this.canLog && console.log(this.LOG_PREFIX, 'finish')
 		noThrowRun(() => this.config.onFinishedHook?.())
 	}

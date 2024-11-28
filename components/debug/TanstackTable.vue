@@ -162,7 +162,7 @@ const table = useVueTable({
   </div>
 </template>
 
-<style>
+<style scoped>
 html {
   font-family: sans-serif;
   font-size: 14px;

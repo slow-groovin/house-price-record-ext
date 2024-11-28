@@ -38,7 +38,9 @@ function toggleRules(payload:boolean){
 }
 const title=useTitle()
 
-const components = [UncategorizedDebugFunctions,TabsManage,NetRuleTest, DexieIndexedDB, UnovisSamples, WxtStorage,CalendarGraphSample,CommunityDebug,FakeDataInsert,TanstackTable]
+const components = [UncategorizedDebugFunctions,TabsManage,NetRuleTest, DexieIndexedDB, UnovisSamples, WxtStorage,
+  CalendarGraphSample,CommunityDebug,FakeDataInsert,TanstackTable
+]
 </script>
 
 

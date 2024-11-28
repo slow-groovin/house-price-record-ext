@@ -60,11 +60,11 @@ export function injectFuzzyStyle() {
 //     background-color: rgba(115, 92, 83, 0.56) !important;
 //     color: rgba(191, 189, 189, 0.38) !important;
 // }`;
-
+// 	font-size: 9px !important; /* 缩小字体 */
 	const css = `
 body * {
     background-color: rgba(115, 92, 83, 0.56) !important;
-    font-size: 9px !important; /* 缩小字体 */
+
     color: rgba(191, 189, 189, 0.38) !important;
 }`;
 	// 创建一个 <style> 标签

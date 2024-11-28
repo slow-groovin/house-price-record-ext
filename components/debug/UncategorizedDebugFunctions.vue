@@ -2,7 +2,7 @@
 
 import {isCaptchaPage, isHousePage, isHouseSoldPage} from "@/utils/lj-url";
 import {browser} from "wxt/browser";
-import {ref} from "vue";
+import {nextTick, reactive, ref} from "vue";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {useLocalStorage} from "@vueuse/core";
@@ -17,6 +17,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import {onMessage, sendMessage} from "webext-bridge/popup";
+import ObjectTable from "@/components/table/ObjectTable.vue";
 
 
 const curTabUrl = ref('')
@@ -101,12 +102,32 @@ dialog end
 /*
 message
  */
-
 async function sendMsg(){
   const a=await sendMessage('simple',{},'background')
   console.log(a,typeof a)
   a.echo()
 }
+/*
+message end
+ */
+
+/*
+obj of class reactive
+ */
+class A{constructor(public a:string,public b:number,public c:string) {}; rand(){
+  console.log('begin random change field')
+  setInterval(()=>{
+    this.a=Math.random().toString()
+    this.c=Math.random().toString()
+    this.b=Math.random()*100
+  },666)
+}}
+const a=new A('',0,'')
+const a1=new A('ref(a1)',0,'')
+const a2=new A('reactive(a2)',0,'')
+const refA=ref(a1)
+const reactiveA=reactive(a2)
+
 </script>
 
 <template>
@@ -173,6 +194,25 @@ async function sendMsg(){
       <h1> does msg return serialized value or memory variable? </h1>
       <Button @click="sendMsg">send msg</Button>
       <h1> serialized value ✔ </h1>
+    </div>
+
+    <div class="c-block">
+      <h1>reactive class obk</h1>
+      <pre>{{a}}</pre>
+      <div>a.a:{{a.a}} a.b:{{a.b}} a.c:{{a.c}}</div>
+      <div>refA.a :{{refA.a}} refA.b:{{refA.b}} refA.c:{{refA.c}}</div>
+      <div>reactiveA.a :{{reactiveA.a}} reactiveA.b:{{reactiveA.b}} reactiveA.c:{{reactiveA.c}}</div>
+      <ObjectTable :data="refA"/>
+      <ObjectTable :data="reactiveA"/>
+      <div class="flex flex-row gap-4">
+        <Button @click="()=>a.rand()">a</Button>
+        <Button @click="()=>refA.rand()">refA</Button>
+        <Button @click="()=>reactiveA.rand()">reactiveA</Button>
+        <Button @click="()=>console.log(a,refA,reactiveA)">Log</Button>
+        <Button @click="()=>nextTick()">NextTick</Button>
+
+      </div>
+
     </div>
   </div>
 
