@@ -4,6 +4,10 @@ export class Semaphore {
 	public constructor (private counter = 0) {
 	}
 
+	public count(){
+		return this.counter
+	}
+
 	public async take (): Promise<void> {
 		await new Promise<void>(resolve => {
 			this.counter--

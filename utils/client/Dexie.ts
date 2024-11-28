@@ -1,14 +1,6 @@
 import Dexie, {EntityTable} from "dexie";
 import {DebugInfo, type DexieSampleItem} from "@/types/sample-models";
-import {
-	HouseItem,
-	HouseChange,
-	HouseTask,
-	CommunityTask,
-	CommunityRecord,
-	CommonFieldChange,
-	HouseStatusChange
-} from "@/types/lj";
+import {CommonFieldChange, CommunityRecord, CommunityTask, HouseChange, HouseStatusChange, HouseTask} from "@/types/lj";
 
 const db = new Dexie('Database-Dexie-Sample') as Dexie & {
 	items: EntityTable<

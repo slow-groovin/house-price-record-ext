@@ -1,7 +1,7 @@
 import {onMessage} from "webext-bridge/background"
 import {clearRules, updateRules} from "@/entrypoints/reuse/block";
 import {db} from "@/utils/client/Dexie";
-import {registerCommunityTaskManualRunCrawlOne} from "@/entrypoints/background/message";
+import {registerCommunityTaskManualRunCrawlOne, registerSimpleMessage} from "@/entrypoints/background/message";
 import {registerDaoMessage} from "@/entrypoints/background/dao";
 import {defineBackground} from "wxt/sandbox";
 import {browser} from "wxt/browser";
@@ -41,7 +41,7 @@ export default defineBackground(async () => {
 
 	registerCommunityTaskManualRunCrawlOne()
 	registerDaoMessage()
-
+	registerSimpleMessage()
 
 });
 
