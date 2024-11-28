@@ -6,8 +6,9 @@ export function pageDebugEntry(ctx: ContentScriptContext) {
 	if(import.meta.env.VITE_HIDE==='true'){
 
 	}
-	console.log('pageDebugEntry',import.meta.env.NODE_ENV)
-	onParseMessage()
+	if(process.env.NODE_ENV==='development'){
+		onParseMessage()
+	}
 
 }
 

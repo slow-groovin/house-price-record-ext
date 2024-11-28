@@ -1,10 +1,11 @@
 import {housePageEntry} from "@/entrypoints/content/house-page";
 import {communityListPageEntry} from "@/entrypoints/content/community-list-page";
-import {isCommunityListPage, isHousePage} from "@/utils/lj-url";
+import {isCommunityListPage, isHousePage, isHouseSoldPage} from "@/utils/lj-url";
 import '~/assets/tailwind.css'
 import '~/assets/shacn.css'
 import {pageDebugEntry} from "@/entrypoints/content/page-debug";
 import {defineContentScript} from "wxt/sandbox";
+import {houseSoldPageEntry} from "@/entrypoints/content/house-sold-page";
 
 export default defineContentScript({
 	matches: [
@@ -24,12 +25,12 @@ export default defineContentScript({
 
 		const url=window.location.href
 		if(isHousePage(url)){
-			console.log('lj house')
 			housePageEntry(ctx)
-
 		}else if(isCommunityListPage(url)){
-			console.log('lj community list',Date.now())
 			await communityListPageEntry(ctx)
+		}else if(isHouseSoldPage(url)){
+			console.log("sold out hit")
+			await houseSoldPageEntry(ctx)
 		}
 
 		pageDebugEntry(ctx)

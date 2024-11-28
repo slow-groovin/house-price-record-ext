@@ -2,7 +2,7 @@
 import {useRoute} from "vue-router";
 import {db} from "@/utils/client/Dexie";
 import ObjectTable from "@/components/table/ObjectTable.vue";
-import {HouseChange, HouseTask} from "@/types/lj";
+import {CommonFieldChange, HouseChange, HouseStatusChange, HouseTask, HouseTaskStatus} from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
 import {Button} from "@/components/ui/button";
@@ -15,9 +15,13 @@ const hid=query['id'] as string
 
 const task=ref<HouseTask>()
 const changes=ref<HouseChange[]>()
+const statusChanges=ref<HouseStatusChange[]>()
+const commonFieldChanges=ref<CommonFieldChange[]>()
 async function queryData(){
   task.value=await db.houseTasks.where('hid').equals(hid).first()
   changes.value=await db.houseChanges.where('hid').equals(hid).toArray()
+  statusChanges.value=await db.houseStatusChanges.where('hid').equals(hid).toArray()
+  commonFieldChanges.value=await db.houseCommonFieldChanges.where('hid').equals(hid).toArray()
   console.log(task.value?.accessRecord)
   console.log(changes.value)
 }
@@ -32,6 +36,8 @@ function task2ObjectTableData(t:HouseTask){
 onMounted(()=>{
   queryData()
 })
+
+
 </script>
 
 <template>
@@ -60,6 +66,31 @@ onMounted(()=>{
         <div> {{change.oldValue}}</div>
         <div> →</div>
         <div> {{change.newValue}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="c-block">
+    <h2> common field changes </h2>
+    <div>
+      <div v-for="change in commonFieldChanges" class="flex flex-row gap-3">
+        <div>{{new Date(change.at).toLocaleString()}}</div>
+        <div> {{change.name }}</div>
+        <div> {{change.oldValue}}</div>
+        <div> →</div>
+        <div> {{change.newValue}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="c-block">
+    <h2> status changes </h2>
+    <div>
+      <div v-for="change in statusChanges" class="flex flex-row gap-3">
+        <div>{{new Date(change.at).toLocaleString()}}</div>
+        <div> {{HouseTaskStatus[change.oldValue]}}</div>
+        <div> →</div>
+        <div> {{HouseTaskStatus[change.newValue]}}</div>
       </div>
     </div>
   </div>

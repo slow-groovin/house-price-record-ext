@@ -5,6 +5,8 @@ import CommunityListUI from "@/entrypoints/content/CommunityListUI.vue";
 import {parseAllOfCommunity} from "@/entrypoints/content/community-dom-parse";
 import {createApp} from "vue";
 export async function communityListPageEntry(ctx:ContentScriptContext) {
+	console.log("[content.js][community list page]")
+
 	registerMessage()
 
 	if(import.meta.env.VITE_HIDE==='true'){

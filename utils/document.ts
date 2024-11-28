@@ -81,6 +81,7 @@ export function extractNumber(areaText?:string|null){
 }
 
 
+
 /**
  * 类似playwright的等待元素出现
  * @param selector

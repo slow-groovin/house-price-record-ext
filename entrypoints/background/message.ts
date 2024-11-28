@@ -20,11 +20,6 @@ export function registerCrawlHouseTask() {
 	onMessage('crawlHouseTask', async ({data}) => {
 		const {hid} = data as { hid: string }
 		await runHouseTaskManualRunCrawlOne(hid)
-		//fetch
-		//302 captcha
-		//302
-		//404
-		//200 normal crawl
 		return {resp: 'ok'}
 	})
 }

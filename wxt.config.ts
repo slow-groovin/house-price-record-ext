@@ -1,5 +1,5 @@
 import { defineConfig } from 'wxt';
-
+import vueJsx from '@vitejs/plugin-vue-jsx'
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   extensionApi: 'chrome',
@@ -37,4 +37,9 @@ export default defineConfig({
 		// action:{},
 
 	},
+
+	// @ts-ignore
+	vite: (configEnv)=>({
+		plugins: [vueJsx()],
+	})
 });

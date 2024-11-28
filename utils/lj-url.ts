@@ -4,7 +4,7 @@ export function isHousePage(url?: string) {
 }
 
 
-export function isSoldHousePage(url?: string) {
+export function isHouseSoldPage(url?: string) {
 	if (!url) return false
 	return /lianjia.com\/chengjiao\/\d+.html/.test(url)
 }
@@ -14,6 +14,10 @@ export function isCaptchaPage(url?: string) {
 	return /lianjia.com\/captcha/.test(url)
 }
 
+export function isLoginPage(url?: string){
+	if (!url) return false
+	return url.includes('com/login')
+}
 
 export function isCommunityListPage(url?: string) {
 	if (!url) return false

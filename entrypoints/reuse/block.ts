@@ -1,4 +1,5 @@
 import {storage} from "wxt/storage";
+import {browser} from "wxt/browser";
 
 
 const debugRules = [
@@ -87,9 +88,9 @@ const ljMetricRules = [
 		// 阻止包含 "cnzz" 的所有请求
 		id: 17106,
 		priority: 1,
-		action: { type: "block" },
+		action: {type: "block"},
 		condition: {
-			initiatorDomains : ["lianjia.com"],
+			initiatorDomains: ["lianjia.com"],
 			regexFilter: ".*cnzz.*",
 			resourceTypes: ["main_frame", "sub_frame", "script", "xmlhttprequest"]
 		}
@@ -98,9 +99,9 @@ const ljMetricRules = [
 		// 阻止包含 "bdstatic" 的所有请求
 		id: 17108,
 		priority: 1,
-		action: { type: "block" },
+		action: {type: "block"},
 		condition: {
-			initiatorDomains : ["lianjia.com"],
+			initiatorDomains: ["lianjia.com"],
 			regexFilter: ".*bdstatic.*",
 			resourceTypes: ["main_frame", "sub_frame", "script", "xmlhttprequest"]
 		}
@@ -109,9 +110,9 @@ const ljMetricRules = [
 		// 阻止包含 "bdimg" 的所有请求
 		id: 17109,
 		priority: 1,
-		action: { type: "block" },
+		action: {type: "block"},
 		condition: {
-			initiatorDomains : ["lianjia.com"],
+			initiatorDomains: ["lianjia.com"],
 			regexFilter: ".*bdimg.*",
 			resourceTypes: ["main_frame", "sub_frame", "script", "xmlhttprequest"]
 		}
@@ -121,11 +122,11 @@ const ljMetricRules = [
 		id: 17110,
 		priority: 10,
 		// action: { type: "block" },
-		action: { type: "allow" },
+		action: {type: "allow"},
 		condition: {
-			initiatorDomains : ["hip.lianjia.com"],
+			initiatorDomains: ["hip.lianjia.com"],
 			urlFilter: "||s1.ljcdn.com/",
-			resourceTypes: ["image",  "script","xmlhttprequest"]
+			resourceTypes: ["image", "script", "xmlhttprequest"]
 		}
 	},
 	{
@@ -152,13 +153,25 @@ const ljMetricRules = [
 			// excludedResourceTypes:["main_frame"]
 		}
 	},
+	{
+		// 允许包含 "geetest.com" 的图片
+		id: 17120,
+		priority: 10,
+		// action: { type: "block" },
+		action: {type: "allow"},
+		condition: {
+			initiatorDomains: ["clogin.lianjia.com"],
+			// urlFilter: "||geetest.com",
+			// resourceTypes: ["image", "script", "xmlhttprequest"]
+		}
+	},
 ]
 
 const ljImgRules = [
 	{
 		// 阻止所有 .png, .jpg, .jpeg 文件
 		id: 17001,
-		priority: 100,
+		priority: 9,
 		action: {type: "block"},
 
 		condition: {
@@ -171,13 +184,13 @@ const ljImgRules = [
 ];
 
 
-const rules = {
+export const rules = {
 	debugRules,
 	ljImgRules,
 	ljMetricRules
 }
 
-export const allBlockRuleKeys: (keyof typeof rules)[]=['debugRules','ljImgRules','ljMetricRules']
+export const allBlockRuleKeys: (keyof typeof rules)[] = ['debugRules', 'ljImgRules', 'ljMetricRules']
 
 
 export async function toggleRules(key: keyof typeof rules) {
@@ -192,26 +205,24 @@ export async function toggleRules(key: keyof typeof rules) {
 	}
 }
 
+export async function clearRules(){
+	const _rules = await browser.declarativeNetRequest.getDynamicRules()
 
-export function updateRules(key: keyof typeof rules) {
-	chrome.declarativeNetRequest.getDynamicRules((_rules) => {
-		if (chrome.runtime.lastError) {
-			console.error(chrome.runtime.lastError.message);
-			return;
-		}
-		console.log('Dynamic rules:', _rules);
-		browser.declarativeNetRequest.updateDynamicRules({
-			removeRuleIds: _rules.map(rule => rule.id)
-		}, () => {
-			browser.declarativeNetRequest.updateDynamicRules({
-				//@ts-ignore
-				addRules: rules[key],
-				removeRuleIds: rules[key].map(rule => rule.id)
-			});
-		});
+	if (browser.runtime.lastError) {
+		console.error(browser.runtime.lastError.message);
+		return;
+	}
+	await browser.declarativeNetRequest.updateDynamicRules({
+		removeRuleIds: _rules.map(rule => rule.id)
+	})
+	console.log('[block.ts]Clear all rules:', _rules.map(r=>r.id));
+}
+export async function updateRules(key: keyof typeof rules) {
+	await browser.declarativeNetRequest.updateDynamicRules({
+		// @ts-ignore
+		addRules: rules[key],
 	});
-
-
+	console.log('[block.ts]update new rules done:');
 }
 
 export function removeRules(key: keyof typeof rules) {

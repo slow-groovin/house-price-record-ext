@@ -6,6 +6,7 @@ declare module "webext-bridge" {
 		block: ProtocolWithReturn<{enable:boolean}, {resp:string}>,
 		houseItem: ProtocolWithReturn<HouseItem,{resp:string}>,
 		parseHouse: ProtocolWithReturn<{},HouseItem>,
+		parseHouseSold: ProtocolWithReturn<{},{price:number,soldDate?:string}>,
 		simple: ProtocolWithReturn<string,any>
 		debug: ProtocolWithReturn<string,any>
 		// to specify the return type of the message,

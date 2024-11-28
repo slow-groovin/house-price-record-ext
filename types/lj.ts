@@ -61,6 +61,11 @@ export class HouseTask implements HouseItem {
 
 	public onSellDate?: number;
 
+	/**
+	 * 成交时间: 字符串
+	 */
+	public soldDate: string;
+
 	constructor(
 		public hid: string,
 		public cid: string,
@@ -212,5 +217,14 @@ export interface CommonFieldChange {
 	name: string,
 	newValue: any,
 	oldValue: any,
+	at: number
+}
+
+export interface HouseStatusChange{
+	id?:number,
+	hid:string;
+	cid:string;
+	oldValue:HouseTaskStatus,
+	newValue:HouseTaskStatus,
 	at: number
 }

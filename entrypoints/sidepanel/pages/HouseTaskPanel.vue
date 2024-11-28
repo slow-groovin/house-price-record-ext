@@ -13,7 +13,8 @@
     </div>
     <div v-else class="c-block">
       <div>已添加任务√</div>
-      <div>{{houseItem?.hid}}</div>
+
+      <a :href="'/options.html#/h/task/detail?id='+houseItem?.hid" target="_blank">{{houseItem?.hid}}</a>
       <!--    debug buttons-->
       <div>
         <Button @click="manualCrawl" >make record</Button>
@@ -118,7 +119,10 @@ async function createTask(){
 }
 
 async function manualCrawl(){
-  const {houseTask:task,respParsedItem}=await handleNormalPage(props.tabId)
+  console.log('[sidebar][HouseTaskPanel]begin  crawl house page.')
+
+  const {houseTask:task,respParsedItem}=await handleNormalPage(props.tabId,houseTask.value)
+  console.log('[sidebar][HouseTaskPanel]crawl house page done.',task,respParsedItem)
   await fetchLast10Changes(task.hid)
   houseTask.value=task
   houseItem.value=respParsedItem

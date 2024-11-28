@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 //
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {
@@ -10,6 +10,7 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
+  RowSelectionState,
   SortingState,
   TableOptions,
   useVueTable,
@@ -19,8 +20,9 @@ import {HouseTask} from "@/types/lj";
 import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {valueUpdater} from "@/utils/shadcn-utils";
-import {onMounted, ref, h,watch} from "vue";
+import {h, onMounted, ref, watch} from "vue";
 import {useLocalStorage} from "@vueuse/core";
+
 
 /*
 ref definition
@@ -28,7 +30,7 @@ ref definition
 const sorting = ref<SortingState>([])
 const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = useLocalStorage<VisibilityState>('house-tasks-column-visibility', {})
-const rowSelection = ref({})
+const rowSelection = defineModel<RowSelectionState>('rowSelection')
 const {data, rowCount} = defineProps<{
   data: HouseTask[],
   rowCount: number
@@ -45,10 +47,10 @@ const emit = defineEmits<{
   (e: 'onPaginationChange', pageIndex: number, pageSize: number): void
 }>()
 // const pagination = defineModel<PageState>('pagination')
-const pagination = ref( {pageIndex: 1, pageSize: 10})
+const pagination = ref({pageIndex: 1, pageSize: 10})
 
 //初始化默认查询
-emit('onPaginationChange',pagination.value.pageIndex,pagination.value.pageSize)
+emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
 /**
  * pagination end
  */
@@ -60,6 +62,28 @@ column BEGIN
  */
 const columnHelper = createColumnHelper<HouseTask>()
 const columnDef: (ColumnDef<HouseTask> | AccessorKeyColumnDef<HouseTask, any>)[] = [
+  {
+    id: 'select',
+    header: ({table}: { table: any }) => {
+      return (
+        <input type="checkbox"
+          checked={table.getIsAllRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+        ></input>
+      )
+    },
+    cell: ({row}: { row: any }) => {
+      return (
+        <div class="px-1">
+          <input type="checkbox"
+            checked={row.getIsSelected()}
+            disabled={!row.getCanSelect()}
+            onChange={row.getToggleSelectedHandler()}
+          ></input>
+        </div>
+      )
+    },
+  },
   columnHelper.accessor('id', {}),
 
   {
@@ -70,7 +94,10 @@ const columnDef: (ColumnDef<HouseTask> | AccessorKeyColumnDef<HouseTask, any>)[]
   } as ColumnDef<HouseTask>,
   columnHelper.accessor('hid', {
     header: 'id',
-    cell: ({cell}) => h('a', {'class': 'text-green-500','href': '#/h/task/detail?id=' + cell.getValue()}, cell.getValue())
+    cell: ({cell}) => h('a', {
+      'class': 'text-green-500',
+      'href': '#/h/task/detail?id=' + cell.getValue()
+    }, cell.getValue())
   }) as ColumnDef<HouseTask>,
   columnHelper.accessor('name', {}),
   columnHelper.accessor('area', {}),
@@ -133,6 +160,7 @@ let options: TableOptions<HouseTask> = {
     },
 
   },
+  enableRowSelection: true, //enable row selection for all rows
   // autoResetPageIndex:false,
   manualPagination: true,
   // pageCount:30,
@@ -142,7 +170,7 @@ let options: TableOptions<HouseTask> = {
     // console.log('updaterOrValue',updaterOrValue ,'before:',pagination.value)
     valueUpdater(updaterOrValue, pagination)
     // console.log('after:',pagination.value)
-    emit('onPaginationChange',pagination.value.pageIndex, pagination.value.pageSize)
+    emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
   }
 }
 const table = useVueTable(options)
@@ -165,6 +193,7 @@ onMounted(() => {
 
 <template>
   <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility"/>
+  rowSelection: {{rowSelection}}
   <Table>
     <TableHeader>
       <TableRow v-for="headerGroup in table.getHeaderGroups()">

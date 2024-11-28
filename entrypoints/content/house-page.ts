@@ -7,19 +7,15 @@ import {extractCidFromHomePageUrl, extractCityFromUrl} from "@/utils/lj-url";
 import {housePageElementsDisguise, injectCoverModal, injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
 
 export function housePageEntry(ctx: ContentScriptContext) {
-
+	console.log("[content.js][house page]")
 	if(import.meta.env.VITE_HIDE==='true'){
 		injectFuzzyStyle()
 		injectCoverModal()
 		housePageElementsDisguise()
 	}
 
-
-
 	onParseHouseMessage()
-
 	onForTestUseMessage()
-
 
 }
 

@@ -7,12 +7,13 @@ import UnovisSamples from "@/components/debug/UnovisSamples.vue";
 import WxtStorage from "@/components/debug/WxtStorage.vue";
 import CalendarGraphSample from "@/components/debug/CalendarGraphSample.vue";
 import {Switch} from "@/components/ui/switch";
-import {allBlockRuleKeys, removeRules, updateRules} from "@/utils/block";
+import {allBlockRuleKeys, removeRules, updateRules} from "@/entrypoints/reuse/block";
 import CommunityDebug from "@/components/debug/CommunityDebug.vue";
 import FakeDataInsert from "@/components/debug/FakeDataInsert.vue";
 import TanstackTable from "@/components/debug/TanstackTable.vue";
 import {useLocalStorage, useTitle} from "@vueuse/core";
 import UncategorizedDebugFunctions from "@/components/debug/UncategorizedDebugFunctions.vue";
+import NetRuleTest from "@/components/debug/NetRuleTest.vue";
 
 
 /**
@@ -37,7 +38,7 @@ function toggleRules(payload:boolean){
 }
 const title=useTitle()
 
-const components = [UncategorizedDebugFunctions,TabsManage, DexieIndexedDB, UnovisSamples, WxtStorage,CalendarGraphSample,CommunityDebug,FakeDataInsert,TanstackTable]
+const components = [UncategorizedDebugFunctions,TabsManage,NetRuleTest, DexieIndexedDB, UnovisSamples, WxtStorage,CalendarGraphSample,CommunityDebug,FakeDataInsert,TanstackTable]
 </script>
 
 
