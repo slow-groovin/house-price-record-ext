@@ -57,7 +57,7 @@ onMounted(async () => {
   if (!hidList.value) {
     goSidePanelHome()
   }
-  // await db.tempBatchHouse.delete(tempId)  //todo 测试完毕后删除
+  await db.tempBatchHouse.delete(tempId)
 })
 
 

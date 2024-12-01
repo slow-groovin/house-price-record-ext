@@ -8,7 +8,7 @@ import {housePageElementsDisguise, injectCoverModal, injectFuzzyStyle} from "@/e
 
 export function housePageEntry(ctx: ContentScriptContext) {
 	console.log("[content.js][house page]")
-	if(import.meta.env.VITE_HIDE==='true'){
+	if (import.meta.env.VITE_HIDE === 'true') {
 		injectFuzzyStyle()
 		injectCoverModal()
 		housePageElementsDisguise()
@@ -66,9 +66,9 @@ function onParseHouseMessage() {
 		totalRealArea = Number(totalRealArea.toFixed(2)) // 避免出现小数点后两位以上
 		//real unit price
 		let realUnitPrice: undefined | number
-		if (totalPrice){
-			realUnitPrice = (totalPrice*10000) / totalRealArea
-			realUnitPrice=Number(realUnitPrice.toFixed(0))
+		if (totalPrice) {
+			realUnitPrice = (totalPrice * 10000) / totalRealArea
+			realUnitPrice = Number(realUnitPrice.toFixed(0))
 		}
 
 		return {
@@ -79,7 +79,7 @@ function onParseHouseMessage() {
 			totalPrice: totalPrice,
 			unitPrice: Number(unitPrice),
 			area: extractNumber(areaText) ?? 0,
-			realArea: totalRealArea,
+			realArea: totalRealArea ? totalRealArea : undefined,  //为0则改为undefined
 			realUnitPrice,
 			onSellDate,
 			buildingType,

@@ -3,9 +3,9 @@ import {HousesUpdatePreview} from "@/types/LjUpdatePreview";
 import {HouseTaskStatus} from "@/types/lj";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
 
-//todo 避免重复提交
-//todo realArea未登录为空直接省略掉
-//todo normal 0字段更新 时在preview页面显示问题
+
+
+
 export async function updateBatchHouseWithPreview(preview?:HousesUpdatePreview){
 	if(!preview){
 		alert("没有数据!")
