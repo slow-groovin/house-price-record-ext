@@ -64,7 +64,7 @@ export class HouseTask implements HouseItem {
 	/**
 	 * 成交时间: 字符串
 	 */
-	public soldDate: string;
+	public soldDate?: string;
 
 	constructor(
 		public hid: string,
@@ -228,3 +228,4 @@ export interface HouseStatusChange{
 	newValue:HouseTaskStatus,
 	at: number
 }
+

@@ -6,10 +6,12 @@ import HouseTasksTable from "@/entrypoints/options/components/HouseTasksTable.vu
 import {onMounted, ref} from "vue";
 import { RowSelectionState} from "@tanstack/vue-table";
 import {Button} from "@/components/ui/button";
-import {runHouseTaskManualRunCrawlOne} from "@/entrypoints/reuse/house-control";
+import {oneHouseEntry} from "@/entrypoints/reuse/house-control";
 import {BatchQueueExecutor, Job} from "@/utils/lib/BatchQueueExecutor";
 import {browser} from "wxt/browser";
 import BatchJobRunningStatusBar from "@/components/lj/BatchJobRunningStatusBar.vue";
+import {sendMessage} from "webext-bridge/popup";
+import {sleep} from "radash";
 
 /*
 ref definition
@@ -33,50 +35,26 @@ async function queryData(pageIndex:number,pageSize:number) {
 data END
  */
 
-/**
- * 批量开启任务
- */
-const batchExecutor=ref<BatchQueueExecutor>()
-const batchSize=ref(0)
-async function batchCrawl(){
-  await browser.windows.create({})
-  batchSize.value=Object.keys(rowSelection.value).length
-  function * jobIter():IterableIterator<Job> {
-    const hidList=Object.keys(rowSelection.value)
-      .map(s=>Number(s))
-      .map(i=>data.value[i].hid)
 
-    for (let hid of hidList) {
-      yield {
-        promiseGetter: ()=>runHouseTaskManualRunCrawlOne(hid),
-        context: {
-          id: hid,
-        }
-      }
-    }
-  }
-  batchExecutor.value=new BatchQueueExecutor(jobIter(),{
-    retryTimes:0,
-    interval:500,
-    maxConcurrent:5,
-    log:true,
-        onJobFailHook:context=>{
-      console.log('job fail',context)
-    },
-    onJobRetryHook:context=>{
-      console.log('job retry',context)
-    },
-        onFinishedHook:()=>{
-      console.log('finished')
-    },
-    onPauseHook:context=>{
-      console.log('pause',context)
-    }
-  })
-  await batchExecutor.value.run()
-  alert("all done.")
+async function batchCrawl2(){
+  const hidList=Object.keys(rowSelection.value)
+    .map(s=>Number(s))
+    .map(i=>data.value[i].hid)
+  const id=await db.tempBatchHouse.add({hidList})
+
+  const window=await browser.windows.getCurrent({})
+  const newWindow=await browser.windows.create({state:'maximized'})
+  await chrome.sidePanel.open({windowId: newWindow.id as number})
+  await chrome.sidePanel.setOptions({path:'/sidepanel.html#/h/batch?id='+id})
 
 }
+
+async function sendMessageTest(){
+  const rs=await sendMessage('sidebarStartBatchHouse', {hidList:['1','222',]},'popup')
+
+}
+
+
 onMounted(()=>{
 })
 </script>
@@ -87,9 +65,9 @@ onMounted(()=>{
     <div class="flex flex-row flex-wrap">
 
     </div>
-    <Button @click="batchCrawl()">batchCrawl</Button>
-    <BatchJobRunningStatusBar v-if="batchExecutor" :executor="batchExecutor" :total="batchSize"/>
+    <Button @click="batchCrawl2()">batchCrawl2</Button>
   </div>
+
   <HouseTasksTable :data="data" :row-count="rowCount" @on-pagination-change="queryData" v-model:row-selection="rowSelection"/>
 
 </template>

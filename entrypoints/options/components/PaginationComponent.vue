@@ -67,7 +67,9 @@ function calcShowedPageNumbers(curPage: number, maxPage: number): (number | '...
   return result;
 }
 function gotoPage(){
-  props.setPageIndex(Number((document.getElementById('input-pageIndex') as HTMLInputElement)?.value))
+  let pageNo = Number((document.getElementById('input-pageIndex') as HTMLInputElement)?.value);
+  console.log('goto :',pageNo)
+  props.setPageIndex(pageNo)
 }
 </script>
 
@@ -99,7 +101,7 @@ function gotoPage(){
 
       <div>
         <input type="number" id="input-pageIndex" class="max-w-10 border">
-        <button @click="gotoPage" class="border">go</button>
+        <button @click="gotoPage" class="border px-1 rounded ml-2 mr-4">go</button>
       </div>
 
       <select

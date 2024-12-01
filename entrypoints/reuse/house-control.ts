@@ -4,6 +4,8 @@ import {genHousePageUrl, isCaptchaPage, isLoginPage, isHouseSoldPage} from "@/ut
 import {db} from "@/utils/client/Dexie";
 
 import {browser} from "wxt/browser";
+import {NoRetryError, PauseError} from "@/utils/lib/BatchQueueExecutor";
+import {openTabAndRun} from "@/utils/tab-utils";
 
 const LOG_PREFIX = '[house-control]'
 
@@ -11,7 +13,7 @@ const LOG_PREFIX = '[house-control]'
  * 从background/popup调用, 对一个house进行抓取,更新
  * @param hid
  */
-export async function runHouseTaskManualRunCrawlOne(hid: string) {
+export async function oneHouseEntry(hid: string) {
 	const LOG_PREFIX = `[house-control][hid:${hid}]`
 	console.log(LOG_PREFIX, 'begin ')
 	/*
@@ -32,32 +34,29 @@ export async function runHouseTaskManualRunCrawlOne(hid: string) {
 		await updateTaskMiss(task)
 	} else if (fetchRs.status === 200 && fetchRs.redirected) { //redirect
 		if (isCaptchaPage(fetchRs.url)) {  //  captcha
-			throw new Error(LOG_PREFIX + 'counter captcha!')
+			throw new PauseError('遭遇了验证码, 请打开网页通过验证码后, 确保页面能正常打开后手动恢复运行!')
 		} else if (isHouseSoldPage(fetchRs.url)) {  //sold
 			console.log(LOG_PREFIX, 'house sold')
+			await openTabAndRun({url},async (tab)=>{
+				await handleSoldPage(tab.id as number, task)
 
-			const tab = await browser.tabs.create({url})
-			if (!tab.id) {
-				throw new Error(LOG_PREFIX + 'tab id is undefined.')
-			}
-			await handleSoldPage(tab.id, task)
+			})
 		}else if(isLoginPage(fetchRs.url)){ //login
-			throw new Error(LOG_PREFIX + 'login required!')
+			throw new PauseError('需要登录, 请先打开网页登录后, 确保页面能正常打开后手动恢复运行!')
 		}
 		else {
-			throw new Error(LOG_PREFIX + 'unknown redirect!:' + fetchRs.url)
+			throw new NoRetryError(LOG_PREFIX + 'unknown redirect!:' + fetchRs.url)
 		}
 
 	} else if (fetchRs.status === 200) { // normal, still running
-		const tab = await browser.tabs.create({url})
-		if (!tab.id) {
-			throw new Error(LOG_PREFIX + 'tab id is undefined.')
-		}
 		console.log(LOG_PREFIX, 'house status is normal ')
 
-		await handleNormalPage(tab.id, task)
+		await openTabAndRun({url},async (tab)=>{
+			await handleNormalPage(tab.id as number, task)
+		})
 	}
 }
+
 
 async function updateTaskMiss(task: HouseTask) {
 	//构建task对象(否则成员函数不生效)

@@ -6,12 +6,14 @@ import {registerDaoMessage} from "@/entrypoints/background/dao";
 import {defineBackground} from "wxt/sandbox";
 import {browser} from "wxt/browser";
 
-export default defineBackground(async () => {
-	console.log('Load background!', {id: browser.runtime.id});
-	await clearRules()
-	await updateRules('ljMetricRules')
-	await updateRules('ljImgRules')
-	await updateRules('debugRules')
+export default defineBackground(() => {
+	console.log(`[${new Date().toLocaleString()}]`,'Load background!', {id: browser.runtime.id});
+	clearRules().then(()=>{
+		updateRules('ljMetricRules')
+		updateRules('ljImgRules')
+		updateRules('debugRules')
+	})
+
 
 
 

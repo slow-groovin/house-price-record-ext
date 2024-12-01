@@ -214,6 +214,18 @@ const reactiveA=reactive(a2)
       </div>
 
     </div>
+    <div>
+      1
+      <ul class="list-disc pl-4">
+        <li>1</li>
+        <li>1</li>
+        <li>1</li>
+        <li>1</li>
+        <li>1</li>
+      </ul>
+
+    </div>
+
   </div>
 
 </template>

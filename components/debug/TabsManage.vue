@@ -96,7 +96,7 @@ function* generator(): IterableIterator<Job> {
   for (let url of urls) {
     console.log(PREFIX + '[generator]generate promise job:', url)
     async function newTabProcess(){
-      await sleep(random(300, 600))
+      await sleep(random(300, 6000))
       if(url===urls[6]){
         throw new NoRetryError('url 6: throw NoRetryError')
       }
@@ -135,46 +135,77 @@ const executor = ref<BatchQueueExecutor>(new BatchQueueExecutor(generator(), {
   // timeout: 0,
   log: true,
   maxConcurrent: 3,
-  onDoneCountUpdateHook(): void {
-    console.log(PREFIX, 'onDoneCountUpdateHook', executor.value.doneCount)
-    // doneCount.value = executor.doneCount
-    // doneCost.value = executor.doneCost
-  },
-  onRunCountUpdateHook(): void {
-    // runningCount.value = executor.runCount
-  },
-  onFinishedHook(): void {
-    console.log(PREFIX, 'on finished')
-  },
-  onJobStartHook(context: JobContext): void {
-    batchExecuteResult.value.push({id: context.id, start: new Date(), end: undefined})
-    console.log(PREFIX, 'onJobStartHook', context.id)
-  },
-  onJobEndHook(context: JobContext): void {
-    const i = batchExecuteResult.value.findIndex(i => i.id === context.id)
-    if (batchExecuteResult.value[i]) {
-      batchExecuteResult.value[i] = {
-        ...batchExecuteResult.value[i],
-        end: new Date(),
-      }
-    }
-    console.log(PREFIX, 'onJobEndHook', context.id)
-  },
-  onJobFailHook(context: JobContext, e): void {
-    console.warn(PREFIX, 'onJobFailHook', context.id, e)
-  },
-  onJobRetryHook(context: JobContext, e): void {
-    console.warn(PREFIX, 'onJobRetryHook', context.id, e)
-  },
 
-  onPauseHook(context: JobContext | undefined, e): void {
-    console.warn(PREFIX, 'onPauseHook', context?.id, e)
-    alert('Paused, please solve the problem and resume!' + context?.id)
-  }
 }))
 
+// onDoneCountUpdateHook(): void {
+//   console.log(PREFIX, 'onDoneCountUpdateHook', executor.value.doneCount)
+//   // doneCount.value = executor.doneCount
+//   // doneCost.value = executor.doneCost
+// },
+// onRunCountUpdateHook(): void {
+//   // runningCount.value = executor.runCount
+// },
+// onFinishedHook(): void {
+//   console.log(PREFIX, 'on finished')
+// },
+// onJobStartHook(context: JobContext): void {
+//   batchExecuteResult.value.push({id: context.id, start: new Date(), end: undefined})
+//   console.log(PREFIX, 'onJobStartHook', context.id)
+// },
+// onJobEndHook(context: JobContext): void {
+//   const i = batchExecuteResult.value.findIndex(i => i.id === context.id)
+//   if (batchExecuteResult.value[i]) {
+//     batchExecuteResult.value[i] = {
+//       ...batchExecuteResult.value[i],
+//       end: new Date(),
+//     }
+//   }
+//   console.log(PREFIX, 'onJobEndHook', context.id)
+// },
+// onJobFailHook(context: JobContext, e): void {
+//   console.warn(PREFIX, 'onJobFailHook', context.id, e)
+// },
+// onJobRetryHook(context: JobContext, e): void {
+//   console.warn(PREFIX, 'onJobRetryHook', context.id, e)
+// },
+//
+// onPauseHook(context: JobContext | undefined, e): void {
+//   console.warn(PREFIX, 'onPauseHook', context?.id, e)
+//   alert('Paused, please solve the problem and resume!' + context?.id)
+// }
 
+executor.value.on('onPause',(context: JobContext | undefined, e?:Error)=>{
+  console.warn(PREFIX, 'onPauseHook', context?.id, e)
+  alert('Paused, please solve the problem and resume!' + context?.id)
+})
 
+executor.value.on('onJobFail',(context, e)=>{
+  console.warn(PREFIX, 'onJobFailHook', context.id, e)
+})
+
+executor.value.on('onJobRetry',(context, e)=>{
+  console.warn(PREFIX, 'onJobRetryHook', context.id, e)
+})
+executor.value.on('onJobStart',(context)=>{
+  batchExecuteResult.value.push({id: context.id, start: new Date(), end: undefined})
+  console.log(PREFIX, 'onJobStartHook', context.id)
+})
+
+executor.value.on('onJobEnd',(context)=>{
+  const i = batchExecuteResult.value.findIndex(i => i.id === context.id)
+  if (batchExecuteResult.value[i]) {
+    batchExecuteResult.value[i] = {
+      ...batchExecuteResult.value[i],
+      end: new Date(),
+    }
+  }
+  console.log(PREFIX, 'onJobEndHook', context.id)
+})
+
+executor.value.on('onFinished',()=>{
+  console.log(PREFIX, 'on finished')
+})
 
 async function BatchQueueExecutorSample() {
 
@@ -201,7 +232,7 @@ async function BatchQueueExecutorSample() {
       <Button @click="BatchQueueExecutorSample">Once Multiple Tabs With BatchQueueExecutor</Button>
       <Button @click="executor?.manualPause()">pause</Button>
       <Button @click="executor?.resume()">resume</Button>
-      <BatchJobRunningStatusBar v-if="executor" :executor="executor" :total="urls.length"/>
+      <BatchJobRunningStatusBar v-if="executor" :executor="executor" :total="urls.length" class="w-96"/>
 
     </div>
 

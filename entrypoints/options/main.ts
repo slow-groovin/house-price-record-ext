@@ -11,6 +11,9 @@ import HouseChangeList from "@/entrypoints/options/pages/house-changes-list/Hous
 import HouseDetailPage from "@/entrypoints/options/pages/HouseDetailPage.vue";
 import CommunityTaskList from "@/entrypoints/options/pages/community-task-list/CommunityTaskList.vue";
 import CommunityDetailPage from "@/entrypoints/options/pages/CommunityDetailPage.vue";
+import HouseUpdatePreview from "@/entrypoints/options/pages/HouseUpdatePreview.vue";
+import { VueQueryPlugin } from '@tanstack/vue-query'
+
 
 const router=createRouter({
 
@@ -30,6 +33,7 @@ const router=createRouter({
 				{path:'/h/task/detail',component:HouseDetailPage},
 				{path:'/c/task/list',component:CommunityTaskList},
 				{path:'/c/task/detail',component:CommunityDetailPage},
+				{path:'h/update/preview',component:HouseUpdatePreview}
 
 			]
 		},
@@ -37,4 +41,4 @@ const router=createRouter({
 
 })
 console.log("init options vue")
-createApp(App).use(router).mount('#app');
+createApp(App).use(router).use(VueQueryPlugin).mount('#app');

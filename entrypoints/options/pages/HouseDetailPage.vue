@@ -6,7 +6,7 @@ import {CommonFieldChange, HouseChange, HouseStatusChange, HouseTask, HouseTaskS
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
 import {Button} from "@/components/ui/button";
-import {runHouseTaskManualRunCrawlOne} from "@/entrypoints/reuse/house-control";
+import {oneHouseEntry} from "@/entrypoints/reuse/house-control";
 import {onMounted, ref} from "vue";
 import {genHousePageUrl} from "@/utils/lj-url";
 
@@ -45,7 +45,7 @@ onMounted(()=>{
   <div class="c-block">
     <h2>actions</h2>
     <div v-if="task">
-      <Button v-if="task.hid" @click="runHouseTaskManualRunCrawlOne(hid)">crawl</Button>
+      <Button v-if="task.hid" @click="oneHouseEntry(hid)">crawl</Button>
       <a v-if="task.city && task.hid" :href="genHousePageUrl(task?.city,task?.hid)" target="_blank"  rel="noreferrer">link</a>
     </div>
   </div>

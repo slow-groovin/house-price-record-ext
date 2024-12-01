@@ -1,22 +1,13 @@
-// import {crawlHouse} from "@/entrypoints/reuse/house-control";
-// import {browser} from "wxt/browser";
-//
-//
-// export function openTabAndExec(url:string, func:(tabId:number)=>Promise<any>|any,closeTab=true){
-// 	return new Promise<any>(async (resolve, reject) => {
-// 		browser.tabs.create({url,active:false}, async (tab) => {
-// 			if(!tab.id) {
-// 				reject(false)
-// 				return
-// 			}
-// 			const rs=await func(tab.id)
-//
-// 			if(closeTab){
-// 				browser.tabs.remove(tab.id)
-// 			}
-//
-// 			resolve(rs)
-//
-// 		})
-// 	})
-// }
+import {browser, Tabs} from "wxt/browser";
+import {NoRetryError} from "@/utils/lib/BatchQueueExecutor";
+
+
+export async function openTabAndRun<T>(option: Tabs.CreateCreatePropertiesType,action: (tab:Tabs.Tab) => Promise<T>) {
+	const tab=await browser.tabs.create(option)
+	if(!tab || !tab.id){
+		throw new NoRetryError( 'tab id is undefined.')
+	}
+	const rs=await action(tab)
+	browser.tabs.remove(tab.id)
+	return rs
+}

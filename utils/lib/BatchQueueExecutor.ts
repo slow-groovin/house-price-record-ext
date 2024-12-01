@@ -7,6 +7,7 @@
  */
 import {Semaphore} from "@/utils/lib/Semaphore";
 import {sleep} from "radash";
+import EventEmitter from 'eventemitter3';
 
 export type JobContext = { id: string, } & Record<string, any>
 export type Job = {
@@ -20,22 +21,41 @@ export type ExecutorConfig = {
 	interval: number;
 	maxConcurrent: number;
 	log?: boolean;
-	onDoneCountUpdateHook?: () => void;
-	onRunCountUpdateHook?: () => void;
-	onFinishedHook?: () => void;
-	onPauseHook?: (context?: JobContext, error?: Error) => void;
-
-	onJobStartHook?: (context: JobContext) => void;
-	onJobEndHook?: (context: JobContext) => void;
-	onJobRetryHook?: (context: JobContext, error: Error) => void;
-	onJobFailHook?: (context: JobContext, error: Error) => void;
 }
 
-export class BatchQueueExecutor {
+// 定义事件与消息的类型映射
+interface MyEvents {
+	onStart: void;
+	onFinished: void;
+	onPause: (context?: JobContext, error?: Error)=>void;
+	onResume: void;
+	onJobStart: (context:JobContext)=>void;
+	onJobEnd: (context:JobContext)=>void;
+	onJobRetry: (context:JobContext, error:Error)=>void;
+	onJobFail: (context:JobContext, error:Error)=>void;
+}
+type Args<T> = T extends (...args: infer P) => any ? P : [];
+type ParametersWrapper<T> = T extends (...args: any[]) => any ? Args<T> : [];
+
+
+export class BatchQueueExecutor{
+	private emitter: EventEmitter=new EventEmitter();
+	// 重写 emit 方法以支持事件类型检查
+	emit<K extends keyof MyEvents>(event: K, ...args: Args<MyEvents[K]> ): boolean {
+		return this.emitter.emit(event, ...args);
+	}
+
+	// 重写 on 方法以支持事件类型检查
+	on<K extends keyof MyEvents>(event: K, listener: (...args: Args<MyEvents[K]>) => void): EventEmitter {
+		return this.emitter.on(event, listener);
+	}
 
 	public doneCost: number = 0;
 	public isInit: boolean = true;
 	public isRunning: boolean = false;
+
+
+
 	public isFinished: boolean =false;
 	public isPaused: boolean = false;
 	public retryCount: number = 0;
@@ -43,12 +63,16 @@ export class BatchQueueExecutor {
 	public pauseCount: number = 0;
 	private pauseQueue: ((v: unknown) => void)[] = [];
 	private semaphore: Semaphore;
-
 	private canLog: boolean = false;
+
+	public runningPromise: Promise<any>[]=[];
+	public runningIds:string[]=[];
+
 	private LOG_PREFIX = '[BatchQueueExecutor]'
 
 
 	constructor(private jobIter: IterableIterator<Job>, private config: ExecutorConfig) {
+
 		this.semaphore = new Semaphore(config.maxConcurrent);
 		this.canLog = !!config.log
 	}
@@ -61,7 +85,6 @@ export class BatchQueueExecutor {
 
 	private set doneCount(_doneCount: number) {
 		this._doneCount = _doneCount
-		noThrowRun(this.config.onDoneCountUpdateHook)
 	}
 
 	private _runCount: number = 0;
@@ -72,13 +95,12 @@ export class BatchQueueExecutor {
 
 	private set runCount(_runCount: number) {
 		this._runCount = _runCount
-		noThrowRun(this.config.onRunCountUpdateHook)
 	}
 
 	public manualPause() {
 		this.isPaused = true
 		this.isRunning = false
-		noThrowRun(() => this.config.onPauseHook?.())
+		this.emit('onPause',{id:'-1'},new Error('manual pause'))
 	}
 
 	/**
@@ -88,8 +110,7 @@ export class BatchQueueExecutor {
 		this.isPaused = true
 		this.isRunning = false
 		this.pauseCount++
-		noThrowRun(() => this.config.onPauseHook?.(context, err))
-
+		this.emit('onPause', context, err)
 		return new Promise((resolve) => {
 			this.pauseQueue.push(resolve)
 		})
@@ -100,26 +121,20 @@ export class BatchQueueExecutor {
 		this.isPaused = false
 		this.isRunning = true
 		this.pauseQueue.forEach(f => {
-			f('ok')
+			f('continue')
 		})
+		this.emit('onResume')
 	}
 
 	public async run() {
 		this.isRunning = true
-		let finishResolve = (value: unknown): void => {
-			throw new Error('unset finish resolve')
-		};
-		const finishPromise = new Promise((resolve) => {
-			finishResolve = resolve
-		})
+		this.isInit=false
+		this.emit('onStart')
 
 
-		while (true) {
+		while (!this.isFinished) {
 			await this.waitResume()
 			await this.semaphore.take()
-			//after take semaphore
-			await this.waitResume()
-
 
 			let curJob: Job
 			let next = this!.jobIter.next()
@@ -128,12 +143,11 @@ export class BatchQueueExecutor {
 			//no more job, finish
 			if (!curJob) {
 				this.finish()
-				finishResolve('finish')
 				break;
 			}
 
 			//async start job of 'next'
-			(async () => {
+			const asyncJobExec=(async () => {
 				const startAt = Date.now()
 				this.runCount++
 
@@ -142,7 +156,7 @@ export class BatchQueueExecutor {
 				let isJobSuc = false
 				let lastError: Error = new Error("empty error")
 				const {context, promiseGetter} = curJob
-				noThrowRun(() => this.config.onJobStartHook?.(context))
+				this.emit('onJobStart',context)
 
 				while (retryTime < this.config.retryTimes + 1) {
 
@@ -169,15 +183,16 @@ export class BatchQueueExecutor {
 						this.canLog && console.log(this.LOG_PREFIX, '[retry]', retryTime, e)
 						retryTime++
 						this.retryCount++ //global retry count
-						noThrowRun(() => this.config.onJobRetryHook?.(context, lastError))
+
+						this.emit('onJobRetry',context,lastError)
 					}
 				}
 
 				if (isJobSuc) {
-					noThrowRun(() => this.config.onJobEndHook?.(context))
+					this.emit('onJobEnd',context)
 				} else {
 					this.failedCount++
-					noThrowRun(() => this.config.onJobFailHook?.(context, lastError))
+					this.emit('onJobFail',context,lastError)
 				}
 
 				this.doneCount++
@@ -187,12 +202,20 @@ export class BatchQueueExecutor {
 
 				await sleep(this.config.interval)//执行等待interval
 				this.semaphore.free()
-			})().then(() => {
-				this.canLog && console.log(this.LOG_PREFIX, 'one exec procedure done.', curJob.context.id)
+			})()
+
+			this.runningPromise.push(asyncJobExec)
+			this.runningIds.push(curJob.context.id)
+			asyncJobExec.finally(()=>{
+				this.runningPromise.splice(this.runningPromise.indexOf(asyncJobExec), 1)
+				this.runningIds.splice(this.runningIds.indexOf(curJob.context.id), 1)
 			})
 
+			// 	.then(() => {
+			// 	this.canLog && console.log(this.LOG_PREFIX, 'one exec procedure done.', curJob.context.id)
+			// })
+
 		}
-		return finishPromise
 	}
 
 	/**
@@ -207,12 +230,27 @@ export class BatchQueueExecutor {
 
 	private finish() {
 		this.isRunning = false
-		this.isFinished = true
-		this.canLog && console.log(this.LOG_PREFIX, 'finish')
-		noThrowRun(() => this.config.onFinishedHook?.())
+
+		//等待剩余的都结束
+		Promise.all(this.runningPromise).then(()=>{
+			this.canLog && console.log(this.LOG_PREFIX, 'finish')
+			this.emit('onFinished')
+			this.isFinished = true
+
+		})
+
+
+
+
 	}
 
 
+	public manualForceFinish(){
+		this.isRunning = false
+		this.isPaused=false
+		this.isFinished = true
+		this.emit('onFinished')
+	}
 }
 
 export class NoRetryError extends Error {

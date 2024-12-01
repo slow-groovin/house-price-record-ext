@@ -105,7 +105,7 @@ onMounted(()=>{
   </div>
 
 
-<!-- community records todo mock data -->
+
   <div class="c-block">
     <h2>community record</h2>
     <CommunityRecordTable :data="records" :row-count="recordsCount" @on-pagination-change="queryRecords"/>
