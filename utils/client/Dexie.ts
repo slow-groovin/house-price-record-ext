@@ -1,7 +1,7 @@
 import Dexie, {EntityTable} from "dexie";
 import {DebugInfo, type DexieSampleItem} from "@/types/sample-models";
 import {CommonFieldChange, CommunityRecord, CommunityTask, HouseChange, HouseStatusChange, HouseTask} from "@/types/lj";
-import {HousesUpdatePreview} from "@/types/LjUpdatePreview";
+import {CommunityUpdatePreview, HousesUpdatePreview} from "@/types/LjUpdatePreview";
 
 const db = new Dexie('Database-Dexie-Sample') as Dexie & {
 	items: EntityTable<
@@ -17,7 +17,11 @@ const db = new Dexie('Database-Dexie-Sample') as Dexie & {
 	communityRecords: EntityTable<CommunityRecord,'id'>
 
 	tempBatchHouse: EntityTable<{id?:number,hidList:string[]},'id'> //batch house时, 通过此表options页面向sidebar页面传递hidList
+	tempBatchCommunity: EntityTable<{id?:number,communityList:CommunityTask[]},'id'>
+
 	tempHouseUpdatePreview: EntityTable<HousesUpdatePreview,'batchId'>
+	tempCommunityUpdatePreview: EntityTable<CommunityUpdatePreview,'batchId'>
+
 };
 
 db.version(101).stores({
@@ -30,7 +34,9 @@ db.version(101).stores({
 	communityTasks: '++id, &cid, city, status, createdAt, lastRunningAt',
 	communityRecords: '++id, cid, city, at',
 	tempBatchHouse: '++id',
-	tempHouseUpdatePreview: 'batchId'
+	tempBatchCommunity: "++id",
+	tempHouseUpdatePreview: 'batchId',
+	tempCommunityUpdatePreview: 'batchId'
 
 });
 

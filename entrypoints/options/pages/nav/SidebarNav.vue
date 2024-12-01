@@ -29,7 +29,8 @@ const menuGroups = ref<MenuGroup[]>([
     menus: [
       { name: '概览',  link: '/#' },
       { name: '列表',  link: '/h/task/list' },
-      { name: '变更',  link: '/h/task/change' },
+      { name: '价格变更',  link: '/h/task/change' },
+      { name: '状态变更',  link: '/h/task/status/change' },
     ]
   },
   {

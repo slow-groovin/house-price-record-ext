@@ -2,7 +2,7 @@
 import {useRoute} from "vue-router";
 import {db} from "@/utils/client/Dexie";
 import ObjectTable from "@/components/table/ObjectTable.vue";
-import {CommunityRecord, CommunityTask, HouseChange, HouseTask} from "@/types/lj";
+import {CommunityRecord, CommunityTask, HouseChange, HouseStatusChange, HouseTask} from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
 import {Button} from "@/components/ui/button";
@@ -13,6 +13,7 @@ import HouseTasksTable from "@/entrypoints/options/components/HouseTasksTable.vu
 import CommunityRecordTable from "@/entrypoints/options/components/CommunityRecordTable.vue";
 import {onMounted, ref, toRaw} from "vue";
 import {genCommunityPageUrl} from "@/utils/lj-url";
+import HouseStatusChangesTimeline from "@/entrypoints/options/components/HouseStatusChangesTimeline.vue";
 
 const {query}=useRoute()
 const cid=query['id'] as string
@@ -27,6 +28,10 @@ const houseTasksCount=ref(0)
 
 const changes=ref<HouseChange[]>([])
 const changesCount=ref(0)
+
+const statusChanges=ref<HouseStatusChange[]>([])
+const statusChangesCount=ref(0)
+
 
 
 async function queryData(){
@@ -43,6 +48,13 @@ async function queryChanges(pageIndex:number,pageSize:number){
   console.log(pageIndex,pageSize,offset)
   changes.value=await db.houseChanges.where('cid').equals(cid).reverse().offset(offset).limit(pageSize).toArray()
   changesCount.value=await db.houseChanges.where('cid').equals(cid).count()
+}
+
+async function queryStatusChanges(pageIndex:number,pageSize:number){
+  const offset=calcOffset(pageIndex,pageSize)
+  console.log(pageIndex,pageSize,offset)
+  statusChanges.value=await db.houseStatusChanges.where('cid').equals(cid).reverse().offset(offset).limit(pageSize).toArray()
+  statusChangesCount.value=await db.houseStatusChanges.where('cid').equals(cid).count()
 }
 
 async function queryHouseTasks(pageIndex:number,pageSize:number) {
@@ -93,8 +105,12 @@ onMounted(()=>{
     <!-- changes history -->
     <h2> changes history </h2>
     <HouseChangesTable :data="changes ?? []" :row-count="changesCount ?? 0" @on-pagination-change="queryChanges"/>
+  </div>
 
-
+  <div class="c-block">
+    <!-- changes history -->
+    <h2> status changes history </h2>
+    <HouseStatusChangesTimeline :data="statusChanges ?? []" :row-count="statusChangesCount ?? 0" @on-pagination-change="queryStatusChanges"/>
   </div>
 
 <!-- graph -->

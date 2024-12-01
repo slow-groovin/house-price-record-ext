@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 //
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {
@@ -10,6 +10,7 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
+  RowSelectionState,
   SortingState,
   TableOptions,
   useVueTable,
@@ -23,6 +24,9 @@ import {valueUpdater} from "@/utils/shadcn-utils";
 import {calcOffset, PageState} from "@/utils/table-utils";
 import {h, onMounted, ref, toRaw} from "vue";
 import {useLocalStorage} from "@vueuse/core";
+import {Button} from "@/components/ui/button";
+import {toInt} from "radash";
+import {browser} from "wxt/browser";
 
 
 /*
@@ -31,7 +35,8 @@ ref definition
 const sorting = ref<SortingState>([])
 const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = useLocalStorage<VisibilityState>('community-list-column-visibility', {})
-const rowSelection = ref({})
+const rowSelection = ref<RowSelectionState>({})
+
 /*
 ref definition DONE
  */
@@ -54,12 +59,12 @@ const pagination = ref<PageState>({
 data
  */
 const data = ref<CommunityTask[]>([])
-const rowCount=ref(0)
+const rowCount = ref(0)
 
 async function queryData() {
   //changes
   const tasks = await db.communityTasks.offset(calcOffset(pagination.value.pageIndex, pagination.value.pageSize)).limit(pagination.value.pageSize).toArray()
-  rowCount.value= await db.communityTasks.count()
+  rowCount.value = await db.communityTasks.count()
   //communities info
   data.value = tasks
 
@@ -75,13 +80,36 @@ column BEGIN
  */
 const columnHelper = createColumnHelper<CommunityTask>()
 const columnDef: (ColumnDef<CommunityTask> | AccessorKeyColumnDef<CommunityTask, any>)[] = [
+  {
+    id: 'select',
+    header: ({table}: { table: any }) => {
+      return (
+        <input type="checkbox"
+               checked={table.getIsAllRowsSelected()}
+               onChange={table.getToggleAllRowsSelectedHandler()}></input>
+      )
+    },
+    cell: ({row}: { row: any }) => {
+      return (
+        <div class="px-1">
+          <input type="checkbox"
+                 checked={row.getIsSelected()}
+                 disabled={!row.getCanSelect()}
+                 onChange={row.getToggleSelectedHandler()}></input>
+        </div>
+      )
+    },
+  },
   columnHelper.accessor('id', {}),
 
   {
     accessorKey: 'cid',
     id: 'cid',
     header: 'cid header',
-    cell: ({cell}) => h('a', {'class': 'text-green-500', 'href':'#/c/task/detail?id='+cell.getValue()}, cell.getValue() as string)
+    cell: ({cell}) => h('a', {
+      'class': 'text-green-500',
+      'href': '#/c/task/detail?id=' + cell.getValue()
+    }, cell.getValue() as string)
   } as ColumnDef<CommunityTask>,
   columnHelper.accessor('name', {}),
   columnHelper.accessor('city', {}),
@@ -164,19 +192,33 @@ onMounted(() => {
   queryData()
 })
 
+async function beginCrawlCommunities(){
+  const communityList= Object.keys(rowSelection.value).map(s=>toInt(s)).map(i=>toRaw(data.value[i]))
+  let item = {communityList};
+  console.log(item)
+  const id=await db.tempBatchCommunity.add(item)
+  const newWindow=await browser.windows.create({state:'maximized'})
+  await chrome.sidePanel.open({windowId: newWindow.id as number})
+  await chrome.sidePanel.setOptions({path:'/sidepanel.html#/c/batch?id='+id})
+
+}
 
 </script>
 
 <template>
   <h1>Community tasks</h1>
   <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility"/>
+  <div>{{Object.keys( rowSelection)}}</div>
+  <div>
+    <Button @click="beginCrawlCommunities()">beginCrawls()</Button>
+  </div>
   <Table>
     <TableHeader>
       <TableRow v-for="headerGroup in table.getHeaderGroups()">
         <TableHead v-for="header in headerGroup.headers">
           <FlexRender
-              v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
-              :props="header.getContext()"
+            v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+            :props="header.getContext()"
           />
         </TableHead>
 
@@ -193,10 +235,10 @@ onMounted(() => {
   </Table>
 
   <PaginationComponent
-      :set-page-index="table.setPageIndex"
-      :set-page-size="table.setPageSize"
-      :pagination="pagination"
-      :row-count="rowCount"/>
+    :set-page-index="table.setPageIndex"
+    :set-page-size="table.setPageSize"
+    :pagination="pagination"
+    :row-count="rowCount"/>
 
 
 </template>

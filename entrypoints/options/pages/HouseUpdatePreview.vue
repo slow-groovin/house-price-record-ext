@@ -124,7 +124,7 @@ const props = defineProps<Props>()
 const {query:{id}}=useRoute()
 const data=ref<HousesUpdatePreview>()
 if(id)
-  db.tempHouseUpdatePreview.get(id).then(rs=>data.value=rs)
+  db.tempHouseUpdatePreview.get(id as string).then(rs=>data.value=rs)
 
 const isUpdateDone=ref(false)
 

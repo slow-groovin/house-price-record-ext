@@ -1,4 +1,4 @@
-import {HouseTaskStatus} from "@/types/lj";
+import {CommunityRecord, HouseTaskStatus} from "@/types/lj";
 
 
 interface HousesUpdatePreview {
@@ -27,9 +27,18 @@ interface HouseNormal extends HouseUpdateBase {
 	newStatus?: HouseTaskStatus,
 }
 
+interface CommunityUpdatePreview{
+	batchId: string,
+	at: number,
+	records: CommunityRecord[]
+}
+
 export type {
+
 	HousesUpdatePreview,
 	HouseUpdateBase,
 	HouseNormal,
 	HouseSold,
+
+	CommunityUpdatePreview
 }

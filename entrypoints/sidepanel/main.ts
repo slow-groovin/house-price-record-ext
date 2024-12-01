@@ -6,12 +6,14 @@ import {createRouter, createWebHashHistory} from "vue-router";
 import Index from "@/entrypoints/sidepanel/pages/Index.vue";
 import DebugEntryTabs from "@/components/debug/DebugEntryTabs.vue";
 import BatchHouseStart from "@/entrypoints/sidepanel/pages/BatchHouseStart.vue";
+import BatchCommunityStartPage from "@/entrypoints/sidepanel/pages/BatchCommunityStartPage.vue";
 const router=createRouter({
 	history: createWebHashHistory(),
 	routes:[
 		{path:'/',component:Index},
 		{path: '/debug',component:DebugEntryTabs},
-		{path: '/h/batch', component:BatchHouseStart}
+		{path: '/h/batch', component:BatchHouseStart},
+		{path: '/c/batch', component:BatchCommunityStartPage}
 
 	]
 
