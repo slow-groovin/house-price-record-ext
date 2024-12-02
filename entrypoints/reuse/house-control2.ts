@@ -90,6 +90,16 @@ export async function handleNormalPage(pageTabId: number, taskInDb: HouseTask):P
 	//发送message ,让页面进行parse item
 	const respParsedItem = await sendMessage('parseHouse', {}, 'content-script@' + pageTabId)
 	console.log('receive parseHouse result:', respParsedItem)
+	return generateNormalPageUpdatePreview(respParsedItem,taskInDb)
+}
+
+
+/**
+ * 根据页面parse result和 task in db,对比,生成更新的preview, 抽出来为单独的函数方便content.js中的过程直接调用
+ * @param parseItem
+ * @param taskInDb
+ */
+export function generateNormalPageUpdatePreview(parseItem:HouseItem, taskInDb:HouseTask):HouseNormal{
 	const updatePreview:HouseNormal={
 		type: 'normal',
 		hid: taskInDb.hid,
@@ -102,7 +112,7 @@ export async function handleNormalPage(pageTabId: number, taskInDb: HouseTask):P
 		// commonFieldChanges: [],
 	}
 	//对比获取更新字段
-	const {dexieUpdateChanges, commonFieldChanges} = genTaskUpdateChanges(taskInDb, respParsedItem)
+	const {dexieUpdateChanges, commonFieldChanges} = genTaskUpdateChanges(taskInDb, parseItem)
 	//如果普通字段发生更新, 则需要更新
 	if(dexieUpdateChanges && Object.keys(dexieUpdateChanges).length>0){
 		updatePreview.updateChanges=dexieUpdateChanges
@@ -112,14 +122,13 @@ export async function handleNormalPage(pageTabId: number, taskInDb: HouseTask):P
 		updatePreview.commonFieldChanges=commonFieldChanges
 	}
 	//如果price发生变动, 增加houseChanges记录
-	if (respParsedItem.totalPrice && taskInDb?.totalPrice !== respParsedItem.totalPrice) {
-		updatePreview.newPrice = respParsedItem.totalPrice
+	if (parseItem.totalPrice && taskInDb?.totalPrice !== parseItem.totalPrice) {
+		updatePreview.newPrice = parseItem.totalPrice
 	}
 	//如果之前状态不是normal,则新增 houseStatusChanges
 	if(taskInDb.status!==HouseTaskStatus.running){
 		updatePreview.newStatus=HouseTaskStatus.running
 	}
-
 	return updatePreview
 }
 

@@ -1,5 +1,6 @@
 import {ProtocolWithReturn} from "webext-bridge";
-import {CommunityListPageItem, CommunityTask, HouseItem} from "@/types/lj";
+import {CommunityListPageItem, CommunityTask, HouseItem, HouseTask} from "@/types/lj";
+import {HouseNormal} from "@/types/LjUpdatePreview";
 
 declare module "webext-bridge" {
 	export interface ProtocolMap {
@@ -12,6 +13,8 @@ declare module "webext-bridge" {
 		// to specify the return type of the message,
 		// use the `ProtocolWithReturn` type wrapper
 		bar: ProtocolWithReturn<{}, {}>;
+
+		openOptionPage: ProtocolWithReturn<string, any>
 
 
 		/**
@@ -35,5 +38,12 @@ declare module "webext-bridge" {
 		 */
 		addCommunityTask: ProtocolWithReturn<CommunityTask, {resp:string}>;
 		queryCommunityTask: ProtocolWithReturn<{cid:string}, CommunityTask[]>;
+		queryHouseTask: ProtocolWithReturn<{hid:string}, HouseTask[]>;
+		updateHouse: ProtocolWithReturn<UpdateHouseParam, any>;
+		createHouseTask: ProtocolWithReturn<HouseItem, {reason?:string}>;
 	}
+
+	export type UpdateHouseParam={houseNormal:HouseNormal, taskInDb:HouseTask}
 }
+
+

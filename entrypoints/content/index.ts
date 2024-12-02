@@ -12,6 +12,7 @@ export default defineContentScript({
 		'*://*.lianjia.com/ershoufang/*',
 		'*://*.lianjia.com/',
 		'*://*.lianjia.com/*',
+		'*://*.example.com/*'
 	],
 	cssInjectionMode: 'ui',
 	async main(ctx) {
@@ -33,7 +34,10 @@ export default defineContentScript({
 			await houseSoldPageEntry(ctx)
 		}
 
-		pageDebugEntry(ctx)
+		if(url.includes('example.com')){
+			pageDebugEntry(ctx)
+		}
+
 
 	},
 });

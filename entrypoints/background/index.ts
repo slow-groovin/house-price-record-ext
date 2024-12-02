@@ -15,7 +15,7 @@ export default defineBackground(() => {
 	})
 
 
-
+	console.log('[backgrond]')
 
 	// if (typeof chrome !== "undefined" && chrome.sidePanel) {
 	// 	// Chrome 或 Edge
@@ -41,6 +41,10 @@ export default defineBackground(() => {
 
 	})
 
+	onMessage('openOptionPage',(msg)=>{
+		console.debug('[openOptionPage]',msg.data)
+		return browser.tabs.create({url:msg.data})
+	})
 	registerCommunityTaskManualRunCrawlOne()
 	registerDaoMessage()
 	registerSimpleMessage()
