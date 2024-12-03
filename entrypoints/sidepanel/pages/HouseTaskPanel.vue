@@ -57,7 +57,7 @@ import {sendMessage} from "webext-bridge/popup";
 import {db} from "@/utils/client/Dexie";
 import {HouseChange, HouseItem, HouseTask} from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
-import {handleNormalPage} from '@/entrypoints/reuse/house-control'
+import {handleNormalPage} from '@/entrypoints/reuse/house-control2'
 import ObjectTable from "@/components/table/ObjectTable.vue";
 import {onMounted, ref, watchEffect} from "vue";
 
@@ -119,13 +119,13 @@ async function createTask(){
 }
 
 async function manualCrawl(){
-  console.log('[sidebar][HouseTaskPanel]begin  crawl house page.')
-
-  const {houseTask:task,respParsedItem}=await handleNormalPage(props.tabId,houseTask.value)
-  console.log('[sidebar][HouseTaskPanel]crawl house page done.',task,respParsedItem)
-  await fetchLast10Changes(task.hid)
-  houseTask.value=task
-  houseItem.value=respParsedItem
+  // console.log('[sidebar][HouseTaskPanel]begin  crawl house page.')
+  //
+  // const {houseTask:task,respParsedItem}=await handleNormalPage(props.tabId,houseTask.value)
+  // console.log('[sidebar][HouseTaskPanel]crawl house page done.',task,respParsedItem)
+  // await fetchLast10Changes(task.hid)
+  // houseTask.value=task
+  // houseItem.value=respParsedItem
 }
 
 async function forTestRandomChangePrice(){

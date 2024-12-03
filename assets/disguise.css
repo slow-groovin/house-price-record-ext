@@ -1,5 +1,10 @@
-
 #ui-container * {
   background-color: rgba(115, 92, 83, 0.56) !important;
   color: rgba(191, 189, 189, 0.38) !important;
+}
+
+#app {
+	background-color: rgba(147, 129, 126, 0.72) !important;
+	color: rgba(92, 88, 88, 0.77) !important;
+
 }

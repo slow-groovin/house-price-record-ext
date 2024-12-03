@@ -1,11 +1,18 @@
 <template>
   <div :class="cn('flex overflow-auto ', props.class)">
 
+    <div v-if="position==='right'" class="self-center">
+      <Icon v-if="!isOpen" @click="open" icon="lets-icons:expand-left-light"
+            :class="cn('cursor-pointer  hover:bg-gray-300 w-4 h-8 border text-gray-800 stroke-2', toggleClass)"/>
+      <Icon v-else @click="close" icon="lets-icons:expand-right-light" :class="cn('cursor-pointer hover:bg-gray-300  w-4 h-8 border text-gray-800 stroke-2', toggleClass)">
+      </Icon>
+    </div>
+
     <div :class="{'w-0 overflow-hidden':!isOpen}" >
       <slot name="default"></slot>
     </div>
 
-    <div class="self-center">
+    <div v-if="position==='left'" class="self-center">
       <Icon v-if="!isOpen" @click="open" icon="lets-icons:expand-right-light"
             :class="cn('cursor-pointer  hover:bg-gray-300 w-4 h-8 border text-gray-800 stroke-2', toggleClass)"/>
       <Icon v-else @click="close" icon="lets-icons:expand-left-light" :class="cn('cursor-pointer hover:bg-gray-300  w-4 h-8 border text-gray-800 stroke-2', toggleClass)">
@@ -27,13 +34,15 @@ interface Props {
   defaultOpen?: boolean
   contentClass?: ClassValue
   toggleClass?: ClassValue
+  position?: 'left'|'right'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   class: '',
   defaultOpen:false,
   contentClass: '',
-  toggleClass: ''
+  toggleClass: '',
+  position:'left',
 })
 
 const isOpen = ref(props.defaultOpen)

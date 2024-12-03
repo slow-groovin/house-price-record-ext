@@ -23,6 +23,11 @@ export default defineContentScript({
 		// ctx.block
 		console.log('hit lj page.',window.location.href);
 
+		if (import.meta.env.VITE_HIDE === 'true') {
+			import('~/assets/disguise.css');
+		}
+
+
 
 		const url=window.location.href
 		if(isHousePage(url)){

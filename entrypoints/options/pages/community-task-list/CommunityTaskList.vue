@@ -27,6 +27,7 @@ import {useLocalStorage} from "@vueuse/core";
 import {Button} from "@/components/ui/button";
 import {toInt} from "radash";
 import {browser} from "wxt/browser";
+import {startPageEntry} from "@/entrypoints/reuse/community-control2";
 
 
 /*
@@ -194,13 +195,7 @@ onMounted(() => {
 
 async function beginCrawlCommunities(){
   const communityList= Object.keys(rowSelection.value).map(s=>toInt(s)).map(i=>toRaw(data.value[i]))
-  let item = {communityList};
-  console.log(item)
-  const id=await db.tempBatchCommunity.add(item)
-  const newWindow=await browser.windows.create({state:'maximized'})
-  await chrome.sidePanel.open({windowId: newWindow.id as number})
-  await chrome.sidePanel.setOptions({path:'/sidepanel.html#/c/batch?id='+id})
-
+  startPageEntry(communityList)
 }
 
 </script>

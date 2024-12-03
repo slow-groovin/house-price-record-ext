@@ -3,26 +3,7 @@ import {CommunityRecord} from "@/types/lj";
 import {Label} from "@/components/ui/label";
 
 const {record}=defineProps<{record:CommunityRecord}>()
-const r1:CommunityRecord={
-  addedItem: [],
-  at: 0,
-  avgTotalPrice: 0,
-  avgUnitPrice: 0,
-  calcOnSellCount: 0,
-  cid: "",
-  city: "",
-  doneCountIn90Days: 0,
-  houseList: [],
-  id: 0,
-  maxPageNo: 0,
-  name: "",
-  onSellCount: 0,
-  pageNo: 0,
-  priceDownList: [],
-  priceUpList: [],
-  removedItem: [],
-  visitCountIn90Days: 0
-}
+
 </script>
 
 <template>
@@ -74,9 +55,10 @@ const r1:CommunityRecord={
 
     <div>
       <details>
-        <summary>全部列表</summary>
+        <summary>全部列表 (共{{record.houseList.length}}个)</summary>
         <div>
-          <div v-for="houseItem in record.houseList" class="flex gap-3 border">
+          <div v-for="(houseItem,index) in record.houseList" class="flex gap-3 border">
+            <div> {{index}} .</div>
             <div> {{houseItem.hid}}</div>
             <div> {{houseItem.price}}万元</div>
             <div> {{houseItem.name}}</div>

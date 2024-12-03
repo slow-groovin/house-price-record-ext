@@ -1,23 +1,26 @@
-import {
-	CommunityListPageItem,
-	CommunityRecord,
-	CommunityTask,
-	HousePriceChangeItem,
-	HousePriceItem,
-	HouseTask
-} from "@/types/lj";
+import {CommunityListPageItem, CommunityRecord, CommunityTask} from "@/types/lj";
 import {sendMessage} from "webext-bridge/background"
 import {db} from "@/utils/client/Dexie";
 import {stabilizeFields} from "@/utils/variable";
 import {removeRepeat} from "@/utils/array";
 import {list} from "radash";
 import {genCommunityPageUrl} from "@/utils/lj-url";
-import {AccessRecord} from "@/utils/lib/AcessRecord";
 import {browser} from "wxt/browser";
-import {execManualRunCrawlOne} from "@/entrypoints/reuse/community-control";
 
 
 const PREFIX='[oneCommunityEntry]'
+
+/**
+ * 打开单独窗口和side panel的start page作为开始
+ */
+export async function startPageEntry(communityList: CommunityTask[]){
+	let item = {communityList};
+	const id=await db.tempBatchCommunity.add(item)
+	const newWindow=await browser.windows.create({state:'maximized'})
+	await chrome.sidePanel.open({windowId: newWindow.id as number})
+	await chrome.sidePanel.setOptions({path:'/sidepanel.html#/c/batch?id='+id})
+}
+
 export async function oneCommunityEntry(communityTask:CommunityTask) {
 	const {cid,city}=communityTask
 

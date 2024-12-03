@@ -6,7 +6,6 @@ import {CommunityRecord, CommunityTask, HouseChange, HouseStatusChange, HouseTas
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
 import {Button} from "@/components/ui/button";
-import {execManualRunCrawlOneFromStart} from "@/entrypoints/reuse/community-control";
 import HouseChangesTable from "@/entrypoints/options/components/HouseChangesTable.vue";
 import {calcOffset} from "@/utils/table-utils";
 import HouseTasksTable from "@/entrypoints/options/components/HouseTasksTable.vue";
@@ -14,6 +13,7 @@ import CommunityRecordTable from "@/entrypoints/options/components/CommunityReco
 import {onMounted, ref, toRaw} from "vue";
 import {genCommunityPageUrl} from "@/utils/lj-url";
 import HouseStatusChangesTimeline from "@/entrypoints/options/components/HouseStatusChangesTimeline.vue";
+import {startPageEntry} from "@/entrypoints/reuse/community-control2";
 
 const {query}=useRoute()
 const cid=query['id'] as string
@@ -87,7 +87,7 @@ onMounted(()=>{
   <div class="c-block" v-if="task">
     <h2>actions</h2>
     <div>
-      <Button @click="execManualRunCrawlOneFromStart(task.city as string,task.cid)">beginTaskCrawl</Button>
+      <Button @click="startPageEntry([toRaw(task)])">beginTaskCrawl</Button>
       <a  :href="genCommunityPageUrl(task!.city as string,task?.cid,1)" target="_blank"  rel="noreferrer">link</a>
     </div>
   </div>

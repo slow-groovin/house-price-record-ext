@@ -1,7 +1,7 @@
 import {ContentScriptContext, createShadowRootUi} from "wxt/client";
 import {communityElementDisguise, injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
 import {onMessage,sendMessage} from "webext-bridge/content-script";
-import CommunityListUI from "@/entrypoints/content/CommunityListUI.vue";
+import CommunityListUI from "@/entrypoints/content/CommunityContentUI.vue";
 import {parseAllOfCommunity} from "@/entrypoints/content/community-dom-parse";
 import {createApp} from "vue";
 export async function communityListPageEntry(ctx:ContentScriptContext) {
@@ -12,12 +12,11 @@ export async function communityListPageEntry(ctx:ContentScriptContext) {
 	if(import.meta.env.VITE_HIDE==='true'){
 		injectFuzzyStyle()
 		communityElementDisguise()
-
 	}
 
 
 	const ui=await createShadowRootUi(ctx, {
-		name: 'example-ui',
+		name: 'community-ui',
 		position: 'modal',
 		zIndex:9999,
 		anchor: 'html',

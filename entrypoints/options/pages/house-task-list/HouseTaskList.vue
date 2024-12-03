@@ -4,14 +4,10 @@ import {HouseTask} from "@/types/lj";
 import {calcOffset} from "@/utils/table-utils";
 import HouseTasksTable from "@/entrypoints/options/components/HouseTasksTable.vue";
 import {onMounted, ref} from "vue";
-import { RowSelectionState} from "@tanstack/vue-table";
+import {RowSelectionState} from "@tanstack/vue-table";
 import {Button} from "@/components/ui/button";
-import {oneHouseEntry} from "@/entrypoints/reuse/house-control";
-import {BatchQueueExecutor, Job} from "@/utils/lib/BatchQueueExecutor";
 import {browser} from "wxt/browser";
-import BatchJobRunningStatusBar from "@/components/lj/BatchJobRunningStatusBar.vue";
 import {sendMessage} from "webext-bridge/popup";
-import {sleep} from "radash";
 
 /*
 ref definition

@@ -9,10 +9,16 @@
   <!--  更新完毕后的提示-->
   <div v-else class="flex flex-col items-center justify-center shadow-inner  my-4 p-3 rounded-lg border">
     <h1 class="inline">
-      本次任务数据库更新完成! 去列表看看吧!
+      本次任务数据库更新完成! 去
+<!--      todo 列表传递参数, 仅查看此次更新的内容-->
+      <a :href="'options.html#/c/task/list'" class="underline text-green-500 cursor-pointer">详情页</a>
+      看看吧!
       <Icon icon="icon-park-outline:success" class="inline-block w-16 h-16 text-green-500"/>
     </h1>
+    <Button variant="destructive" @click="closeWindow()">关闭窗口</Button>
   </div>
+
+
 
   <div v-if="data" :class="cn('flex flex-col space-y-6', props.class)">
 
@@ -68,6 +74,7 @@ import {updateBatchHouseWithPreview} from "@/entrypoints/reuse/house-update";
 import {useMutation} from "@tanstack/vue-query";
 import CommunityRecordCard from "@/entrypoints/options/components/CommunityRecordCard.vue";
 import {updateBatchCommunityWithPreview} from "@/entrypoints/reuse/community-update";
+import {browser} from "wxt/browser";
 
 interface Props {
   class?: HTMLAttributes['class']
@@ -121,5 +128,8 @@ async function doUpdate() {
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-
+async function closeWindow(){
+  const curWindow=await browser.windows.getCurrent()
+  await browser.windows.remove(curWindow.id as number)
+}
 </script>

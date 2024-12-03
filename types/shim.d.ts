@@ -16,12 +16,10 @@ declare module "webext-bridge" {
 
 		openOptionPage: ProtocolWithReturn<string, any>
 
-
 		/**
-		 * Auto Run  contentUI/options -> background to control
-		 * fromStart: 是否新打开页面获取总页数再开始抓取步骤
+		 *  contentUI -> background to manual run one task
 		 */
-		manualRunOneCommunityTask: ProtocolWithReturn<{city:string,cid:string,maxPage:number,fromStart?:boolean}, {resp:string}>;
+		crawlCommunityTask: ProtocolWithReturn<{cid:string}, {resp:string}>;
 
 		/**
 		 *  * -> background.js

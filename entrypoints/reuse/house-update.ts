@@ -1,5 +1,5 @@
 import {db} from "@/utils/client/Dexie";
-import {HouseNormal, HousesUpdatePreview} from "@/types/LjUpdatePreview";
+import {HouseNormal, HouseSold, HousesUpdatePreview, HouseUpdateBase} from "@/types/LjUpdatePreview";
 import {HouseTask, HouseTaskStatus} from "@/types/lj";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
 
@@ -19,23 +19,7 @@ export async function updateBatchHouseWithPreview(preview?:HousesUpdatePreview){
 			console.warn("miss house task not found",item)
 			continue
 		}
-		const accessRecord=AccessRecord.fromAccessRecord(task.accessRecord)
-		accessRecord.setAccessStatus(new Date(at),true)
-		await db.houseTasks.update(task.id,{
-			status: HouseTaskStatus.miss,
-			lastRunningAt: at,
-			accessRecord: accessRecord,
-		})
-		//如果之前状态不是 miss,则新增 houseStatusChanges
-		if(task.status!==HouseTaskStatus.miss){
-			await db.houseStatusChanges.add({
-				at: at,
-				cid: task.cid,
-				hid: task.hid,
-				oldValue: task.status,
-				newValue: HouseTaskStatus.miss
-			})
-		}
+		await updateOneMiss(item,task,at)
 	}
 
 	for (let item of sold) {
@@ -44,36 +28,7 @@ export async function updateBatchHouseWithPreview(preview?:HousesUpdatePreview){
 			console.warn("miss house task not found",item)
 			continue
 		}
-		const accessRecord=AccessRecord.fromAccessRecord(task.accessRecord)
-		accessRecord.setAccessStatus(new Date(at),true)
-
-		let changes:any = {
-			status: HouseTaskStatus.sold,
-			lastRunningAt: at,
-			soldDate: item.soldDate,
-			accessRecord: accessRecord,
-		};
-		if(item.newPrice){
-			changes['totalPrice']=item.newPrice
-			await db.houseChanges.add({
-				hid: task.hid,
-				cid: task.cid,
-				at: at,
-				oldValue: task.totalPrice ?? -1,
-				newValue: item.newPrice,
-			})
-		}
-		await db.houseTasks.update(task.id,changes)
-		//如果之前状态不是 sold,则新增 houseStatusChanges
-		if(task.status!==HouseTaskStatus.sold){
-			await db.houseStatusChanges.add({
-				at: at,
-				cid: task.cid,
-				hid: task.hid,
-				oldValue: task.status,
-				newValue: HouseTaskStatus.sold
-			})
-		}
+		await updateOneSold(item,task,at)
 	}
 
 	for (let item of normal) {
@@ -135,5 +90,64 @@ export async function updateOneNormal(houseNormal:HouseNormal, taskInDb: HouseTa
 			oldValue: c.oldValue
 
 		})))
+	}
+}
+
+
+export async function updateOneMiss(item:HouseUpdateBase, taskInDb: HouseTask, at:number) {
+	const task=await db.houseTasks.where('hid').equals(item.hid).first()
+	if(!task){
+		console.warn("miss house task not found",item)
+		return
+	}
+	const accessRecord=AccessRecord.fromAccessRecord(taskInDb.accessRecord)
+	accessRecord.setAccessStatus(new Date(at),true)
+	await db.houseTasks.update(taskInDb.id,{
+		status: HouseTaskStatus.miss,
+		lastRunningAt: at,
+		accessRecord: accessRecord,
+	})
+	//如果之前状态不是 miss,则新增 houseStatusChanges
+	if(taskInDb.status!==HouseTaskStatus.miss){
+		await db.houseStatusChanges.add({
+			at: at,
+			cid: taskInDb.cid,
+			hid: taskInDb.hid,
+			oldValue: taskInDb.status,
+			newValue: HouseTaskStatus.miss
+		})
+	}
+}
+
+export async function updateOneSold(item:HouseSold, taskInDb: HouseTask, at:number) {
+	const accessRecord=AccessRecord.fromAccessRecord(taskInDb.accessRecord)
+	accessRecord.setAccessStatus(new Date(at),true)
+
+	let changes:any = {
+		status: HouseTaskStatus.sold,
+		lastRunningAt: at,
+		soldDate: item.soldDate,
+		accessRecord: accessRecord,
+	};
+	if(item.newPrice){
+		changes['totalPrice']=item.newPrice
+		await db.houseChanges.add({
+			hid: taskInDb.hid,
+			cid: taskInDb.cid,
+			at: at,
+			oldValue: taskInDb.totalPrice ?? -1,
+			newValue: item.newPrice,
+		})
+	}
+	await db.houseTasks.update(taskInDb.id,changes)
+	//如果之前状态不是 sold,则新增 houseStatusChanges
+	if(taskInDb.status!==HouseTaskStatus.sold){
+		await db.houseStatusChanges.add({
+			at: at,
+			cid: taskInDb.cid,
+			hid: taskInDb.hid,
+			oldValue: taskInDb.status,
+			newValue: HouseTaskStatus.sold
+		})
 	}
 }
