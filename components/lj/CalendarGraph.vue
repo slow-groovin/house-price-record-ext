@@ -124,6 +124,7 @@ const showTooltip = (event: MouseEvent, content: string) => {
 const hideTooltip = () => {
   tooltipVisible.value = false;
 };
+console.log('CalendarGraph render.')
 </script>
 
 <template>

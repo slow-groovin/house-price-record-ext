@@ -115,6 +115,15 @@ async function autoUpdateOrCreateHouseTask(record: CommunityRecord) {
 			houseTask.addedType=TaskAddedType.autoByCommunity
 			await db.houseTasks.add(houseTask)
 
+			//add status change: indicate new create
+			await db.houseStatusChanges.add({
+				hid: item.hid,
+				cid: record.cid,
+				at: record.at,
+				oldValue: HouseTaskStatus.void,
+				newValue: HouseTaskStatus.running,
+			})
+
 		}
 	}
 }

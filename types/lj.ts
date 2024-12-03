@@ -38,7 +38,8 @@ export enum HouseTaskStatus {
 	running = 1,
 	pause = 2,
 	miss = 3,
-	sold = 4
+	sold = 4,
+	void=-1, //尚未创建
 }
 
 export enum TaskAddedType {manual = 1, autoByCommunity = 2, forDebug = 11}

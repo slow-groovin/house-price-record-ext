@@ -2,9 +2,11 @@
 
 import HeaderNav from "@/entrypoints/options/pages/nav/HeaderNav.vue";
 import SidebarNav from "@/entrypoints/options/pages/nav/SidebarNav.vue";
+import BackToTopBtn from "@/components/float/BackToTopBtn.vue";
 </script>
 
 <template>
+  <div id="__top_anchor"/>
   <div class="md:hidden">
 
   </div>
@@ -26,4 +28,6 @@ import SidebarNav from "@/entrypoints/options/pages/nav/SidebarNav.vue";
       </div>
     </div>
   </div>
+
+  <BackToTopBtn />
 </template>

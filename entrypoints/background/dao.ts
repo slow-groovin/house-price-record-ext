@@ -1,7 +1,7 @@
 import {onMessage} from "webext-bridge/background"
 import {db} from "@/utils/client/Dexie";
 import {HouseNormal} from "@/types/LjUpdatePreview";
-import {HouseTask} from "@/types/lj";
+import {HouseTask, HouseTaskStatus} from "@/types/lj";
 import {updateOneNormal} from "@/entrypoints/reuse/house-update";
 import {sendMessage} from "webext-bridge/popup";
 
@@ -53,7 +53,16 @@ export function registerDaoMessage(){
 			}else{
 				let houseTask = HouseTask.newFromItem(houseItem);
 				houseTask.markAccess()
+				//add task
 				const task=await db.houseTasks.add(houseTask)
+				//add status change
+				await db.houseStatusChanges.add({
+					hid: houseTask.hid,
+					cid: houseTask.cid,
+					at: houseItem.createdAt,
+					oldValue: HouseTaskStatus.void,
+					newValue: HouseTaskStatus.running,
+				})
 				return {}
 			}
 		}catch (e){
