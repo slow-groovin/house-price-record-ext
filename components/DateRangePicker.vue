@@ -16,7 +16,7 @@ const df = new DateFormatter('zh-CN', {
 const today = new Date()
 
 const emit = defineEmits<{
-  confirm: [] // 具名元组语法
+  (e: 'confirm'): void
 }>()
 
 const startDateValue = ref<CalendarDate>()

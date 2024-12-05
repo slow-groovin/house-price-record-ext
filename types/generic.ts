@@ -7,3 +7,5 @@ export function removeNull<T>(value: T | null | undefined): T | undefined {
 	}
 	return value;
 }
+
+export type ElementType<T> = T extends (infer U)[] ? U : never;

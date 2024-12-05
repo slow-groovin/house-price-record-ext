@@ -226,7 +226,7 @@ table END
 onMounted(() => {
 
   watch(() => rowCount, () => {
-    console.log('rowCount changed.')
+    console.log('rowCount changed.', rowCount)
     options.rowCount = rowCount
 
   })

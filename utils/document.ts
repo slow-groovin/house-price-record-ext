@@ -114,3 +114,14 @@ export function waitForElement(selector:string, timeout = 10000) {
 	});
 }
 
+
+/**
+ * scroll to by id
+ * @param id
+ */
+export function scrollToId(id: string) {
+	const element = document.getElementById(id)
+	if (element) {
+		element.scrollIntoView({ behavior: 'smooth' })
+	}
+}

@@ -1,8 +1,8 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 //
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {
-  AccessorKeyColumnDef,
+  AccessorKeyColumnDef, CellContext,
   ColumnDef,
   ColumnFiltersState,
   createColumnHelper,
@@ -19,8 +19,15 @@ import {CommunityRecord} from "@/types/lj";
 import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {valueUpdater} from "@/utils/shadcn-utils";
-import {h, onMounted, ref, watch,} from "vue";
+import {computed, onMounted, ref, watch,} from "vue";
 import {useLocalStorage} from "@vueuse/core";
+import {formatDistanceToNowHoursOrDays} from "@/utils/date";
+import {ElementType} from "@/types/generic";
+import {tryMinusOrUndefined} from "@/utils/operator";
+import ValueChangeBudget from "@/components/lj/house/ValueChangeBudget.vue";
+import TableRowExpandPriceChange from "@/components/lj/community/detail/TableRowExpandPriceChange.vue";
+import {CommunityRecordUrl} from "@/utils/url-component";
+import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
 
 /*
 ref definition
@@ -30,15 +37,66 @@ const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = useLocalStorage<VisibilityState>('column-visibility-community-record', {})
 const rowSelection = ref({})
 
-type DATA_TYPE=CommunityRecord
+type DATA_TYPE = CommunityRecord
+type RENDER_DATA_TYPE=Record<keyof DATA_TYPE,ValueDiff>
 const {data, rowCount} = defineProps<{
   data: DATA_TYPE[],
   rowCount: number
 }>()
+
+type ValueDiff={value:any,diff?:number}
+
+const renderData = computed(() => {
+  const result: RENDER_DATA_TYPE[] = []
+  let lastData: CommunityRecord|undefined=undefined
+  for (let i = data.length-1; i >= 0; i--) {
+    const obj: any= {}
+    const curData = data[i]
+    const {
+      id,
+      at,
+      avgTotalPrice,
+      avgUnitPrice,
+      onSellCount,
+      visitCountIn90Days,
+      doneCountIn90Days,
+      priceDownList,
+      priceUpList,
+      removedItem,
+      addedItem,
+      houseList
+    } = curData
+    obj.id = {value: id}
+    obj.at={value:at}
+    obj.avgTotalPrice = {value: avgTotalPrice}
+    obj.avgUnitPrice = {value: avgUnitPrice}
+    obj.onSellCount = {value: onSellCount}
+    obj.visitCountIn90Days = {value: visitCountIn90Days}
+    obj.doneCountIn90Days = {value: doneCountIn90Days}
+    obj.priceDownList = {value: priceDownList?.length}
+    obj.priceUpList = {value: priceUpList?.length}
+    obj.removedItem = {value: removedItem?.length}
+    obj.addedItem = {value: addedItem?.length}
+    obj.houseList = {value: houseList}
+    if (lastData) {
+      obj.avgTotalPrice.diff= tryMinusOrUndefined(avgTotalPrice, lastData.avgTotalPrice)
+      obj.avgUnitPrice.diff= tryMinusOrUndefined(avgUnitPrice, lastData.avgUnitPrice)
+      obj.onSellCount.diff= tryMinusOrUndefined(onSellCount, lastData.onSellCount)
+      obj.visitCountIn90Days.diff= tryMinusOrUndefined(visitCountIn90Days, lastData.visitCountIn90Days)
+      obj.doneCountIn90Days.diff= tryMinusOrUndefined(doneCountIn90Days, lastData.doneCountIn90Days)
+      obj.priceUpList.diff= tryMinusOrUndefined(priceUpList?.length, lastData.priceUpList?.length)
+      obj.priceDownList.diff= tryMinusOrUndefined(priceDownList?.length, lastData.priceDownList?.length)
+      obj.removedItem.diff= tryMinusOrUndefined(removedItem?.length, lastData.removedItem?.length)
+      obj.addedItem.diff= tryMinusOrUndefined(addedItem?.length, lastData.addedItem?.length)
+    }
+    result.push(obj as RENDER_DATA_TYPE)
+    lastData = data[i]
+  }
+  return result.reverse()
+})
 /*
 ref definition DONE
  */
-
 
 /**
  * pagination
@@ -47,53 +105,60 @@ const emit = defineEmits<{
   (e: 'onPaginationChange', pageIndex: number, pageSize: number): void
 }>()
 // const pagination = defineModel<PageState>('pagination')
-const pagination = ref( {pageIndex: 1, pageSize: 10})
+const pagination = ref({pageIndex: 1, pageSize: 10})
 
 //初始化默认查询
-emit('onPaginationChange',pagination.value.pageIndex,pagination.value.pageSize)
+emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
 /**
  * pagination end
  */
 
 
+const cellRenderWithValueChange=({cell}:CellContext<RENDER_DATA_TYPE, any>)=>{
+  const {value,diff}=cell.getValue()
+  if(diff){
+    return <div class="flex items-center flex-nowrap">{value} <ValueChangeBudget type="number" value={diff} /></div>
+  }
+  return `${value}`
+}
+
 
 /*
 column BEGIN
  */
-const columnHelper = createColumnHelper<DATA_TYPE>()
+const columnHelper = createColumnHelper<RENDER_DATA_TYPE>()
 
-const columnDef: (ColumnDef<DATA_TYPE> | AccessorKeyColumnDef<DATA_TYPE, any>)[] = [
-  columnHelper.accessor('id', {}),
-
-  {
-    accessorKey: 'cid',
-    id: 'cid',
-    header: 'cid header',
-    cell: ({cell}) => h('a', {href: '#/c/task/detail?id=' + cell.getValue(),target:'_blank'}, cell.getValue() as string)
-  } as ColumnDef<DATA_TYPE>,
-  columnHelper.accessor('avgTotalPrice', {}),
-  columnHelper.accessor('avgUnitPrice', {}),
-  columnHelper.accessor('onSellCount', {}),
-  columnHelper.accessor('visitCountIn90Days', {}),
-  columnHelper.accessor('doneCountIn90Days', {}),
-  columnHelper.accessor('maxPageNo', {}),
+const columnDef: (ColumnDef<RENDER_DATA_TYPE> | AccessorKeyColumnDef<RENDER_DATA_TYPE, any>)[] = [
+  columnHelper.accessor('id', {cell:({cell})=>CommunityRecordUrl(cell.getValue().value)}),
   columnHelper.accessor('at', {
-    cell: ({cell}) => new Date(cell.getValue()).toLocaleString()
+    cell: ({cell}) => formatDistanceToNowHoursOrDays(cell.getValue().value)
   }),
-
+  columnHelper.accessor('avgTotalPrice', {
+    cell:cellRenderWithValueChange
+  }),
+  columnHelper.accessor('avgUnitPrice', {
+    cell: cellRenderWithValueChange,
+  }),
 
   columnHelper.accessor('addedItem', {
-    cell: ({cell})=> cell.getValue()?.length
+    cell: ({cell}) => cell.getValue().value
   }),
   columnHelper.accessor('removedItem', {
-    cell: ({cell})=> cell.getValue()?.length
+    cell: ({cell}) => cell.getValue().value
   }),
   columnHelper.accessor('priceUpList', {
-    cell: ({cell})=> cell.getValue()?.length
+    cell: ({cell}) => cell.getValue().value
   }),
   columnHelper.accessor('priceDownList', {
-    cell: ({cell})=> cell.getValue()?.length
+    cell: ({cell}) => cell.getValue().value
   }),
+
+  columnHelper.accessor('onSellCount', {cell:cellRenderWithValueChange}),
+  columnHelper.accessor('visitCountIn90Days', {cell:cellRenderWithValueChange}),
+  columnHelper.accessor('doneCountIn90Days', {cell:cellRenderWithValueChange}),
+
+
+
 ]
 /*
 column END
@@ -103,9 +168,9 @@ column END
 /*
 table BEGIN
  */
-let options: TableOptions<DATA_TYPE> = {
+let options: TableOptions<RENDER_DATA_TYPE> = {
   get data() {
-    return data
+    return renderData.value
   },
   get columns() {
     return columnDef
@@ -147,7 +212,7 @@ let options: TableOptions<DATA_TYPE> = {
     // console.log('updaterOrValue',updaterOrValue ,'before:',pagination.value)
     valueUpdater(updaterOrValue, pagination)
     // console.log('after:',pagination.value)
-    emit('onPaginationChange',pagination.value.pageIndex, pagination.value.pageSize)
+    emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
   }
 }
 const table = useVueTable(options)
@@ -169,8 +234,7 @@ onMounted(() => {
 </script>
 
 <template>
-<!--  todo table->timeline -->
-  <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility"/>
+  <ColumnVisibleOption :columns="table.getAllColumns()"/>
   <Table>
     <TableHeader>
       <TableRow v-for="headerGroup in table.getHeaderGroups()">
@@ -185,11 +249,15 @@ onMounted(() => {
 
     </TableHeader>
     <TableBody>
-      <TableRow v-for="row in table.getRowModel().rows">
-        <TableCell v-for="cell in row.getVisibleCells()">
-          <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()"/>
-        </TableCell>
-      </TableRow>
+      <template v-for="(row,rowIndex) in table.getRowModel().rows">
+        <TableRow class="border-b">
+          <TableCell v-for="cell in row.getVisibleCells()">
+            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()"/>
+          </TableCell>
+
+        </TableRow>
+      </template>
+
     </TableBody>
   </Table>
 

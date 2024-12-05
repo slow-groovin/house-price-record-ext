@@ -3,6 +3,7 @@ import {db} from '@/utils/client/Dexie'
 import {random} from "radash";
 import {DexieSampleItem} from "@/types/sample-models";
 import {ref, toRaw} from "vue";
+import {Input} from "@/components/ui/input";
 
 
 const genNewItem = () => ({
@@ -84,6 +85,14 @@ const queryItemsByName = async () => {
   }
 };
 
+/**
+ * select * from TABLE where a='a' and b between 1 and 10 实验
+ */
+async function queryByEqualAndBetween(name:string, begin:number,end:number){
+  items.value=await db.items.where({'name':name}).and(x => x.createdAt>begin && x.createdAt<end).toArray()
+
+
+}
 // Load initial items
 loadItems();
 </script>
@@ -103,9 +112,10 @@ loadItems();
     <hr/>
 
     <!-- Query Item -->
-    <div>
-      <h2>Query Items</h2>
+    <div class="flex flex-col gap-y-4">
       <div>
+        <h2>Query Items</h2>
+
         <input v-model="query.id" placeholder="ID (exact)" type="number"/>
         <button @click="queryItemsById">Query by ID</button>
       </div>
@@ -125,6 +135,14 @@ loadItems();
       <div>
         <input v-model="query.name" placeholder="Name (fuzzy)"/>
         <button @click="queryItemsByName">Query by Name</button>
+      </div>
+
+
+      <div>
+        <input v-model="query.name" placeholder="Name (fuzzy)"/>
+        <input v-model="query.createdAtMin" placeholder="Created At Min" type="number"/>
+        <input v-model="query.createdAtMax" placeholder="Created At Max" type="number"/>
+        <button @click="queryByEqualAndBetween(query.name,query.createdAtMin,query.createdAtMax)">Query as "select from TABLE where name={name} and createdAt between {begin} and {end}</button>
       </div>
     </div>
 

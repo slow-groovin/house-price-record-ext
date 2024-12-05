@@ -22,6 +22,8 @@ import PaginationComponent from "@/entrypoints/options/components/PaginationComp
 import {valueUpdater} from "@/utils/shadcn-utils";
 import {h, onMounted, ref, watch} from "vue";
 import {useLocalStorage} from "@vueuse/core";
+import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
+import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
 
 
 /*
@@ -192,8 +194,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility"/>
-  rowSelection: {{rowSelection}}
+  <ColumnVisibleOption :columns="table.getAllColumns()"/>
   <Table>
     <TableHeader>
       <TableRow v-for="headerGroup in table.getHeaderGroups()">

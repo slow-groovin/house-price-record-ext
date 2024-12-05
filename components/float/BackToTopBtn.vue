@@ -14,18 +14,14 @@
 
 <script lang="ts" setup>
 import { Icon } from '@iconify/vue'
+import {scrollToId} from "@/utils/document";
 
 const props = defineProps<{ topAnchorId?: string }>()
 
-function scrollTo(id: string) {
-  const element = document.getElementById(id)
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth' })
-  }
-}
+
 
 function scrollToTop() {
-  scrollTo(props.topAnchorId ?? '__top_anchor')
+  scrollToId(props.topAnchorId ?? '__top_anchor')
 }
 
 

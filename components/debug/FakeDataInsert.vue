@@ -156,7 +156,7 @@ async function genSingleCommunityAll() {
   const cid = "t001"
   const initialCount = random(10, 20)
 
-  let lastAt = new Date("2024-12-01T16:00:00.000Z").getTime();
+  let lastAt = new Date().getTime();
   let beginAt = new Date("2024-01-01T16:00:00.000Z").getTime();
   const task: CommunityTask = {
     id, cid,
@@ -211,21 +211,21 @@ async function genSingleCommunityAll() {
   const changes: HouseChange[] = []
   const statusChanges: HouseStatusChange[] = []
   let at = beginAt
+  let once=true
   while (at < lastAt) {
-    at = at + random(1, 4) * 7 * 24 * 60 * 60 * 1000 //随机1~4周
     const removed: HousePriceItem[] = []
-    const added: HousePriceItem = []
+    const added: HousePriceItem[] = []
     const priceUpList: HousePriceChangeItem[] = [];
     const priceDownList: HousePriceChangeItem[] = [];
 
     //随机下架若干h
     const outIndex = randArray(random(0, 3), 0, houses.length)
     const outHouses = extractAndRemove(houses, outIndex)
-    removed.push(outHouses.map(h => ({hid: h.hid, price: h.totalPrice} as HousePriceItem)))
+    removed.push(...outHouses.map(h => ({hid: h.hid, price: h.totalPrice} as HousePriceItem)))
     //更新task和changes
     outHouses.forEach(h => {
       h.status = HouseTaskStatus.sold
-      h.soldDate = at
+      h.soldDate =new Date(at).toLocaleDateString()
       h.accessRecord.setAccessStatus(new Date(at), true)
       statusChanges.push({
         cid,
@@ -241,7 +241,7 @@ async function genSingleCommunityAll() {
     const changeIndex = randArray(random(0, 3), 0, houses.length)
     const changeHouses = extractElements(houses, changeIndex)
     for (let h of changeHouses) {
-      let oldVal = h.totalPrice
+      let oldVal = h.totalPrice!
       let newVal = random(0, 100) < 50 ? oldVal + 10 : oldVal - 10
       if (newVal > oldVal) {
         priceUpList.push({
@@ -257,6 +257,7 @@ async function genSingleCommunityAll() {
         })
       }
       h.totalPrice = newVal
+      h.unitPrice=newVal*10000/h.area!
       //changes
       changes.push({at: at, cid: cid, hid: h.hid, newValue: newVal, oldValue: oldVal} as HouseChange)
     }
@@ -268,7 +269,7 @@ async function genSingleCommunityAll() {
       houses.push(h)
       added.push({
         hid: h.hid,
-        price: h.totalPrice
+        price: h.totalPrice!
       })
       //更新task和changes
       statusChanges.push({
@@ -290,10 +291,10 @@ async function genSingleCommunityAll() {
       priceUpList: priceUpList,
       removedItem: removed,
       at: at,
-      avgTotalPrice: toInt(houses.reduce((acc, cur) => acc + cur.totalPrice, 0) / houses.length),
-      avgUnitPrice: toInt(houses.reduce((acc, cur) => acc + cur.unitPrice, 0) / houses.length),
+      avgTotalPrice: toInt(houses.reduce((acc, cur) => acc + cur.totalPrice!, 0) / houses.length)??undefined,
+      avgUnitPrice: toInt(houses.reduce((acc, cur) => acc + cur.unitPrice!, 0) / houses.length)??undefined,
       calcOnSellCount: houses.length,
-      houseList: houses,
+      houseList: houses.map(h=>( {...h,price:h.totalPrice} as HousePriceItem)),
       name: "t001_NAME",
       onSellCount: houses.length,
       pageNo: 0,
@@ -301,6 +302,12 @@ async function genSingleCommunityAll() {
       doneCountIn90Days: random(0, 90),
     }
     records.push(record)
+
+    at = at + random(1, 4) * 7 * 24 * 60 * 60 * 1000 //随机1~4周
+    if(at > lastAt && once){ //最后一次, 用最新的时间
+      at=lastAt-1
+      once=false
+    }
   }
 
   return {task, allHouses, records, changes, statusChanges}

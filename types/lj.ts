@@ -42,6 +42,15 @@ export enum HouseTaskStatus {
 	void=-1, //尚未创建
 }
 
+export const HouseTaskStatusText = {
+	[HouseTaskStatus.running]: '正常',
+	[HouseTaskStatus.pause]: '暂停',
+	[HouseTaskStatus.miss]: '下架',
+	[HouseTaskStatus.sold]: '成交',
+	[HouseTaskStatus.void]: '未创建',
+} as const
+
+
 export enum TaskAddedType {manual = 1, autoByCommunity = 2, forDebug = 11}
 
 export class HouseTask implements HouseItem {

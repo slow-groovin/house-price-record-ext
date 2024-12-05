@@ -97,7 +97,7 @@ function getMonthDesc(day: Date) {
   let monthNumberStr = (day.getMonth() + 1).toString().padStart(2, '0');
   let firstDayStr = day.getDate().toString().padStart(2, '0');
   let lastDayStr = lastDayOfMonth(day).getDate().toString().padStart(2, ' ');
-  return `${monthNumberStr}/${firstDayStr} ~ ${monthNumberStr}/${lastDayStr}`
+  return `${monthNumberStr}.${firstDayStr} - ${monthNumberStr}.${lastDayStr}`
 }
 
 /**tooltip**/
@@ -138,10 +138,9 @@ console.log('CalendarGraph render.')
   <div :class="cn('flex flex-col w-fit', props.class)">
     <SimpleTabsContainer :tabs="getYearsTab(years)">
       <template v-for="year in years" v-slot:[year]>
-        <h2>{{ year }}</h2>
         <div class="flex flex-col gap-y-3" ref="container">
           <div v-for="(month) in yearsData[year]" class="flex flex-row gap-2">
-            <div class="border  ">
+            <div class="  ">
               {{ getMonthDesc(new Date(year, month.monthIndex, 1)) }}
             </div>
 

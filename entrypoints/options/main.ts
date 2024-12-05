@@ -15,6 +15,7 @@ import HouseUpdatePreview from "@/entrypoints/options/pages/HouseUpdatePreview.v
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import CommunityUpdatePreview from "@/entrypoints/options/pages/CommunityUpdatePreview.vue";
 import HouseStatusChangeList from "@/entrypoints/options/pages/house-changes-list/HouseStatusChangeList.vue";
+import CommunityRecordPage from "@/entrypoints/options/pages/CommunityRecordPage.vue";
 
 
 const router=createRouter({
@@ -36,6 +37,7 @@ const router=createRouter({
 				{path:'/h/task/detail',component:HouseDetailPage},
 				{path:'/c/task/list',component:CommunityTaskList},
 				{path:'/c/task/detail',component:CommunityDetailPage},
+				{path:'/c/record',component:CommunityRecordPage},
 				{path:'h/update/preview',component:HouseUpdatePreview},
 				{path:'c/update/preview',component:CommunityUpdatePreview},
 

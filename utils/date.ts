@@ -1,5 +1,6 @@
 import { formatDistanceToNowStrict, isDate } from 'date-fns'
-
+import {CalendarDate, getLocalTimeZone} from "@internationalized/date";
+import {zhCN} from 'date-fns/locale/zh-CN'
 /**
  * 返回输入时间距离当前的距离,如果小于24小时仅返回小时单位, 超过24小时仅返回天数但额外i, (封装date-fns)
  */
@@ -12,14 +13,7 @@ export function formatDistanceToNowHoursOrDays(date: any) {
 
 	const dateObj = new Date(date)
 
-	const differenceInHours = (Date.now() - dateObj.getTime()) / (1000 * 60 * 60)
-	if (differenceInHours < 24) {
-		return formatDistanceToNowStrict(dateObj, { addSuffix: true, unit: 'hour' })
-	} else {
-		return formatDistanceToNowStrict(dateObj, { addSuffix: true, unit: 'day' })
-	}
-
-
+	return formatDistanceToNowStrict(dateObj, { addSuffix: true,  locale: zhCN })
 }
 
 /**
@@ -33,3 +27,8 @@ export function isDateValue(value: string | number | Date | any) {
 	}
 	return isDate(value)
 }
+
+export function calendarDateToDate(calendarDate?:CalendarDate){
+	return calendarDate?.toDate(getLocalTimeZone())
+}
+

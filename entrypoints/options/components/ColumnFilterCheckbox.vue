@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {Column, Table, VisibilityState} from "@tanstack/vue-table";
 import {toRaw} from "vue";
+import {Separator} from "@/components/ui/separator";
 
 const columnVisibility = defineModel<VisibilityState>('visibility')
 const props = defineProps<{
@@ -26,7 +27,7 @@ function toggleAllColumnsVisibility() {
 </script>
 
 <template>
-  <div class=" border border-black shadow rounded flex flex-row">
+  <div class=" border-black shadow rounded flex flex-row">
     <div class="px-1 border-b border-black">
       <label>
         <input
@@ -37,6 +38,7 @@ function toggleAllColumnsVisibility() {
         Toggle All
       </label>
     </div>
+
 
     <div
       v-for="column in table.getAllLeafColumns()"
