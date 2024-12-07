@@ -26,6 +26,7 @@ export function registerDaoMessage(){
 	console.log('[registerDaoMessage]','addCommunityTask')
 
 	onMessage('queryHouseTask', async (msg)=>{
+		console.log('queryHouseTask',msg.data)
 		const hid=msg.data.hid
 		return db.houseTasks.where('hid').equals(hid).toArray();
 	})
@@ -59,7 +60,7 @@ export function registerDaoMessage(){
 				await db.houseStatusChanges.add({
 					hid: houseTask.hid,
 					cid: houseTask.cid,
-					at: houseItem.createdAt,
+					at: Date.now(),
 					oldValue: HouseTaskStatus.void,
 					newValue: HouseTaskStatus.running,
 				})

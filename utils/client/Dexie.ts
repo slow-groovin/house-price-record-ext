@@ -27,10 +27,10 @@ const db = new Dexie('Database-Dexie-Sample') as Dexie & {
 db.version(102).stores({
 	items: '++id, name, price, createdAt', // Auto-increment id, and indexes for queries
 	debugInfo:'++id',
-	houseChanges: '++id, price, hid, cid, at',
+	houseChanges: '++id,  hid, cid, at,newValue',
 	houseCommonFieldChanges: '++id, hid, cid, at, name',
 	houseTasks: '++id, &hid, cid, city, status, createdAt,totalPrice,unitPrice, lastRunningAt,autoRecord',
-	houseStatusChanges: '++id, hid, cid, at',
+	houseStatusChanges: '++id, hid, cid, at, newValue,oldValue',
 	communityTasks: '++id, &cid, city, status, createdAt, lastRunningAt',
 	communityRecords: '++id, cid, city, at',
 	tempBatchHouse: '++id',

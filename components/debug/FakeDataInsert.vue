@@ -18,9 +18,11 @@ import {
 } from "@/types/lj";
 import {db} from "@/utils/client/Dexie";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
-import {list, random, toInt} from "radash";
+import {list, random, toInt, uid} from "radash";
 import {extractAndRemove, extractElements, randArray} from "@/utils/array";
-import {ref} from "vue";
+import {ref, toRef} from "vue";
+import {batchProcess} from "@/utils/batch";
+import {useMutation} from "@tanstack/vue-query";
 
 const houseData = () => houseTaskJson.map(item => {
   return {
@@ -330,6 +332,44 @@ async function addMockData() {
   await db.houseChanges.bulkAdd(changes)
   await db.houseStatusChanges.bulkAdd(statusChanges)
 }
+
+const SIZE=100000
+const genId=()=>list(2500,5000+SIZE)
+async function genManyCommunityTasks(){
+  await batchProcess(genId(),10000,async (ids)=>{
+    await db.communityTasks.bulkAdd(ids.map(id=>({
+      id,
+      cid:'gen_c_'+id,
+      avgTotalPrice: random(1,1500),
+      avgUnitPrice: random(10000,200000),
+      city: "gen",
+      createdAt: new Date().getTime()+random(-600*24*60*60*1000,0),
+      doneCountIn90Days: random(0,100),
+      lastRunningAt: new Date().getTime()+random(-15*24*60*60*1000,0),
+      name: "name_gen_c"+id+uid(16),
+      onSellCount: random(0,150),
+      runningCount: random(0,100),
+      status: CommunityTaskStatus.running,
+      visitCountIn90Days: random(0,100)
+    } as CommunityTask)))
+  })
+}
+async function deleteGenManyCommunityTasks(){
+  await batchProcess(genId(),10000,async (ids)=>{
+    await  db.communityTasks.bulkDelete(ids)
+  })
+}
+const genMut=useMutation({
+  mutationFn: genManyCommunityTasks,
+  onSuccess(){alert('插入完毕')}
+})
+const isGenPending=toRef(genMut.isPending)
+
+const delGenMut=useMutation({
+  mutationFn: deleteGenManyCommunityTasks,
+  onSuccess(){alert('删除完毕')}
+})
+const isDelGenPending=toRef(delGenMut.isPending)
 </script>
 
 <template>
@@ -365,13 +405,25 @@ async function addMockData() {
       </div>
     </div>
 
+    <div>
+      <h2>batch insert for query performance test</h2>
+
+      <Button @click="genMut.mutate" :disabled="isGenPending">[{{genMut.status}}]gen a lot of Community Tasks</Button>
+      {{delGenMut.status}}
+
+      <Button @click="delGenMut.mutate" :disabled="isDelGenPending">[{{delGenMut.status}}]delete Community Tasks  generated 👆 </Button>
+      <pre v-if="genMut.error">{{genMut.error}}</pre>
+      <pre v-if="delGenMut.error">{{delGenMut.error}}</pre>
+
+    </div>
+
 
   </div>
 
   <div class="c-block">
     <h1> data select/purge</h1>
     <div class="flex flex-row flex-wrap gap-4">
-      <Button @click="logCidUndefined">log cid is undefined</Button>
+      <Button @click="logCidUndefined" >log cid is undefined</Button>
       <Button @click="findDuplicateHid().then(rs=>console.log(rs))">log duplicate hids</Button>
 
 

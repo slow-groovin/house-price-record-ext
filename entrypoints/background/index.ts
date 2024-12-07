@@ -1,3 +1,4 @@
+import "webext-bridge/background";
 import {onMessage} from "webext-bridge/background"
 import {clearRules, updateRules} from "@/entrypoints/reuse/block";
 import {db} from "@/utils/client/Dexie";

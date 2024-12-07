@@ -83,8 +83,6 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 			showedOnSellCount=Number(extractNumber(document.querySelector('.agentCardDetailItem:nth-child(2)>.agentCardDetailInfo')?.textContent));
 			showedDoneCountIn90Days=Number(extractNumber(document.querySelector('.agentCardDetailItem:nth-child(3)>a')?.textContent));
 			showedVisitCountIn90Days=Number(extractNumber(document.querySelector('.agentCardDetailItem:nth-child(4)>.agentCardDetailInfo')?.textContent));
-
-
 		})
 		.catch((error) => {
 			//do nothing

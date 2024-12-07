@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //
-import {CommunityTask, HouseChange, HouseStatusChange, HouseTask} from "@/types/lj";
+import {HouseChange, HouseStatusChange, HouseTask} from "@/types/lj";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {onMounted, ref, watch} from "vue";
 import TimelineItem from "@/components/TimelineItem.vue";
@@ -8,28 +8,19 @@ import PriceChangeBudget from "@/components/lj/house/PriceChangeBudget.vue";
 import {scrollToId} from "@/utils/document";
 import StatusChangeBudget from "@/components/lj/house/StatusChangeBudget.vue";
 import {formatDistanceToNowHoursOrDays} from "@/utils/date";
-
-// type CrossKey=Extract<keyof HouseTask,keyof CommunityTask>
-type CrossKey = "lastRunningAt" | "name" | "id" | "cid" | "status" | "accessRecord" | "createdAt" | 'markAccess'
-type HouseChangeWithDetail = HouseChange &
-  Omit<HouseTask, CrossKey> &
-  Omit<CommunityTask, CrossKey> &
-  {
-    houseName?: string,
-    communityName?: string
-  } &
-  {
-    [other: string]: any
-  }
+import {cn} from "@/utils/shadcn-utils";
+import {db} from "@/utils/client/Dexie";
 
 
 /*
 ref definition
  */
-const {data, rowCount,type} = defineProps<{
+const {data, rowCount,isShowDetail,type,class:classNames} = defineProps<{
   data: (HouseChange|HouseStatusChange)[],
   rowCount: number,
+  isShowDetail?:boolean,
   type: 'price'|'status',
+  class?: string,
 }>()
 /*
 ref definition DONE
@@ -62,66 +53,68 @@ updatePagination()
 /*
 data
  */
-const dataWithDetail = ref<HouseChangeWithDetail[]>([])
+const hMap = ref<Record<string, HouseTask>>({})
 
-// async function queryDetailData() {
-//   const results: HouseChangeWithDetail[] = []
-//   //changes
-//   const changes = data
-//
-//
-//   //houses info
-//   const houseQueryCache = new QueryCache<HouseTask>()
-//   const communityQueryCache = new QueryCache<CommunityTask>()
-//   for (let i = 0; i < changes.length; i++) {
-//     const change = changes[i]
-//     const house = await houseQueryCache.getData('hid:' + change.hid, async () => {
-//       return db.houseTasks.where('hid').equals(change.hid).first();
-//     })
-//     const community = await communityQueryCache.getData('cid:' + change.cid, async () => {
-//       return db.communityTasks.where('cid').equals(change.cid).first()
-//     })
-//
-//     results.push({
-//       ...house,
-//       ...community,
-//       ...change,
-//       houseName: house?.name,
-//       communityName: community?.name,
-//     } as HouseChangeWithDetail)
-//   }
-//
-//   //communities info
-//   dataWithDetail.value = results
-// }
+
+async function queryDetailData() {
+  console.log('[HouseChangesTimeLine.vue] queryDetailData()')
+  //changes hid cid
+  const hidList = Array.from(new Set(data.map(c=>c.hid)))
+  const houseTasks= await db.houseTasks.where('hid').anyOf(hidList).toArray()
+  houseTasks.forEach(h=>hMap.value[h.hid]=h)
+}
+function clearDetailData(){
+  hMap.value={}
+}
 
 /*
 data END
  */
 
 onMounted(() => {
-
+  if(isShowDetail){
+    queryDetailData()
+  }
   watch(() => data, () => {
-    console.log('data changed.',type)
-    // queryDetailData()
+    console.log('[HouseChangesTimeLine.vue]data changed.')
+    if(isShowDetail){
+      queryDetailData()
+    }else{
+      clearDetailData()
+    }
+  })
+  watch(() => isShowDetail, () => {
+    if(!isShowDetail) return
+    console.log('[HouseChangesTimeLine.vue]isShowDetail change to TRUE.','hMap::length',Object.values(hMap.value).length)
+
+    if(Object.keys(hMap.value).length===0){
+      queryDetailData()
+    }
   })
 })
+console.log("[HouseChangesTimeLine.vue] init.")
 
 
 </script>
 
 <template>
-  <div class="flex flex-col items-start justify-start" id="change-timeline">
-    <TimelineItem v-for="(change,index) in data" :key="index" class="w-[34rem] h-[6rem]" :spacing="100" :color="'bg-green-300'">
-      <div class="grid grid-rows-2  gap-2  w-full h-fit">
-        <div class="row-start-1 row-end-2  ">
-          ({{ formatDistanceToNowHoursOrDays(change.at) }})   {{ new Date(change.at).toLocaleString() }}
+  <div id="change-timeline" :class="cn('flex flex-col flex-wrap  items-start justify-start ',classNames)">
+    <TimelineItem v-for="(change,index) in data" :key="change.id" class="max-w-full" :spacing="80" :color="'bg-green-300'">
+      <div class="flex flex-col  gap-2  mb-6 overflow-x-hidden  ">
+        <div class="flex flex-row gap-2 ">
+          <div class="text-nowrap">
+            ({{ formatDistanceToNowHoursOrDays(change.at) }})   {{ new Date(change.at).toLocaleString() }}
+          </div>
+
           <a :href="'/options.html#/h/task/detail?id='+change.hid" target="_blank" class="text-green-500 underline cursor-pointer">{{ change.hid }}</a>
+          <div v-if="isShowDetail" class="text-nowrap overflow-hidden overflow-ellipsis" :title="hMap[change.hid]?.name">
+            {{hMap[change.hid]?.name}} {{hMap[change.hid]?.area}}㎡
+          </div>
+
         </div>
-        <div class="row-start-2 row-end-3 ">
+        <div class="h-fit">
           <PriceChangeBudget v-if="type==='price'" :old-value="change.oldValue" :new-value="change.newValue" unit="万元"/>
           <StatusChangeBudget v-if="type==='status'" :old-value="change.oldValue" :new-value="change.newValue"/>
-
         </div>
       </div>
     </TimelineItem>

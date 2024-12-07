@@ -19,6 +19,9 @@ export function isLoginPage(url?: string){
 	return url.includes('com/login')
 }
 
+export function isCommunityHomePage(url?:string){
+	return url?.includes('lianjia.com/xiaoqu/')
+}
 export function isCommunityListPage(url?: string) {
 	if (!url) return false
 	return /ershoufang\/(pg\d+)?(co\d+)?c\d+\//.test(url)

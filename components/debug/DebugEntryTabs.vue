@@ -15,6 +15,7 @@ import {useLocalStorage, useTitle} from "@vueuse/core";
 import UncategorizedDebugFunctions from "@/components/debug/UncategorizedDebugFunctions.vue";
 import NetRuleTest from "@/components/debug/NetRuleTest.vue";
 import VueSonnerToast from "@/components/debug/VueSonnerToast.vue";
+import MessageTest from "@/components/debug/MessageTest.vue";
 
 
 /**
@@ -40,7 +41,7 @@ function toggleRules(payload:boolean){
 const title=useTitle()
 
 const components = [UncategorizedDebugFunctions,TabsManage,NetRuleTest, DexieIndexedDB, UnovisSamples, WxtStorage,
-  CalendarGraphSample,CommunityDebug,FakeDataInsert,TanstackTable,VueSonnerToast
+  CalendarGraphSample,CommunityDebug,FakeDataInsert,TanstackTable,VueSonnerToast, MessageTest
 ]
 </script>
 

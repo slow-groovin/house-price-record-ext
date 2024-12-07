@@ -12,6 +12,9 @@ import HouseTaskTableQueryDock from "@/entrypoints/options/components/HouseTaskT
 import {HouseTaskQueryCondition, SortState} from "@/types/query-condition";
 import {ArgCache} from "@/utils/lib/ArgCache";
 import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
+import {Collection, InsertType, WhereClause} from "dexie";
+import {isNumber} from "radash";
+import {toast} from "vue-sonner";
 
 /*
 ref definition
@@ -40,20 +43,54 @@ async function queryData(_pageIndex?:number,_pageSize?:number) {
   const {field,order}=sortCondition.value
   const filters:((task:HouseTask)=>boolean)[]=[]
 
-  let query
-  if(!order){
-    query=db.houseTasks.toCollection()
-  }else{
-    query=db.houseTasks.orderBy(field!)
+  let whereKey=''
+
+
+
+
+  let query:Collection<HouseTask, number | undefined, InsertType<HouseTask, "id">>
+
+
+  /**
+   * indexDB中  where只能匹配一个单索引, 所以按照优先级选用某个字段匹配
+   * 如果有排序, 则使用索引排序
+   * 否则, 优先使用可能范围更小的的索引
+   */
+  if(order && field){
     if(order==='desc'){
-      query=query.reverse()
+      query=db.houseTasks.orderBy(field).reverse()
     }
+    query=db.houseTasks.orderBy(field)
+  }else  if(createdAtMax || createdAtMin){
+    if(!createdAtMin && createdAtMax){
+      query=db.houseTasks.where('createdAt').belowOrEqual(new Date(createdAtMax).getTime())
+    }else if(!createdAtMax && createdAtMin){
+      query=db.houseTasks.where('createdAt').aboveOrEqual(new Date(createdAtMin).getTime())
+    }else{
+      query=db.houseTasks.where('createdAt').between(new Date(createdAtMin!).getTime(),new Date(createdAtMax!).getTime(),true,true)
+    }
+  }else if(isNumber(totalPriceMax) || isNumber(totalPriceMin)){
+    if(!isNumber(totalPriceMin)){
+      query=db.houseTasks.where('totalPrice').belowOrEqual(totalPriceMax)
+    }else if(!isNumber(totalPriceMax)){
+      query=db.houseTasks.where('totalPrice').aboveOrEqual(totalPriceMin)
+    }else{
+      query=db.houseTasks.where('totalPrice').between(totalPriceMin,totalPriceMax,true,true)
+    }
+  }else if(status){
+    query=db.houseTasks.where('status').equals(status)
+  }else if(addedType){
+    query=db.houseTasks.where('addedType').equals(addedType)
+  }else if(city){
+    query=db.houseTasks.where('city').equals(city)
+  }else{
+    query=db.houseTasks.where('id').notEqual(-1)
   }
 
 
-
-
-
+  /*
+  字段匹配, 仅使用filter. 前面where匹配的index不做额外排除(减少代码复杂)
+   */
   if(hidInclude){
     filters.push(s=>s.hid.includes(hidInclude))
   }
@@ -84,6 +121,8 @@ async function queryData(_pageIndex?:number,_pageSize?:number) {
 
 
   query=query.filter(t=>filters.every(f=>f(t)))
+
+
 
 
   rowCount.value = await query.count()

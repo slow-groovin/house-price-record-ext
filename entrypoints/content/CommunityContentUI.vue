@@ -6,7 +6,13 @@ import {Button} from "@/components/ui/button";
 import {CommunityListPageItem, CommunityModelUtil, CommunityTask} from "@/types/lj";
 import ObjectTable from "@/components/table/ObjectTable.vue";
 
-import {extractCidFromListUrl} from "@/utils/lj-url";
+import {
+  extractCidFromHomePageUrl,
+  extractCidFromListUrl,
+  isCommunityHomePage,
+  isCommunityListPage,
+  isHousePage
+} from "@/utils/lj-url";
 import {injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
 import {sendMessage} from 'webext-bridge/content-script';
 import {onMounted, ref} from "vue";
@@ -33,7 +39,10 @@ function openOption() {
 
 
 async function initParseAndQuery() {
-  const cidFromUrl = extractCidFromListUrl(window.location.href)
+  const url=window.location.href
+
+  let cidFromUrl:string|null=extractCidFromListUrl(url)
+
   if (!cidFromUrl) {
     throw new Error('cid not exist: ' + window.location.href)
   }

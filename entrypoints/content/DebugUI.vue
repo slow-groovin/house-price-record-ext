@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import DebugEntryTabs from "@/components/debug/DebugEntryTabs.vue";
+import {Toaster} from "vue-sonner";
 </script>
 
 <template>

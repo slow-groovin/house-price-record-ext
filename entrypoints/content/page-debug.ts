@@ -46,5 +46,6 @@ function onParseMessage() {
 		if(data==='parse'){
 			return  {text:document.title,url: window.location.href}
 		}
+		return "content.js:simple:response"
 	})
 }

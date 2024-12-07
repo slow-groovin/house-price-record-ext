@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog'
 import {onMessage, sendMessage} from "webext-bridge/popup";
 import ObjectTable from "@/components/table/ObjectTable.vue";
+import NewPriceChangeBudget from "@/components/lj/house/NewPriceChangeBudget.vue";
 
 
 const curTabUrl = ref('')
@@ -225,6 +226,9 @@ const reactiveA=reactive(a2)
       </ul>
 
     </div>
+
+    <NewPriceChangeBudget old-value="100" new-value="200" unit="万元"/>
+    <NewPriceChangeBudget old-value="210" new-value="200" unit="万元"/>
 
   </div>
 

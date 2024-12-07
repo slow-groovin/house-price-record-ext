@@ -1,6 +1,7 @@
+import  "webext-bridge/content-script";
 import {housePageEntry} from "@/entrypoints/content/house-page";
 import {communityListPageEntry} from "@/entrypoints/content/community-list-page";
-import {isCommunityListPage, isHousePage, isHouseSoldPage} from "@/utils/lj-url";
+import {isCommunityHomePage, isCommunityListPage, isHousePage, isHouseSoldPage} from "@/utils/lj-url";
 import '~/assets/tailwind.css'
 import '~/assets/shacn.css'
 import {pageDebugEntry} from "@/entrypoints/content/page-debug";

@@ -16,7 +16,7 @@ export function registerSimpleMessage(){
 		}
 		echo(){console.log("msg is",this.msg)}
 	}
-	onMessage('simple',({})=>{
+	onMessage('simple',async ({})=>{
 		return new A('aaa')
 	})
 }

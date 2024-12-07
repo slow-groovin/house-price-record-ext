@@ -18,7 +18,6 @@ import {
 } from '@tanstack/vue-table'
 import {db} from "@/utils/client/Dexie";
 import {CommunityTask} from "@/types/lj";
-import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {valueUpdater} from "@/utils/shadcn-utils";
 import {calcOffset, PageState} from "@/utils/table-utils";
@@ -26,8 +25,15 @@ import {h, onMounted, ref, toRaw} from "vue";
 import {useLocalStorage} from "@vueuse/core";
 import {Button} from "@/components/ui/button";
 import {toInt} from "radash";
-import {browser} from "wxt/browser";
 import {startPageEntry} from "@/entrypoints/reuse/community-control2";
+import CommunityQueryDock from "@/entrypoints/options/components/CommunityQueryDock.vue";
+import {CommunityQueryCondition, SortState} from "@/types/query-condition";
+import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
+import {ArgCache} from "@/utils/lib/ArgCache";
+import {Collection, InsertType} from "dexie";
+import {tryGreaterThanOrFalse, tryLessThanOrFalse} from "@/utils/operator";
+import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
+import LoadingOverlay from "@/components/LoadingOverlay.vue";
 
 
 /*
@@ -37,6 +43,12 @@ const sorting = ref<SortingState>([])
 const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = useLocalStorage<VisibilityState>('community-list-column-visibility', {})
 const rowSelection = ref<RowSelectionState>({})
+
+const queryCondition = ref<CommunityQueryCondition>({})
+const sortCondition = ref<SortState<CommunityTask>>({})
+
+const queryCost = ref(0)
+const isPending = ref(false)
 
 /*
 ref definition DONE
@@ -51,7 +63,7 @@ const pagination = ref<PageState>({
   pageSize: 10,
   pageIndex: 1,
 })
-
+const argCache = new ArgCache()
 /**
  * pagination end
  */
@@ -62,14 +74,83 @@ data
 const data = ref<CommunityTask[]>([])
 const rowCount = ref(0)
 
-async function queryData() {
-  //changes
-  const tasks = await db.communityTasks.offset(calcOffset(pagination.value.pageIndex, pagination.value.pageSize)).limit(pagination.value.pageSize).toArray()
-  rowCount.value = await db.communityTasks.count()
-  //communities info
-  data.value = tasks
+async function queryData(_pageIndex?: number, _pageSize?: number) {
+  const pageIndex = argCache.retrieve('pageIndex', _pageIndex, 1)
+  const pageSize = argCache.retrieve('pageSize', _pageSize, 10)
+  const beginAt = Date.now()
+  isPending.value = true
+
+  let query: Collection<CommunityTask, number | undefined, InsertType<CommunityTask, "id">>
+
+  /**
+   * index match
+   */
+  const {
+    cidInclude, nameInclude, city, lastRunningAtMax, lastRunningAtMin, createdAtMin, createdAtMax, avgTotalPriceMax,
+    avgTotalPriceMin, avgUnitPriceMax, avgUnitPriceMin, onSellCountMin, onSellCountMax
+  } = queryCondition.value
+  const {field, order} = sortCondition.value
+
+  if (order && field) {
+    query = db.communityTasks.orderBy(field)
+  } else if (lastRunningAtMin || lastRunningAtMax) {
+    if (lastRunningAtMin && lastRunningAtMax) {
+      query = db.communityTasks.where('lastRunningAt').between(new Date(lastRunningAtMin).getTime(), new Date(lastRunningAtMax).getTime(), true, true)
+    } else if (lastRunningAtMin) {
+      query = db.communityTasks.where('lastRunningAt').aboveOrEqual(new Date(lastRunningAtMin).getTime())
+    } else {
+      query = db.communityTasks.where('lastRunningAt').belowOrEqual(new Date(lastRunningAtMax!).getTime())
+    }
+  } else if (city) {
+    query = db.communityTasks.where('city').equals(city)
+  } else {
+    query = db.communityTasks.toCollection()
+  }
 
 
+  /**
+   * filter
+   */
+  const filters: ((item: CommunityTask) => boolean)[] = []
+  if (cidInclude) filters.push(item => item.cid.includes(cidInclude))
+  if (nameInclude) filters.push(item => item.name?.includes(nameInclude) ?? false)
+  if (city) filters.push(item => item.city?.includes(city) ?? false)
+  if (lastRunningAtMax) filters.push(item => item.lastRunningAt <= new Date(lastRunningAtMax).getTime())
+  if (lastRunningAtMin) filters.push(item => item.lastRunningAt >= new Date(lastRunningAtMin).getTime())
+  if (createdAtMax) filters.push(item => item.createdAt <= new Date(createdAtMax).getTime())
+  if (createdAtMin) filters.push(item => item.createdAt >= new Date(createdAtMin).getTime())
+  if (avgTotalPriceMax) filters.push(item => tryLessThanOrFalse(item?.avgTotalPrice, avgTotalPriceMax))
+  if (avgTotalPriceMin) filters.push(item => tryGreaterThanOrFalse(item?.avgTotalPrice, avgTotalPriceMin))
+  if (avgUnitPriceMax) filters.push(item => tryLessThanOrFalse(item?.avgUnitPrice, avgUnitPriceMax))
+  if (avgUnitPriceMin) filters.push(item => tryGreaterThanOrFalse(item?.avgUnitPrice, avgUnitPriceMin))
+  if (onSellCountMax) filters.push(item => tryLessThanOrFalse(item?.onSellCount, onSellCountMax))
+  if (onSellCountMin) filters.push(item => tryGreaterThanOrFalse(item?.onSellCount, onSellCountMin))
+
+  //应用filter
+  if (filters.length) {
+    query = query.filter(item => filters.every(f => f(item)))
+  }
+
+
+  rowCount.value = await query.count()
+
+  if (order !== 'asc') {
+    query = query.reverse()
+  }
+
+  data.value = await query
+    .offset(calcOffset(pageIndex, pageSize))
+    .limit(pageSize)
+    .toArray()
+
+  queryCost.value = Date.now() - beginAt
+  isPending.value = false
+}
+
+async function onApplyQueryCondition() {
+  if (isPending.value) return
+  argCache.del('pageIndex')
+  queryData()
 }
 
 /*
@@ -114,11 +195,14 @@ const columnDef: (ColumnDef<CommunityTask> | AccessorKeyColumnDef<CommunityTask,
   } as ColumnDef<CommunityTask>,
   columnHelper.accessor('name', {}),
   columnHelper.accessor('city', {}),
+  columnHelper.accessor('onSellCount', {}),
+
+  columnHelper.accessor('avgTotalPrice', {}),
+  columnHelper.accessor('avgUnitPrice', {}),
+  // columnHelper.accessor('status', {}),
   columnHelper.accessor('runningCount', {}),
   columnHelper.accessor('visitCountIn90Days', {}),
   columnHelper.accessor('doneCountIn90Days', {}),
-  columnHelper.accessor('avgUnitPrice', {}),
-  columnHelper.accessor('status', {}),
   columnHelper.accessor('createdAt', {
     cell: ({cell}) => new Date(cell.getValue()).toLocaleString()
   }),
@@ -178,8 +262,7 @@ let options: TableOptions<CommunityTask> = {
 
   onPaginationChange: updaterOrValue => {
     valueUpdater(updaterOrValue, pagination)
-    console.log(toRaw(pagination.value))
-    queryData()
+    queryData(pagination.value.pageIndex, pagination.value.pageSize)
 
   }
 }
@@ -193,20 +276,41 @@ onMounted(() => {
   queryData()
 })
 
-async function beginCrawlCommunities(){
-  const communityList= Object.keys(rowSelection.value).map(s=>toInt(s)).map(i=>toRaw(data.value[i]))
+async function beginCrawlCommunities() {
+  const communityList = Object.keys(rowSelection.value).map(s => toInt(s)).map(i => toRaw(data.value[i]))
   startPageEntry(communityList)
 }
 
 </script>
 
 <template>
-  <h1>Community tasks</h1>
-  <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility"/>
-  <div>{{Object.keys( rowSelection)}}</div>
-  <div>
-    <Button @click="beginCrawlCommunities()">beginCrawls()</Button>
+  <h1 class="text-3xl font-extrabold text-center my-4">小区任务</h1>
+
+  <div class="relative flex  flex-col p-2 rounded border">
+    <h2 class="text-2xl font-bold">查询条件</h2>
+    <LoadingOverlay v-if="isPending"/>
+    <CommunityQueryDock v-model="queryCondition" @update="onApplyQueryCondition"/>
   </div>
+
+  <div class="relative mb-5 rounded p-2 border">
+    排序:
+    <HouseTaskSortDock v-model="sortCondition" :fields="['lastRunningAt','createdAt']" @update="onApplyQueryCondition"/>
+    <LoadingOverlay v-if="isPending" disable-anim/>
+  </div>
+
+
+  <div class="relative flex items-center p-1 my-2 gap-4">
+    <div> 共 {{ rowCount }} 条</div>
+    <div> 查询耗时: {{ queryCost / 1000 }} 秒</div>
+    <Button @click="beginCrawlCommunities()">beginCrawls()</Button>
+    <div> {{ queryCondition }}</div>
+    <div>{{ Object.keys(rowSelection) }}</div>
+
+    <LoadingOverlay v-if="isPending" disable-anim/>
+  </div>
+
+  <ColumnVisibleOption :columns="table.getAllColumns()"/>
+
   <Table>
     <TableHeader>
       <TableRow v-for="headerGroup in table.getHeaderGroups()">
@@ -229,11 +333,16 @@ async function beginCrawlCommunities(){
     </TableBody>
   </Table>
 
-  <PaginationComponent
-    :set-page-index="table.setPageIndex"
-    :set-page-size="table.setPageSize"
-    :pagination="pagination"
-    :row-count="rowCount"/>
+
+  <div class="relative">
+    <PaginationComponent
+      :set-page-index="table.setPageIndex"
+      :set-page-size="table.setPageSize"
+      :pagination="pagination"
+      :row-count="rowCount"/>
+    <LoadingOverlay v-if="isPending" disable-anim/>
+
+  </div>
 
 
 </template>

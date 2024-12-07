@@ -87,8 +87,8 @@ function openOption() {
     <ToastComponent :message="toastMsg" :type="toastType" :position-type="'block'" :key="toastKey"/>
 
     <Bubble v-on:mouseenter.once="isFocus=true" class="">
-      <!--      <div v-if="houseTask" class="flex flex-col">-->
-      <div class="flex flex-col">
+      <div v-if="houseTask" class="flex flex-col">
+        <!--      <div class="flex flex-col">-->
         <span>
           任务已存在 <a @click="openOption" class="text-green-500 underline cursor-auto">查看</a>
         </span>
@@ -99,15 +99,20 @@ function openOption() {
         </Button>
 
       </div>
-      <!--      <div v-else>-->
-      <div class="flex flex-col">
-        <div>尚未创建任务</div>
+      <div v-else class="flex flex-col">
+        <div class="flex">
+          尚未创建任务
+          <button @click="refresh">
+            <Icon icon="material-symbols-light:refresh"/>
+          </button>
+        </div>
         <Button @click="createTsk">
           创建任务
         </Button>
       </div>
 
-      <div v-if="isFocus && houseTask" class="border rounded p-1">
+
+      <div v-if=" houseTask" class="border rounded p-1">
         <div>创建时间: {{ new Date(houseTask.createdAt).toLocaleString() }}</div>
         <div>上次运行时间: {{ new Date(houseTask.lastRunningAt).toLocaleString() }}</div>
       </div>

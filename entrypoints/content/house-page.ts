@@ -1,6 +1,6 @@
 import {ContentScriptContext} from "wxt/client";
 import {random} from "radash";
-import {onMessage} from "webext-bridge/content-script";
+import {onMessage, sendMessage} from "webext-bridge/content-script";
 import {housePageElementsDisguise, injectCoverModal, injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
 import {houseContentUIMount} from "@/entrypoints/content/house-content-ui";
 import {parseHousePage} from "@/entrypoints/content/house-dom-parse";
@@ -16,6 +16,7 @@ export function housePageEntry(ctx: ContentScriptContext) {
 	onParseHouseMessage()
 	onForTestUseMessage()
 	houseContentUIMount(ctx).then(()=>console.log("[content.js]house content ui mount."))
+
 }
 
 function onParseHouseMessage() {
