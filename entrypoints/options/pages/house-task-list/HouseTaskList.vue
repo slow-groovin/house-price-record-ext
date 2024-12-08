@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {db} from "@/utils/client/Dexie";
-import {HouseTask} from "@/types/lj";
+import {HouseTask, HouseTaskStatus} from "@/types/lj";
 import {calcOffset} from "@/utils/table-utils";
 import HouseTasksTable from "@/entrypoints/options/components/HouseTasksTable.vue";
 import {onMounted, ref} from "vue";
@@ -15,6 +15,7 @@ import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDoc
 import {Collection, InsertType, WhereClause} from "dexie";
 import {isNumber} from "radash";
 import {toast} from "vue-sonner";
+import {useRoute} from "vue-router";
 
 /*
 ref definition
@@ -29,6 +30,10 @@ const queryCondition=ref<HouseTaskQueryCondition>({})
 const sortFields:(keyof HouseTask)[]=['id','createdAt','totalPrice','lastRunningAt']
 const sortCondition=ref<SortState<HouseTask>>({})
 
+const {query:{cid,name}}=useRoute()
+if(cid && name){
+  queryCondition.value={cidEqual:cid as string}
+}
 /*
 ref definition DONE
  */
@@ -39,7 +44,7 @@ data
 async function queryData(_pageIndex?:number,_pageSize?:number) {
   const beginAt=Date.now()
 
-  const {addedType,cidInclude,city,createdAtMax,createdAtMin,hidInclude,status,totalPriceMax,totalPriceMin}=queryCondition.value
+  const {addedType,cidInclude,cidEqual,city,createdAtMax,createdAtMin,hidInclude,status,totalPriceMax,totalPriceMin}=queryCondition.value
   const {field,order}=sortCondition.value
   const filters:((task:HouseTask)=>boolean)[]=[]
 
@@ -57,10 +62,12 @@ async function queryData(_pageIndex?:number,_pageSize?:number) {
    * 否则, 优先使用可能范围更小的的索引
    */
   if(order && field){
-    if(order==='desc'){
-      query=db.houseTasks.orderBy(field).reverse()
-    }
     query=db.houseTasks.orderBy(field)
+    if(order!=='desc'){
+      query=query.reverse()
+    }
+  }else if(cidEqual){
+    query=db.houseTasks.where('cid').equals(cidEqual)
   }else  if(createdAtMax || createdAtMin){
     if(!createdAtMin && createdAtMax){
       query=db.houseTasks.where('createdAt').belowOrEqual(new Date(createdAtMax).getTime())
@@ -79,8 +86,6 @@ async function queryData(_pageIndex?:number,_pageSize?:number) {
     }
   }else if(status){
     query=db.houseTasks.where('status').equals(status)
-  }else if(addedType){
-    query=db.houseTasks.where('addedType').equals(addedType)
   }else if(city){
     query=db.houseTasks.where('city').equals(city)
   }else{
@@ -100,9 +105,6 @@ async function queryData(_pageIndex?:number,_pageSize?:number) {
   if(city){
     filters.push(s=>s.city.includes(city))
   }
-  if(status){
-    filters.push(s=>s.status===status)
-  }
   if(addedType){
     filters.push(s=>s.addedType===addedType)
   }
@@ -118,14 +120,18 @@ async function queryData(_pageIndex?:number,_pageSize?:number) {
   if(createdAtMax){
     filters.push(s=>s.createdAt<=new Date(createdAtMax).getTime())
   }
-
-
+  if(cidEqual){
+    query=query.filter(s=>s.cid===cidEqual)
+  }if(status){
+    filters.push(s=>s.status===status)
+  }
   query=query.filter(t=>filters.every(f=>f(t)))
 
 
 
 
   rowCount.value = await query.count()
+
 
   const pageIndex=queryCache.retrieve('pageIndex',_pageIndex,1)
   const pageSize=queryCache.retrieve('pageSize',_pageSize,10)
@@ -187,7 +193,7 @@ onMounted(()=>{
 
 
   <div class="flex">
-    {{queryCondition}}
+    {{queryCondition}} {{sortCondition}}
     <div>共 {{rowCount}} 个</div>
     <div>查询耗时:  {{queryCost/1000}} 秒</div>
   </div>

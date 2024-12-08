@@ -24,6 +24,7 @@ const columns = computed(() => props.columns
   ))
 
 const allColumnsVisible = computed(() => columns.value.every(column => column.getIsVisible()))
+const hideCount = computed(() => columns.value.reduce((acc, column) => acc + (column.getIsVisible() ? 0 : 1), 0))
 
 function toggleAllVisible(inputEvent:Event){
   columns.value.forEach(column => column.toggleVisibility((inputEvent.target as unknown as HTMLInputElement).checked))
@@ -36,10 +37,10 @@ function toggleAllVisible(inputEvent:Event){
       <Button
         variant="outline"
         size="sm"
-        :class="cn('ml-auto hidden h-8  lg:flex', props.class)"
+        :class="cn('h-8 px-2 gap-0', props.class)"
       >
         <Icon icon="radix-icons:mixer-vertical" class="w-4 h-4 " />
-        表头
+        列选项 <span v-show="hideCount">({{hideCount}}列隐藏)</span>
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" class="ml-auto max-w-[150px] min-w-fit px-0">

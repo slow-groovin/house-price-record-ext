@@ -29,13 +29,18 @@
     </div>
 
     <div class="flex flex-col">
-      <label class="text-sm mb-2">cid</label>
+      <label class="text-sm mb-2">小区ID</label>
       <input
         type="text"
         v-model.lazy="queryCondition.cidInclude"
         class="px-3 py-2 rounded border focus:outline-none focus:ring-2"
         placeholder="请输入关键词"
       />
+    </div>
+
+    <div class="flex flex-col">
+      <label class="text-sm mb-2">小区</label>
+      <CommunityQueryBox v-model="communityQueryValue"/>
     </div>
 
     <!-- 数值范围输入区块 -->
@@ -112,12 +117,14 @@
 </template>
 
 <script setup lang="ts">
-import type {HTMLAttributes} from 'vue'
+import {HTMLAttributes, ref, watch} from 'vue'
 import {cn} from "@/utils/shadcn-utils"
 import {HouseTaskQueryCondition} from "@/types/query-condition";
 import {Label} from '@/components/ui/label'
 import {HouseTaskStatus, TaskAddedType} from "@/types/lj";
 import SelectButton from "@/components/custom/SelectButton.vue";
+import CommunityQueryDock from "@/entrypoints/options/components/CommunityQueryDock.vue";
+import CommunityQueryBox from "@/components/lj/community/CommunityQueryBox.vue";
 
 const NumSelectButton=SelectButton<number>
 
@@ -134,6 +141,12 @@ const props = withDefaults(defineProps<Props>(), {
 // 双向绑定模型
 const queryCondition = defineModel<HouseTaskQueryCondition>({
   default: () => ({})
+})
+
+//子组件model
+const communityQueryValue=ref<{cid:string,name:string}|null>()
+watch(communityQueryValue,(newValue)=>{
+  queryCondition.value.cidEqual=newValue?.cid
 })
 
 // 定义更新事件

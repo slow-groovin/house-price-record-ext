@@ -144,13 +144,13 @@ console.log('CalendarGraph render.')
               {{ getMonthDesc(new Date(year, month.monthIndex, 1)) }}
             </div>
 
-            <div class="flex flex-row gap-x-0.5">
+            <div class="flex flex-row gap-x-1">
               <div
                   v-for="(item,index) in month.data"
                   @mouseenter="showTooltip($event, year+' '+(month.monthIndex+1)+'/'+(1+index))"
                   @mouseleave="hideTooltip()"
                   :class="cn(
-            'h-6 w-1.5 rounded hover:border border-neutral-700',
+            'h-6 w-6 rounded hover:border border-neutral-700',
             item ? 'bg-green-500' : 'bg-gray-300'
             )"/>
             </div>

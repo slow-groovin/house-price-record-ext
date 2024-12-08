@@ -16,12 +16,12 @@ import BackToTopBtn from "@/components/float/BackToTopBtn.vue";
 
     <div class="border-t">
       <div class="bg-background">
-        <div class="grid grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
+        <div class="flex">
 <!--          侧边栏位置-->
-          <SidebarNav  class="col-span-1 sticky top-0 h-fit" />
+          <SidebarNav  class=" sticky top-0 h-fit " />
 
 <!--          内容位置-->
-          <div class="col-span-3 lg:col-span-4 xl:col-span-5 2xl:col-span-6 ">
+          <div class="">
             <router-view/>
           </div>
         </div>

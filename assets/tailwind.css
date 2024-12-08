@@ -21,4 +21,9 @@
 		@apply border rounded
 	}
 
+	a.link{
+		@apply text-green-500 underline cursor-pointer hover:no-underline
+	}
+
+
 }

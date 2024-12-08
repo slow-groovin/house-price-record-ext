@@ -1,5 +1,5 @@
 <template>
-  <div :class="cn('flex overflow-auto ', props.class)">
+  <div :class="cn('flex  ', props.class)">
 
     <div v-if="position==='right'" class="self-center">
       <Icon v-if="!isOpen" @click="open" icon="lets-icons:expand-left-light"
@@ -8,7 +8,7 @@
       </Icon>
     </div>
 
-    <div :class="{'w-0 overflow-hidden':!isOpen}" >
+    <div :class="isOpen?'':'w-0 overflow-hidden'" >
       <slot name="default"></slot>
     </div>
 

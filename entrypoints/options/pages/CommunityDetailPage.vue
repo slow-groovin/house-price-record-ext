@@ -161,17 +161,20 @@ onMounted(() => {
     </div>
 
 
-    <div class=" w-fit">
-      <h2>历史运行记录</h2>
-      <CalendarGraph v-if="task" :access-record="AccessRecord.fromAccessRecord(task?.accessRecord)"/>
-    </div>
-
     <!-- graph -->
     <!-- house list -->
-    <div class="" id="houses-nav">
+    <div class="" id="houses-nav" v-if="task?.cid && task?.name">
       <h2>house list</h2>
-      <HouseTasksTable :data="houseTasks" :row-count="houseTasksCount" @on-pagination-change="queryHouseTasks"/>
+
+      <a :href="`/options.html#/h/task/list?cid=${task.cid}&name=${task.name}`" target="_blank" class="link" >去查看</a>
     </div>
+
+    <div class=" w-fit">
+      <h2>历史运行记录</h2>
+      <CalendarGraph v-if="task?.accessRecord" :access-record="AccessRecord.fromAccessRecord(task?.accessRecord)"/>
+    </div>
+
+
 
 
 

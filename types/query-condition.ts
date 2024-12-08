@@ -3,6 +3,7 @@ import {HouseTaskStatus} from "@/types/lj";
 export type HouseTaskQueryCondition={
 	hidInclude?:string,
 	cidInclude?:string,
+	cidEqual?:string,
 	status?:HouseTaskStatus,
 	city?:string,
 	createdAtMin?:string,

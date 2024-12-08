@@ -31,7 +31,7 @@ db.version(102).stores({
 	houseCommonFieldChanges: '++id, hid, cid, at, name',
 	houseTasks: '++id, &hid, cid, city, status, createdAt,totalPrice,unitPrice, lastRunningAt,autoRecord',
 	houseStatusChanges: '++id, hid, cid, at, newValue,oldValue',
-	communityTasks: '++id, &cid, city, status, createdAt, lastRunningAt',
+	communityTasks: '++id, &cid, city, status,name, createdAt, lastRunningAt',
 	communityRecords: '++id, cid, city, at',
 	tempBatchHouse: '++id',
 	tempBatchCommunity: "++id",

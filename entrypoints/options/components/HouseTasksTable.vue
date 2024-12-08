@@ -2,7 +2,6 @@
 //
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {
-  AccessorKeyColumnDef,
   ColumnDef,
   ColumnFiltersState,
   createColumnHelper,
@@ -16,16 +15,19 @@ import {
   useVueTable,
   VisibilityState,
 } from '@tanstack/vue-table'
-import {HouseTask} from "@/types/lj";
-import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
+import {CommunityTask, HouseTask, HouseTaskStatus} from "@/types/lj";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
-import {valueUpdater} from "@/utils/shadcn-utils";
-import {h, onMounted, ref, watch} from "vue";
+import {cn, valueUpdater} from "@/utils/shadcn-utils";
+import {onMounted, ref, watch} from "vue";
 import {useLocalStorage} from "@vueuse/core";
 import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
-import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
-
-
+import {db} from "@/utils/client/Dexie";
+import {Icon} from '@iconify/vue'
+import {genHousePageUrl} from "@/utils/lj-url";
+import RealAreaDesc from "@/entrypoints/options/components/description/RealAreaDesc.vue";
+import {formatDistanceToNowHoursOrDays} from "@/utils/date";
+import {HStatusColor} from "@/entrypoints/reuse/enum-corespond";
+import StatusDesc from "@/entrypoints/options/components/description/StatusDesc.vue";
 /*
 ref definition
  */
@@ -37,6 +39,9 @@ const {data, rowCount} = defineProps<{
   data: HouseTask[],
   rowCount: number
 }>()
+const relatedCommunity = ref(new Map<string, CommunityTask>())
+
+
 /*
 ref definition DONE
  */
@@ -63,14 +68,14 @@ emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize
 column BEGIN
  */
 const columnHelper = createColumnHelper<HouseTask>()
-const columnDef: (ColumnDef<HouseTask> | AccessorKeyColumnDef<HouseTask, any>)[] = [
+const columnDef: (ColumnDef<HouseTask>)[] = [
   {
     id: 'select',
     header: ({table}: { table: any }) => {
       return (
         <input type="checkbox"
-          checked={table.getIsAllRowsSelected()}
-          onChange={table.getToggleAllRowsSelectedHandler()}
+               checked={table.getIsAllRowsSelected()}
+               onChange={table.getToggleAllRowsSelectedHandler()}
         ></input>
       )
     },
@@ -78,46 +83,138 @@ const columnDef: (ColumnDef<HouseTask> | AccessorKeyColumnDef<HouseTask, any>)[]
       return (
         <div class="px-1">
           <input type="checkbox"
-            checked={row.getIsSelected()}
-            disabled={!row.getCanSelect()}
-            onChange={row.getToggleSelectedHandler()}
+                 checked={row.getIsSelected()}
+                 disabled={!row.getCanSelect()}
+                 onChange={row.getToggleSelectedHandler()}
           ></input>
         </div>
       )
     },
   },
-  columnHelper.accessor('id', {}),
 
   {
     accessorKey: 'cid',
-    id: 'cid',
-    header: 'cid header',
-    cell: ({cell}) => h('a', {href: '#/c/task/detail?id=' + cell.getValue()}, cell.getValue() as string)
+    id: '小区',
+    header: '小区',
+    cell: ({cell}) =>
+      <div class="text-xs">
+        <div class="flex">
+          <a href={"#/c/task/detail?id=" + cell.getValue()} class="link " target="_blank">
+            <div>{cell.getValue()}</div>
+          </a> &nbsp;&nbsp;&nbsp;
+        </div>
+        <div>{relatedCommunity.value.get(cell.getValue() as string)?.name}</div>
+      </div>
+
+    // h('a', {href: '#/c/task/detail?id=' + cell.getValue()}, cell.getValue() as string)
   } as ColumnDef<HouseTask>,
-  columnHelper.accessor('hid', {
-    header: 'id',
-    cell: ({cell}) => h('a', {
-      'class': 'text-green-500',
-      'href': '#/h/task/detail?id=' + cell.getValue()
-    }, cell.getValue())
-  }) as ColumnDef<HouseTask>,
-  columnHelper.accessor('name', {}),
-  columnHelper.accessor('area', {}),
-  columnHelper.accessor('realArea', {}),
-  columnHelper.accessor('unitPrice', {}),
-  columnHelper.accessor('realUnitPrice', {}),
-  columnHelper.accessor('totalPrice', {}),
-  columnHelper.accessor('createdAt', {
-    cell: ({cell}) => new Date(cell.getValue()).toLocaleString()
-  }),
+  {
+    accessorKey: 'name',
+    header: '名称',
+    id: '名称',
+    accessorFn(originalRow: HouseTask, index: number) {
+      return {name: originalRow.name, hid: originalRow.hid, city: originalRow.city};
+    },
+    cell: ({cell}) => {
+      const {name, hid, city} = cell.getValue() as { name?: string, hid?: string, city?: string }
+      return <div class="text-xs">
+        <a href={"#/h/task/detail?id=" + hid} class="link" target="_blank">{hid}</a>
+        <div class="text-nowrap flex flex-nowrap">
+          {name}
+          <a class="inline-block link text-base hover:bg-gray-200" href={genHousePageUrl(city!, hid!)} target="_blank"
+             rel="noreferrer">
+            <Icon icon="tdesign:jump"/>
+          </a>
+        </div>
+      </div>
+    }
+  },
+  {
+    accessorKey: 'area', header: '建筑面积', id: '建筑面积',
+    cell: ({cell}) => cell.getValue() + "㎡"
+  },
+  {
+    accessorKey: 'realArea', id: '计算面积',
+    header: () => {
+      return <div class="flex items-center">计算面积<RealAreaDesc/></div>
+    },
+    cell: ({cell, row}) => {
+      const realArea = cell.getValue() as number
+      if (!realArea) return '-'
+      const area = Number(row.getValue('建筑面积'))
+      return <div>
+        {cell.getValue()}㎡ ({(realArea * 100 / area).toFixed(0)}%)
+      </div>
+    }
+  },
+  {
+    accessorKey: "totalPrice",
+    header: '总价',
+    id: '总价',
+    cell: ({cell}) => cell.getValue() ? <div class="text-green-500 font-bold">{cell.getValue()}万</div> : '-'
+  },
+  {
+    accessorKey: "unitPrice", header: '单价(元/㎡)', id: '单价',
+    cell: ({cell}) => cell.getValue() ? <div class=" ">{cell.getValue()}</div> : '-'
+  },
+  {
+    accessorKey: "realUnitPrice",
+    header: '计算面积单价',
+    id: '计算面积单价',
+    cell: ({cell}) => cell.getValue() ? <div class=" ">{cell.getValue()}</div> : '-'
 
-  columnHelper.accessor('lastRunningAt', {
-    cell: ({cell}) => new Date(cell.getValue()).toLocaleString()
-  }),
+  },
+  {
+    accessorKey: "createdAt",
+    header: '任务创建',
+    id: '任务创建',
+    cell: ({cell}) => {
+      if(!cell.getValue()) return '-'
+      return <div class="text-xs text-neutral-600">
+        <div class=" text-blue-400">{formatDistanceToNowHoursOrDays(cell.getValue())}</div>
+        <div>{new Date(cell.getValue() as string).toLocaleString()}</div>
+      </div>
+    }
+  },
 
-  columnHelper.accessor('buildingType', {}),
-  columnHelper.accessor('roomSubType', {}),
-  columnHelper.accessor('roomType', {}),
+  {
+    accessorKey: "lastRunningAt",
+    header: '最后更新',
+    id: '最后更新',
+    cell: ({cell}) => {
+      if(!cell.getValue()) return '-'
+      return <div class="text-xs">
+        <div class=" text-green-400">{formatDistanceToNowHoursOrDays(cell.getValue())}</div>
+        <div>{new Date(cell.getValue() as string).toLocaleString()}</div>
+      </div>
+    }
+  },
+  {
+    accessorKey:'onSellDate',header:'上架时间',id:'上架时间',cell:({cell})=>cell.getValue()?new Date(cell.getValue() as string).toLocaleDateString():'-'
+  },
+  {
+    accessorKey:'soldDate',header:'售出时间',id:'售出时间',cell:({cell})=>cell.getValue()
+  },
+  {
+    accessorKey:'buildingType',header:'楼型',id:'楼型',cell:({cell})=>cell.getValue()
+  },
+  {
+    accessorKey:'roomType',header:'房间',id:'房间',cell:({cell})=>cell.getValue()
+  },
+  {
+    accessorKey:'roomSubType',header:'楼层',id:'楼层',cell:({cell})=>cell.getValue()
+  },
+
+  {
+    accessorKey:'orientation',header:'朝向',id:'朝向',cell:({cell})=>cell.getValue()
+  },
+  {
+    accessorKey:'yearBuilt',header:'建造时间',id:'建造时间',cell:({cell})=>cell.getValue()
+  },
+
+
+
+
 ]
 /*
 column END
@@ -186,7 +283,13 @@ onMounted(() => {
   watch(() => rowCount, () => {
     console.log('rowCount changed.')
     options.rowCount = rowCount
-
+  })
+  watch(() => data, () => {
+    //query related community
+    const cidList = data.map(t => t.cid)
+    db.communityTasks.where('cid').anyOf(cidList).toArray().then(list => {
+      relatedCommunity.value = new Map(list.map(t => [t.cid, t]))
+    })
   })
 })
 
@@ -194,9 +297,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <ColumnVisibleOption :columns="table.getAllColumns()"/>
-  <Table>
-    <TableHeader>
+  <div class="flex gap-2">
+    <StatusDesc/>
+    <ColumnVisibleOption :columns="table.getAllColumns()"/>
+  </div>
+  <Table class="w-fit overflow-scroll text-nowrap">
+    <TableHeader class="border-l-8">
       <TableRow v-for="headerGroup in table.getHeaderGroups()">
         <TableHead v-for="header in headerGroup.headers">
           <FlexRender
@@ -209,9 +315,10 @@ onMounted(() => {
 
     </TableHeader>
     <TableBody>
-      <TableRow v-for="row in table.getRowModel().rows">
+      <TableRow v-for="(row,index) in table.getRowModel().rows" class="border-l-8 rounded-l-2xl"
+                :class="cn('hover:bg-'+HStatusColor[data[index].status]+'/20','border-l-'+HStatusColor[data[index].status],)">
         <TableCell v-for="cell in row.getVisibleCells()">
-          <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()"/>
+          <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
         </TableCell>
       </TableRow>
     </TableBody>
