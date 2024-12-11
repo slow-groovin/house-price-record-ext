@@ -19,6 +19,7 @@ import {
 import {onMessage, sendMessage} from "webext-bridge/popup";
 import ObjectTable from "@/components/table/ObjectTable.vue";
 import NewPriceChangeBudget from "@/components/lj/house/NewPriceChangeBudget.vue";
+import {Checkbox} from "@/components/ui/checkbox";
 
 
 const curTabUrl = ref('')
@@ -129,6 +130,10 @@ const a2=new A('reactive(a2)',0,'')
 const refA=ref(a1)
 const reactiveA=reactive(a2)
 
+/**
+ * checkbox test
+ */
+const checkboxTest=ref(true)
 </script>
 
 <template>
@@ -230,6 +235,10 @@ const reactiveA=reactive(a2)
     <NewPriceChangeBudget old-value="100" new-value="200" unit="万元"/>
     <NewPriceChangeBudget old-value="210" new-value="200" unit="万元"/>
 
+  </div>
+
+  <div>
+    <Checkbox v-model:checked="checkboxTest"></Checkbox>checkboxTest:{{checkboxTest}}
   </div>
 
 </template>

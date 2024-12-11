@@ -13,7 +13,8 @@ import {useToastControl} from "@/components/float/useToastControl";
 
 
 const isFocus = ref(false)
-
+const isTaskAutoRun=ref(false)
+const isTaskAutoRunDone=ref(false)
 const houseItem = ref<HouseItem>()
 const houseTask = ref<HouseTask>()
 
@@ -26,17 +27,12 @@ async function refresh() {
       console.warn('has more than one tasks: ', queryResult.map(t => t.id))
     }
     houseTask.value = queryResult[0]
-    console.log('query house task, hid:', houseTask.value.name)
   }
 }
 
 const {toast, toastType, toastMsg, toastKey} = useToastControl()
 
 
-onMounted(async () => {
-  console.log("[HouseContentUI.vue] mounted.")
-  await refresh()
-})
 
 
 async function updateTaskInPage() {
@@ -54,7 +50,7 @@ async function updateTaskInPage() {
     toast.error('更新失败, 发生错误:' + (e as Error)?.message)
     console.error(e)
   }
-  toast.success('成功!')
+  toast.success('运行成功!')
 }
 
 async function createTsk() {
@@ -80,6 +76,28 @@ function openOption() {
   sendMessage('openOptionPage', '/options.html#/h/task/detail?id=' + houseItem.value?.hid, 'background')
 }
 
+function openAutoSetting() {
+  sendMessage('openOptionPage', '/options.html#/settings', 'background')
+}
+
+async function getIsTaskAutoRun(){
+  isTaskAutoRun.value=!!(await sendMessage('getStorageLocal','autoRunHouseTask','background'))
+
+  if(isTaskAutoRun.value){
+    setTimeout(()=>{
+      updateTaskInPage().then(()=>{
+        isTaskAutoRunDone.value=true
+      })
+    },5000)
+  }
+}
+
+onMounted(async () => {
+  console.log("[HouseContentUI.vue] mounted.")
+  await getIsTaskAutoRun()
+  await refresh()
+})
+
 </script>
 
 <template>
@@ -87,10 +105,24 @@ function openOption() {
     <ToastComponent :message="toastMsg" :type="toastType" :position-type="'block'" :key="toastKey"/>
 
     <Bubble v-on:mouseenter.once="isFocus=true" class="">
+
       <div v-if="houseTask" class="flex flex-col">
+        <div class="border rounded mt-2 p-2">
+          <div v-if="isTaskAutoRun && !isTaskAutoRunDone" class="flex ">
+            <Icon icon="eos-icons:bubble-loading" class="text-primary w-6 h-6"/>
+            开始自动运行任务
+          </div>
+          <div v-else-if="isTaskAutoRun && isTaskAutoRunDone" class="flex ">
+            <a class="link " @click="openAutoSetting">自动</a>运行完毕, 任务已更新
+            <Icon icon="icon-park-outline:success" class="inline-block w-6 h-6 text-green-500"/>
+          </div>
+        </div>
+
+
+
         <!--      <div class="flex flex-col">-->
         <span>
-          任务已存在 <a @click="openOption" class="text-green-500 underline cursor-auto">查看</a>
+          任务已存在 <a @click="openOption" class="text-green-500 underline cursor-auto">去查看</a>
         </span>
 
         <Button variant="default" @click="updateTaskInPage">
@@ -116,7 +148,6 @@ function openOption() {
         <div>创建时间: {{ new Date(houseTask.createdAt).toLocaleString() }}</div>
         <div>上次运行时间: {{ new Date(houseTask.lastRunningAt).toLocaleString() }}</div>
       </div>
-      <Button @click="toast.error('test')">test</Button>
 
     </Bubble>
   </div>

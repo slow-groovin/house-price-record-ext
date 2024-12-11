@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {isHousePage} from "@/utils/lj-url";
 import HouseTaskPanel from "@/entrypoints/sidepanel/pages/HouseTaskPanel.vue";
-import DebugEntryTabs from "@/components/debug/DebugEntryTabs.vue";
+
 import {onMounted, onUnmounted, ref} from "vue";
 import {browser, Tabs} from "wxt/browser";
 import TabChangeInfo = chrome.tabs.TabChangeInfo;
@@ -89,7 +89,7 @@ onMounted(() => {
   </div>
   <details  :open="initialOpenDebugPanel"  @toggle="(v)=>{defaultOpenDebugPanel=v.newState==='open'}">
     <summary>debug panel</summary>
-    <DebugEntryTabs/>
+    <a href="/sidepanel.html#/debug"/>
 
   </details>
 

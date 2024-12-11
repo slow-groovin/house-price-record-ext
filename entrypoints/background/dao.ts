@@ -3,7 +3,7 @@ import {db} from "@/utils/client/Dexie";
 import {HouseNormal} from "@/types/LjUpdatePreview";
 import {HouseTask, HouseTaskStatus} from "@/types/lj";
 import {updateOneNormal} from "@/entrypoints/reuse/house-update";
-import {sendMessage} from "webext-bridge/popup";
+import {storage} from "wxt/storage";
 
 export function registerDaoMessage(){
 	onMessage('queryCommunityTask', async (msg)=>{
@@ -28,7 +28,9 @@ export function registerDaoMessage(){
 	onMessage('queryHouseTask', async (msg)=>{
 		console.log('queryHouseTask',msg.data)
 		const hid=msg.data.hid
-		return db.houseTasks.where('hid').equals(hid).toArray();
+		const rs= await db.houseTasks.where('hid').equals(hid).toArray();
+		console.log('queryHouseTask::result:',rs)
+		return rs
 	})
 	console.log('[registerDaoMessage]','queryHouseTask')
 
@@ -73,6 +75,15 @@ export function registerDaoMessage(){
 
 	})
 }
+
+export function registerBrowserStorageLocalMessage(){
+	onMessage('getStorageLocal', async (msg)=>{
+		const key=msg.data
+		return await storage.getItem(`local:${key}`)
+	})
+	console.log('[registerBrowserStorageLocalMessage]','getStorageLocal')
+}
+
 export async function isHouseTaskExist(hid:string){
 	return await db.houseTasks.where('hid').equals(hid).count()>0
 }

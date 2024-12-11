@@ -21,7 +21,7 @@ import BackToTopBtn from "@/components/float/BackToTopBtn.vue";
           <SidebarNav  class=" sticky top-0 h-fit " />
 
 <!--          内容位置-->
-          <div class="">
+          <div class="overflow-auto">
             <router-view/>
           </div>
         </div>

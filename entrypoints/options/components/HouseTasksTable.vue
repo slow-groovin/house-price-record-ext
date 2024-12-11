@@ -15,7 +15,7 @@ import {
   useVueTable,
   VisibilityState,
 } from '@tanstack/vue-table'
-import {CommunityTask, HouseTask, HouseTaskStatus} from "@/types/lj";
+import {CommunityTask, HouseChange, HouseTask} from "@/types/lj";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {cn, valueUpdater} from "@/utils/shadcn-utils";
 import {onMounted, ref, watch} from "vue";
@@ -28,6 +28,20 @@ import RealAreaDesc from "@/entrypoints/options/components/description/RealAreaD
 import {formatDistanceToNowHoursOrDays} from "@/utils/date";
 import {HStatusColor} from "@/entrypoints/reuse/enum-corespond";
 import StatusDesc from "@/entrypoints/options/components/description/StatusDesc.vue";
+import {boil, group} from "radash";
+import TotalPriceItem from "@/entrypoints/options/components/TotalPriceItem.vue";
+import SelectButton from "@/components/custom/SelectButton.vue";
+import {tryMax, tryMin} from "@/utils/variable";
+import {tryGreaterThanOrFalse, tryLessThanOrFalse} from "@/utils/operator";
+
+
+type RelatedData = {
+  priceInit?: number,
+  priceMax?: { value: number, at?: number },
+  priceMin?: { value: number, at?: number },
+  priceChangeCount?: number,
+  priceLastChange?: { value: number, at: number }
+}
 /*
 ref definition
  */
@@ -40,8 +54,8 @@ const {data, rowCount} = defineProps<{
   rowCount: number
 }>()
 const relatedCommunity = ref(new Map<string, CommunityTask>())
-
-
+const relatedData = ref(new Map<string, RelatedData>())
+const priceRelatedShowType = ref<undefined | 'last' | 'max' | 'min' | 'init' | 'count'>()
 /*
 ref definition DONE
  */
@@ -151,7 +165,10 @@ const columnDef: (ColumnDef<HouseTask>)[] = [
     accessorKey: "totalPrice",
     header: '总价',
     id: '总价',
-    cell: ({cell}) => cell.getValue() ? <div class="text-green-500 font-bold">{cell.getValue()}万</div> : '-'
+    cell: ({cell, row}) => <TotalPriceItem hid={row.original.hid}
+                                           price={cell.getValue() as number}
+                                           relatedData={relatedData.value.get(row.original.hid)}
+                                           relatedType={priceRelatedShowType.value}/>
   },
   {
     accessorKey: "unitPrice", header: '单价(元/㎡)', id: '单价',
@@ -169,7 +186,7 @@ const columnDef: (ColumnDef<HouseTask>)[] = [
     header: '任务创建',
     id: '任务创建',
     cell: ({cell}) => {
-      if(!cell.getValue()) return '-'
+      if (!cell.getValue()) return '-'
       return <div class="text-xs text-neutral-600">
         <div class=" text-blue-400">{formatDistanceToNowHoursOrDays(cell.getValue())}</div>
         <div>{new Date(cell.getValue() as string).toLocaleString()}</div>
@@ -182,7 +199,7 @@ const columnDef: (ColumnDef<HouseTask>)[] = [
     header: '最后更新',
     id: '最后更新',
     cell: ({cell}) => {
-      if(!cell.getValue()) return '-'
+      if (!cell.getValue()) return '-'
       return <div class="text-xs">
         <div class=" text-green-400">{formatDistanceToNowHoursOrDays(cell.getValue())}</div>
         <div>{new Date(cell.getValue() as string).toLocaleString()}</div>
@@ -190,29 +207,30 @@ const columnDef: (ColumnDef<HouseTask>)[] = [
     }
   },
   {
-    accessorKey:'onSellDate',header:'上架时间',id:'上架时间',cell:({cell})=>cell.getValue()?new Date(cell.getValue() as string).toLocaleDateString():'-'
+    accessorKey: 'onSellDate',
+    header: '上架时间',
+    id: '上架时间',
+    cell: ({cell}) => cell.getValue() ? new Date(cell.getValue() as string).toLocaleDateString() : '-'
   },
   {
-    accessorKey:'soldDate',header:'售出时间',id:'售出时间',cell:({cell})=>cell.getValue()
+    accessorKey: 'soldDate', header: '售出时间', id: '售出时间', cell: ({cell}) => cell.getValue()
   },
   {
-    accessorKey:'buildingType',header:'楼型',id:'楼型',cell:({cell})=>cell.getValue()
+    accessorKey: 'buildingType', header: '楼型', id: '楼型', cell: ({cell}) => cell.getValue()
   },
   {
-    accessorKey:'roomType',header:'房间',id:'房间',cell:({cell})=>cell.getValue()
+    accessorKey: 'roomType', header: '房间', id: '房间', cell: ({cell}) => cell.getValue()
   },
   {
-    accessorKey:'roomSubType',header:'楼层',id:'楼层',cell:({cell})=>cell.getValue()
+    accessorKey: 'roomSubType', header: '楼层', id: '楼层', cell: ({cell}) => cell.getValue()
   },
 
   {
-    accessorKey:'orientation',header:'朝向',id:'朝向',cell:({cell})=>cell.getValue()
+    accessorKey: 'orientation', header: '朝向', id: '朝向', cell: ({cell}) => cell.getValue()
   },
   {
-    accessorKey:'yearBuilt',header:'建造时间',id:'建造时间',cell:({cell})=>cell.getValue()
+    accessorKey: 'yearBuilt', header: '建造时间', id: '建造时间', cell: ({cell}) => cell.getValue()
   },
-
-
 
 
 ]
@@ -273,9 +291,60 @@ let options: TableOptions<HouseTask> = {
   }
 }
 const table = useVueTable(options)
+
 /*
 table END
  */
+
+/**
+ * 查询每一项相关数据
+ */
+async function queryRelatedData() {
+  //query related community
+  const cidList = data.map(t => t.cid)
+  db.communityTasks.where('cid').anyOf(cidList).toArray().then(list => {
+    relatedCommunity.value = new Map(list.map(t => [t.cid, t]))
+  })
+  //query and calc changes
+  const hidList = data.map(t => t.hid)
+
+  const changes = await db.houseChanges.where('hid').anyOf(hidList).sortBy('hid')
+  const changesGroup = group(changes, t => t.hid)
+  for (let changesGroupKey in changesGroup) {
+    const changes = changesGroup[changesGroupKey]
+    if (changes && changes?.length > 0 && changesGroup[changesGroupKey]) {
+      relatedData.value.set(changesGroupKey, getRelatedDataFromChanges(changesGroup[changesGroupKey]))
+    }
+  }
+}
+
+/**
+ * 从changes记录中计算价格相关数据
+ */
+function getRelatedDataFromChanges(changes: HouseChange[]) {
+  const sortedChanges = changes.sort((a, b) => a.at - b.at)
+  const lastChange = sortedChanges[sortedChanges.length - 1]
+  const minOldValue = boil(changes, (a, b) => (a.oldValue < b.oldValue) ? a : b)
+  const maxOldValue = boil(changes, (a, b) => (a.oldValue > b.oldValue) ? a : b)
+  const minNewValue = boil(changes, (a, b) => (a.newValue < b.newValue) ? a : b)
+  const maxNewValue = boil(changes, (a, b) => (a.newValue > b.newValue) ? a : b)
+  const minPrice=tryMin(minOldValue?.oldValue, minNewValue?.newValue)
+  const maxPrice=tryMax(maxOldValue?.oldValue, maxNewValue?.newValue)
+  const minAt=tryLessThanOrFalse(minOldValue?.oldValue, minNewValue?.newValue)?undefined:minNewValue?.at
+  const maxAt=tryGreaterThanOrFalse(maxOldValue?.oldValue, maxNewValue?.newValue)?undefined:maxNewValue?.at
+  const r: RelatedData = {
+    priceChangeCount: sortedChanges.length,
+    priceInit: sortedChanges[0].oldValue,
+    priceLastChange: {at: lastChange.at, value: lastChange.oldValue},
+  }
+  if(minPrice){
+    r.priceMin={at:minAt,value:minPrice}
+  }
+  if(maxPrice){
+    r.priceMax={at:maxAt,value:maxPrice}
+  }
+  return r
+}
 
 
 onMounted(() => {
@@ -286,10 +355,7 @@ onMounted(() => {
   })
   watch(() => data, () => {
     //query related community
-    const cidList = data.map(t => t.cid)
-    db.communityTasks.where('cid').anyOf(cidList).toArray().then(list => {
-      relatedCommunity.value = new Map(list.map(t => [t.cid, t]))
-    })
+    queryRelatedData()
   })
 })
 
@@ -297,9 +363,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex gap-2">
+  <div class="flex gap-2 items-center">
     <StatusDesc/>
     <ColumnVisibleOption :columns="table.getAllColumns()"/>
+    <div class="flex">
+      <SelectButton v-model="priceRelatedShowType" value="count" can-cancel>调价次数</SelectButton>
+      <SelectButton v-model="priceRelatedShowType" value="last" can-cancel>最近调价</SelectButton>
+      <SelectButton v-model="priceRelatedShowType" value="max" can-cancel>最高价</SelectButton>
+      <SelectButton v-model="priceRelatedShowType" value="min" can-cancel>最低价</SelectButton>
+      <SelectButton v-model="priceRelatedShowType" value="init" can-cancel>初始价格</SelectButton>
+    </div>
   </div>
   <Table class="w-fit overflow-scroll text-nowrap">
     <TableHeader class="border-l-8">
@@ -318,7 +391,7 @@ onMounted(() => {
       <TableRow v-for="(row,index) in table.getRowModel().rows" class="border-l-8 rounded-l-2xl"
                 :class="cn('hover:bg-'+HStatusColor[data[index].status]+'/20','border-l-'+HStatusColor[data[index].status],)">
         <TableCell v-for="cell in row.getVisibleCells()">
-          <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+          <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()"/>
         </TableCell>
       </TableRow>
     </TableBody>

@@ -1,7 +1,13 @@
 <script setup lang="ts">
 
-import DebugEntryTabs from "@/components/debug/DebugEntryTabs.vue";
 import {Toaster} from "vue-sonner";
+import {Component, defineAsyncComponent} from "vue";
+// import DebugEntryTabs from "@/components/debug/DebugEntryTabs.vue";
+let DebugEntryTabs:Component;
+
+if (import.meta.env.MODE === 'development') {
+  DebugEntryTabs = defineAsyncComponent(() => import('@/components/debug/DebugEntryTabs.vue'));
+}
 </script>
 
 <template>

@@ -1,8 +1,6 @@
 import {ContentScriptContext, createShadowRootUi} from "wxt/client";
 import {onMessage} from "webext-bridge/content-script";
 import {createApp} from "vue";
-import HouseContentUI from "@/entrypoints/content/HouseContentUI.vue";
-import DebugEntryTabs from "@/components/debug/DebugEntryTabs.vue";
 import DebugUI from "@/entrypoints/content/DebugUI.vue";
 
 export function pageDebugEntry(ctx: ContentScriptContext) {

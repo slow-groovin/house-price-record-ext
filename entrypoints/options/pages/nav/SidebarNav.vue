@@ -43,7 +43,7 @@ const menuGroups = ref<MenuGroup[]>([
   {
     name: '⚙设置',
     menus: [
-      {name: '自动化', link: '/#'},
+      {name: '设置', link: '/settings'},
       {name: '参数', link: '/#'},
       {name: '导入/导出', link: '/#'},
     ]

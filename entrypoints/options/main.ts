@@ -16,6 +16,7 @@ import { VueQueryPlugin } from '@tanstack/vue-query'
 import CommunityUpdatePreview from "@/entrypoints/options/pages/CommunityUpdatePreview.vue";
 import HouseStatusChangeList from "@/entrypoints/options/pages/house-changes-list/HouseStatusChangeList.vue";
 import CommunityRecordPage from "@/entrypoints/options/pages/CommunityRecordPage.vue";
+import SettingsPage from "@/entrypoints/options/pages/SettingsPage.vue";
 
 
 const router=createRouter({
@@ -31,6 +32,7 @@ const router=createRouter({
 					component: HomePage,
 				},
 				{path:'/debug',component:OptionDebugEntry},
+				{path:'/settings',component:SettingsPage},
 				{path:'/h/task/list',component:HouseTaskList},
 				{path:'/h/task/change',component:HouseChangeList},
 				{path:'/h/task/status/change',component:HouseStatusChangeList},

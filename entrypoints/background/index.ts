@@ -3,7 +3,7 @@ import {onMessage} from "webext-bridge/background"
 import {clearRules, updateRules} from "@/entrypoints/reuse/block";
 import {db} from "@/utils/client/Dexie";
 import {registerSimpleMessage} from "@/entrypoints/background/message";
-import {registerDaoMessage} from "@/entrypoints/background/dao";
+import {registerBrowserStorageLocalMessage, registerDaoMessage} from "@/entrypoints/background/dao";
 import {defineBackground} from "wxt/sandbox";
 import {browser} from "wxt/browser";
 
@@ -45,6 +45,7 @@ export default defineBackground(() => {
 		return browser.tabs.create({url:msg.data})
 	})
 	registerDaoMessage()
+	registerBrowserStorageLocalMessage()
 	registerSimpleMessage()
 
 });

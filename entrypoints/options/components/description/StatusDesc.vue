@@ -11,7 +11,7 @@ const statusList: HouseTaskStatus[] = [
 </script>
 
 <template>
-  <div class="flex gap-4">
+  <div class="flex gap-4   ">
     <div v-for="status in statusList" :key="status" class="flex items-center">
       <HoverCard :open-delay="10" :close-delay="10">
         <HoverCardTrigger class="text-inherit   no-underline">

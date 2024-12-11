@@ -1,5 +1,6 @@
 import { defineConfig } from 'wxt';
 import vueJsx from '@vitejs/plugin-vue-jsx'
+import customStrToUtf8 from "./scripts/vite-plugin-to-utf8";
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   extensionApi: 'chrome',
@@ -38,7 +39,6 @@ export default defineConfig({
 			// 'activeTab',
 			"webRequest",
 			"webNavigation",
-			"webRequestBlocking"
 		],
 		// action:{},
 
@@ -46,6 +46,16 @@ export default defineConfig({
 
 	// @ts-ignore
 	vite: (configEnv)=>({
-		plugins: [vueJsx()],
+		plugins: [
+			customStrToUtf8(),
+			vueJsx()
+		],
+		build: {
+			rollupOptions: {
+				external:(id)=>{
+					return configEnv.mode==='production' && id.includes('components/debug/data')
+				}
+			},
+		},
 	})
 });

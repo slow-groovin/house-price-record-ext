@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import {Button} from "@/components/ui/button";
-import DebugEntryTabs from "@/components/debug/DebugEntryTabs.vue";
+import {Component, defineAsyncComponent} from "vue";
+import {browser} from "wxt/browser";
+// import DebugEntryTabs from "@/components/debug/DebugEntryTabs.vue";
+let DebugEntryTabs:Component;
 
-function openSidePanel() {
-  browser.windows.getCurrent({}, (window) => {
-    console.log("Current Window ID:", window.id);
-    if (window.id)
-      browser.sidePanel.open({windowId: window.id})
-  });
+if (import.meta.env.MODE === 'development') {
+  DebugEntryTabs = defineAsyncComponent(() => import('@/components/debug/DebugEntryTabs.vue'));
+}
+
+async function openSidePanel() {
+  const window = await browser.windows.getCurrent({})
+  console.log("Current Window ID:", window.id);
+  if (window.id)
+    browser.sidePanel.open({windowId: window.id})
 }
 
 </script>

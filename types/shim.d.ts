@@ -8,6 +8,7 @@ declare module "webext-bridge" {
 		houseItem: ProtocolWithReturn<HouseItem,{resp:string}>,
 		parseHouse: ProtocolWithReturn<{},HouseItem>,
 		parseHouseSold: ProtocolWithReturn<{},{price:number,soldDate?:string}>,
+
 		simple: ProtocolWithReturn<string,any>
 		debug: ProtocolWithReturn<string,any>
 		// to specify the return type of the message,
@@ -15,6 +16,7 @@ declare module "webext-bridge" {
 		bar: ProtocolWithReturn<{}, {}>;
 
 		openOptionPage: ProtocolWithReturn<string, any>
+		getStorageLocal: ProtocolWithReturn<string, any>
 
 		/**
 		 *  contentUI -> background to manual run one task

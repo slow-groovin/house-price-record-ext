@@ -21,7 +21,7 @@ import {CommunityTask} from "@/types/lj";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {valueUpdater} from "@/utils/shadcn-utils";
 import {calcOffset, PageState} from "@/utils/table-utils";
-import {h, onMounted, ref, toRaw} from "vue";
+import {computed, h, onMounted, ref, toRaw} from "vue";
 import {useLocalStorage} from "@vueuse/core";
 import {Button} from "@/components/ui/button";
 import {toInt} from "radash";
@@ -34,6 +34,7 @@ import {Collection, InsertType} from "dexie";
 import {tryGreaterThanOrFalse, tryLessThanOrFalse} from "@/utils/operator";
 import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
+import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
 
 
 /*
@@ -49,6 +50,9 @@ const sortCondition = ref<SortState<CommunityTask>>({})
 
 const queryCost = ref(0)
 const isPending = ref(false)
+
+const selectionCount = computed(() => Object.keys(rowSelection.value).length)
+
 
 /*
 ref definition DONE
@@ -272,14 +276,22 @@ table END
  */
 
 
-onMounted(() => {
-  queryData()
-})
 
 async function beginCrawlCommunities() {
   const communityList = Object.keys(rowSelection.value).map(s => toInt(s)).map(i => toRaw(data.value[i]))
   startPageEntry(communityList)
 }
+async function deleteSelectedTasks(){
+  const ids = Object.keys(rowSelection.value).map(s => Number(s)).map(index => data.value[index].id)
+  await db.communityTasks.bulkDelete(ids)
+  alert(`删除成功!${ids.length}个任务`)
+  rowSelection.value={}
+  data.value=data.value.filter(item=>!ids.includes(item.id))
+}
+
+onMounted(() => {
+  queryData()
+})
 
 </script>
 
@@ -299,14 +311,37 @@ async function beginCrawlCommunities() {
   </div>
 
 
+
   <div class="relative flex items-center p-1 my-2 gap-4">
-    <div> 共 {{ rowCount }} 条</div>
-    <div> 查询耗时: {{ queryCost / 1000 }} 秒</div>
-    <Button @click="beginCrawlCommunities()">beginCrawls()</Button>
-    <div> {{ queryCondition }}</div>
-    <div>{{ Object.keys(rowSelection) }}</div>
+    <div> 共 <span class="text-primary">{{ rowCount }}</span> 条</div>
+    <div> 查询耗时: <span class="text-primary">{{ queryCost / 1000 }}</span> 秒</div>
+    <div v-if="selectionCount">选中 <span class="text-primary">{{ selectionCount }}</span> 条</div>
+    <ConfirmDialog @confirm="beginCrawlCommunities()">
+      <template #trigger>
+        <Button class="p-1 h-fit">运行任务(选中)</Button>
+      </template>
+      开始运行 {{ selectionCount }} 个任务?
+    </ConfirmDialog>
+
+    <ConfirmDialog @confirm="deleteSelectedTasks">
+      <template #trigger>
+        <Button variant="destructive" class="p-1 h-fit">删除(选中)</Button>
+      </template>
+      <span class="text-red-700 font-bold">
+        确认要删除选中的 {{ selectionCount }} 个任务吗?
+      </span>
+    </ConfirmDialog>
+
 
     <LoadingOverlay v-if="isPending" disable-anim/>
+  </div>
+
+
+  <div class="flex">
+    <h1 class="p-1 m-1 border rounded">DEBUG:</h1>
+    <div> {{ queryCondition }}</div>
+    <div> {{sortCondition}} </div>
+
   </div>
 
   <ColumnVisibleOption :columns="table.getAllColumns()"/>

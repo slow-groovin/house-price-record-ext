@@ -94,3 +94,16 @@ function getMostCommonValue(values: (any | null)[]) {
 
 	return mostCommonValue;
 }
+
+export function tryMin(...nums: (number|undefined)[]):number|undefined{
+	return nums.reduce((acc,cur)=>{
+		if(isNullOrUndefined(acc)||isNullOrUndefined(cur)) return undefined
+		return Math.min(acc,cur)
+	})
+}
+export function tryMax(...nums: (number|undefined)[]):number|undefined{
+	return nums.reduce((acc,cur)=>{
+		if(isNullOrUndefined(acc)||isNullOrUndefined(cur)) return undefined
+		return Math.max(acc,cur)
+	})
+}
