@@ -16,6 +16,7 @@ import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import {CommunityUpdatePreview} from "@/types/LjUpdatePreview";
 import {CommunityTask} from "@/types/lj";
 import {browser} from "wxt/browser";
+import {removeRepeat} from "@/utils/array";
 
 
 const {query: {id}} = useRoute()
@@ -73,6 +74,9 @@ function* jobIter(): IterableIterator<Job> {
   for (let community of communityList.value as CommunityTask[]) {
     yield {
       promiseGetter: () => oneCommunityEntry(community).then(rs => {
+        //idList去重
+        rs.houseList=removeRepeat(rs.houseList, item=>item.hid)
+
         preview.records.push(rs)
       }),
       context: {

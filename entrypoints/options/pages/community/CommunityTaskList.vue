@@ -35,6 +35,16 @@ import {tryGreaterThanOrFalse, tryLessThanOrFalse} from "@/utils/operator";
 import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader, DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
 
 
 /*
@@ -47,6 +57,7 @@ const rowSelection = ref<RowSelectionState>({})
 
 const queryCondition = ref<CommunityQueryCondition>({})
 const sortCondition = ref<SortState<CommunityTask>>({})
+const groupForAdd=ref<{groupId:number,name:string}>()
 
 const queryCost = ref(0)
 const isPending = ref(false)
@@ -289,6 +300,12 @@ async function deleteSelectedTasks(){
   data.value=data.value.filter(item=>!ids.includes(item.id))
 }
 
+async function addToGroup(){
+  if(!groupForAdd.value) return
+  const group=await db.houseTaskGroups.get(groupForAdd.value.groupId)
+  group.idList=new Set<string>([...group.idList,...Object.keys(rowSelection.value)])
+  await db.houseTaskGroups.update(groupForAdd.value.groupId,group)
+}
 onMounted(() => {
   queryData()
 })
@@ -332,6 +349,34 @@ onMounted(() => {
       </span>
     </ConfirmDialog>
 
+    <Dialog>
+      <DialogTrigger as-child>
+        <Button class="p-1 h-fit">添加到分组(选中)</Button>
+      </DialogTrigger>
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>加入分组</DialogTitle>
+          <DialogDescription>
+            <a href="/options.html#/h/group/" class="link">去创建分组</a>
+          </DialogDescription>
+        </DialogHeader>
+
+        <TaskGroupQueryBox v-model="groupForAdd"/>
+
+        <DialogFooter class="sm:justify-start">
+          <DialogClose as-child>
+            <Button type="button" variant="default" @click="addToGroup()">
+              添加
+            </Button>
+          </DialogClose>
+          <DialogClose as-child>
+            <Button type="button" variant="destructive">
+              取消
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     <LoadingOverlay v-if="isPending" disable-anim/>
   </div>

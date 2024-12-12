@@ -23,6 +23,7 @@ import {extractAndRemove, extractElements, randArray} from "@/utils/array";
 import {ref, toRef} from "vue";
 import {batchProcess} from "@/utils/batch";
 import {useMutation} from "@tanstack/vue-query";
+import {TaskGroup} from "@/types/group";
 
 const houseData = () => houseTaskJson.map(item => {
   return {
@@ -305,6 +306,19 @@ async function genSingleCommunityAll() {
     }
     records.push(record)
 
+    //随机生成多条不变动记录
+    if (random(0, 10) < 3) {
+      record.priceDownList=[]
+      record.priceUpList=[]
+      record.removedItem=[]
+      record.addedItem=[]
+      for (let i = 0; i < random(1, 5); i++) {
+        at = at + random(1, 72) * 60 * 60 * 1000 //随机1~72小时
+        record.at=at
+        records.push({...record})
+      }
+    }
+
     at = at + random(1, 4) * 7 * 24 * 60 * 60 * 1000 //随机1~4周
     if(at > lastAt && once){ //最后一次, 用最新的时间
       at=lastAt-1
@@ -370,6 +384,30 @@ const delGenMut=useMutation({
   onSuccess(){alert('删除完毕')}
 })
 const isDelGenPending=toRef(delGenMut.isPending)
+
+
+const GROUP_START=100
+async function  genGroups(){
+  const groupList: TaskGroup[] = []
+  for (let i = 0; i < 100; i++) {
+    groupList.push({
+      id: i+GROUP_START,
+      name: "group_"+i,
+      idList: list(2500,2500+random(0,30)).map(i=>'gen_c_'+i),
+      createdAt: Date.now()-random(0,99999999),
+      lastRunningAt: Date.now()-random(0,19999999),
+      notification: false,
+      notifyInterval: 24
+    })
+  }
+  await db.communityTaskGroups.bulkAdd(groupList)
+  alert('gen c groups suc')
+}
+async function delGroups(){
+  await db.communityTaskGroups.where('id').between(GROUP_START,GROUP_START+100).delete()
+  await db.communityTasks.where('id').between(GROUP_START,GROUP_START+100).delete()
+  alert('del c groups suc')
+}
 </script>
 
 <template>
@@ -421,12 +459,17 @@ const isDelGenPending=toRef(delGenMut.isPending)
   </div>
 
   <div class="c-block">
+    <h1>group data</h1>
+    <Button @click="genGroups">gen tasks groups</Button>
+    <Button @click="delGroups">del tasks groups</Button>
+
+  </div>
+
+  <div class="c-block">
     <h1> data select/purge</h1>
     <div class="flex flex-row flex-wrap gap-4">
       <Button @click="logCidUndefined" >log cid is undefined</Button>
       <Button @click="findDuplicateHid().then(rs=>console.log(rs))">log duplicate hids</Button>
-
-
     </div>
   </div>
 </template>

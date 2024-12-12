@@ -21,7 +21,7 @@ const {price,relatedData} =defineProps<{
   <div class="font-bold text-green-500 italic">
     {{price}}万
   </div>
-  <a class="flex text-xs font-semibold italic ml-1 hover:underline">
+  <div class="flex text-xs font-semibold italic ml-1 hover:underline">
     <div v-if="relatedType==='init' && relatedData?.priceInit" class="text-blue-600">
       ({{relatedData?.priceInit}}万)
     </div>
@@ -38,7 +38,7 @@ const {price,relatedData} =defineProps<{
       ({{relatedData?.priceLastChange?.value}}万@{{formatDistanceToNowHoursOrDays(relatedData?.priceLastChange?.at)?.replace(' ','')}})
     </div>
 
-  </a>
+  </div>
 </a>
 </template>
 

@@ -32,6 +32,9 @@
       </div>
       <h3 class="text-sm font-light italic">确认无误后, 点击下方按钮开始存入浏览器数据库</h3>
       <h3 class="text-sm font-light italic">可以点击按钮, 手动标记删除有误记录</h3>
+      <h3 class="text-sm font-light italic">记录会以周为单位进行存储</h3>
+<!--      todo: hoverInfo介绍周为单位存储的原理-->
+
       <h3 class="text-sm font-light italic"></h3>
     </div>
     <h2 v-else class="text-xl font-semibold">已更新</h2>
@@ -52,6 +55,7 @@
 
 
     <div v-if="!isUpdateDone">
+<!--      todo stick 浮动-->
       <Button @click="mutate" :disabled="status!=='idle'">
         <div v-if="status==='pending'"
           class="w-4 h-4 rounded-full animate-spin  border-2 border-t-transparent border-green-500"></div>
@@ -121,7 +125,10 @@ async function doUpdate() {
     at: data.value.at,
     records: data.value.records.filter((_, index) => !listDelete.value[index]).map(r=>toRaw(r))
   }
+
   console.log(previewData)
+
+
   await updateBatchCommunityWithPreview(previewData)
   isUpdateDone.value = true
   // 滚动到页面顶部

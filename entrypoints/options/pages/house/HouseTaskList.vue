@@ -15,7 +15,19 @@ import {Collection, InsertType} from "dexie";
 import {isNumber} from "radash";
 import {useRoute} from "vue-router";
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
-
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
+import {toast} from "vue-sonner";
+import {sendMessage} from "webext-bridge/options";
 /*
 ref definition
  */
@@ -26,13 +38,23 @@ const rowSelection = ref<RowSelectionState>({})
 const queryCache = new ArgCache()
 const queryCost = ref(0)
 const queryCondition = ref<HouseTaskQueryCondition>({})
+
 const sortFields: (keyof HouseTask)[] = ['id', 'createdAt', 'totalPrice', 'lastRunningAt']
+
 const sortCondition = ref<SortState<HouseTask>>({})
 const selectionCount = computed(() => Object.keys(rowSelection.value).length)
 
-const {query: {cid, name}} = useRoute()
+const groupForAdd = ref<{ groupId: number, name: string }>()
+
+const queryScopeLabel=ref('')
+const {query: {cid, name, groupId, type}} = useRoute()
 if (cid && name) {
   queryCondition.value = {cidEqual: cid as string}
+  queryScopeLabel.value='小区:'+name
+}
+if (groupId && name) {
+  queryCondition.value = {groupId: Number(groupId)}
+  queryScopeLabel.value='分组:'+name
 }
 /*
 ref definition DONE
@@ -54,15 +76,20 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
     hidInclude,
     status,
     totalPriceMax,
-    totalPriceMin
+    totalPriceMin,
+    groupId
   } = queryCondition.value
   const {field, order} = sortCondition.value
   const filters: ((task: HouseTask) => boolean)[] = []
 
-  let whereKey = ''
-
+  let groupIdList:string[]=[]
+  if(groupId){
+    const group=await db.houseTaskGroups.get(groupId)
+    groupIdList=group?.idList??[]
+  }
 
   let query: Collection<HouseTask, number | undefined, InsertType<HouseTask, "id">>
+
 
 
   /**
@@ -70,7 +97,7 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
    * 如果有排序, 则使用索引排序
    * 否则, 优先使用可能范围更小的的索引
    */
-  if (order && field) {
+ if (order && field) {
     query = db.houseTasks.orderBy(field)
     if (order !== 'desc') {
       query = query.reverse()
@@ -135,16 +162,22 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   if (status) {
     filters.push(s => s.status === status)
   }
-  query = query.filter(t => filters.every(f => f(t)))
-
+  if(filters.length)
+    query = query.filter(t => filters.every(f => f(t)))
 
   rowCount.value = await query.count()
+
+  //这里anyOf(...).count(...)有bug,会导致查询失效, 所以需要单独处理
+  if(groupIdList.length){
+    query=db.houseTasks.where('hid').anyOf(groupIdList).filter(t => filters.every(f => f(t)))
+    rowCount.value=await db.houseTasks.where('hid').anyOf(groupIdList).filter(t => filters.every(f => f(t))).count()
+  }
+
 
 
   const pageIndex = queryCache.retrieve('pageIndex', _pageIndex, 1)
   const pageSize = queryCache.retrieve('pageSize', _pageSize, 10)
   data.value = await query.offset(calcOffset(pageIndex, pageSize)).limit(pageSize).toArray()
-
   queryCost.value = Date.now() - beginAt
 }
 
@@ -190,14 +223,37 @@ async function deleteSelectedTasks() {
   rowSelection.value = {}
 }
 
+async function addToGroup() {
+  if (!groupForAdd.value) {
+    toast.error('请选择分组')
+    return
+  }
+  const group = await db.houseTaskGroups.get(groupForAdd.value.groupId)
+  if (!group) return
+  const before = group.idList
+  const selectedIdList = Object.keys(rowSelection.value)
+    .map(s => Number(s))
+    .map(i => data.value[i].hid)
+  group.idList = [...new Set<string>([...before, ...selectedIdList])]
+
+  await db.houseTaskGroups.update(groupForAdd.value.groupId, group)
+  toast.success('添加成功', {
+      action: {
+        label: '去查看', onClick: () => {
+          sendMessage('openOptionPage', '/options.html#/h/group/list', 'background')
+        }
+      }
+    }
+  )
+}
+
 onMounted(() => {
 })
 
 </script>
 
 <template>
-  <h1 class="text-2xl mx-2 my-4 font-bold">房源任务</h1>
-
+  <h1 class="text-2xl mx-2 my-4 font-bold">房源任务<span v-if="queryScopeLabel">({{queryScopeLabel}})</span></h1>
   <div class="border rounded-lg p-2">
     <h2 class="mb-3 mx-2">查询条件:</h2>
     <HouseTaskTableQueryDock v-model="queryCondition" @update="onUpdateQueryCondition"/>
@@ -233,6 +289,35 @@ onMounted(() => {
         确认要删除选中的 {{ selectionCount }} 个任务吗?
       </span>
     </ConfirmDialog>
+
+    <Dialog>
+      <DialogTrigger as-child>
+        <Button class="p-1 h-fit">添加到分组(选中)</Button>
+      </DialogTrigger>
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>加入分组</DialogTitle>
+          <DialogDescription>
+            <a href="/options.html#/h/group/list/" class="link">去创建分组</a>
+          </DialogDescription>
+        </DialogHeader>
+
+        <TaskGroupQueryBox v-model="groupForAdd" type="house"/>
+
+        <DialogFooter class="sm:justify-start">
+          <DialogClose as-child>
+            <Button type="button" variant="default" @click="addToGroup()">
+              添加
+            </Button>
+          </DialogClose>
+          <DialogClose as-child>
+            <Button type="button" variant="destructive">
+              取消
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
   </div>
 

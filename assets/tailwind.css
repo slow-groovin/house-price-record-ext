@@ -24,6 +24,19 @@
 	a.link{
 		@apply text-green-500 underline cursor-pointer hover:no-underline
 	}
+	a.hover-link{
+		@apply hover:text-green-500 hover:underline cursor-pointer
+	}
 
+	.list-move,
+	.list-enter-active,
+	.list-leave-active {
+		transition: all 0.5s ease;
+	}
 
+	.list-enter-from,
+	.list-leave-to {
+		opacity: 0;
+		transform: translateX(30px);
+	}
 }

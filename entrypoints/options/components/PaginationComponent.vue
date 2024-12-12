@@ -6,14 +6,32 @@ import {list} from "radash";
 import {computed} from "vue";
 
 const props=defineProps<{
+  /**
+   * 是否是0-based (默认1-based)
+   */
+  zeroBased?:boolean,
   setPageIndex: (index: number) => void
   setPageSize: (index: number) => void
   pagination: { pageIndex: number, pageSize: number },
   rowCount: number,
 }>()
-const pageSizes = [10, 20, 30, 40, 50, 100, 200]
+const pageSizePresets = [10, 20, 30, 40, 50, 100, 200]
 
 const maxPage=computed(()=>Math.ceil(props.rowCount/props.pagination.pageSize))
+/**
+ * 当前显示/逻辑计算的页码(如果是0-based,则转换为1-based)
+ */
+const pageIndex=computed(()=>toBase1PageIndex(props.pagination.pageIndex))
+
+/**
+ * 把输入的 0-based/1-based 页码转换为1-based
+ */
+const toBase1PageIndex=(page:number)=>props.zeroBased?page+1:page
+
+/**
+ * 把页面上显示的页码(1-based)转换为实际的页码(可能为0-based/1-based)
+ */
+const toRealPageIndex=(showPage:number)=>props.zeroBased?showPage-1:showPage
 /**
  * Prompt: 生成显示的页码
  *
@@ -67,28 +85,30 @@ function calcShowedPageNumbers(curPage: number, maxPage: number): (number | '...
   return result;
 }
 function gotoPage(){
-  let pageNo = Number((document.getElementById('input-pageIndex') as HTMLInputElement)?.value);
+  let pageNo = toRealPageIndex(Number((document.getElementById('input-pageIndex') as HTMLInputElement)?.value));
   console.log('goto :',pageNo)
   props.setPageIndex(pageNo)
 }
+
+
 </script>
 
 <template>
   <div>
     <div class="flex items-center gap-2">
       <div
-          v-for="page in calcShowedPageNumbers(pagination.pageIndex,maxPage)">
+          v-for="page in calcShowedPageNumbers(pageIndex,maxPage)">
         <div v-if="page==='...'">
             {{page}}
         </div>
         <button
             v-else
             class="border rounded p-1"
-            @click="() => setPageIndex(page)"
-            :disabled="page===pagination.pageIndex"
+            @click="() => setPageIndex(toRealPageIndex(page))"
+            :disabled="page===pageIndex"
             :class="{
-              'bg-blue-500': page===pagination.pageIndex,
-              'text-white': page===pagination.pageIndex,
+              'bg-blue-500': page===pageIndex,
+              'text-white': page===pageIndex,
             }"
         >
           {{ page }}
@@ -112,7 +132,7 @@ function gotoPage(){
         <option
             :key="pageSize"
             :value="pageSize"
-            v-for="pageSize in pageSizes"
+            v-for="pageSize in pageSizePresets"
         >
           Show {{ pageSize }}
         </option>

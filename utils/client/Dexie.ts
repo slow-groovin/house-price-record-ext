@@ -2,6 +2,7 @@ import Dexie, {EntityTable} from "dexie";
 import {DebugInfo, type DexieSampleItem} from "@/types/sample-models";
 import {CommonFieldChange, CommunityRecord, CommunityTask, HouseChange, HouseStatusChange, HouseTask} from "@/types/lj";
 import {CommunityUpdatePreview, HousesUpdatePreview} from "@/types/LjUpdatePreview";
+import {TaskGroup} from "@/types/group";
 
 const db = new Dexie('Database-Dexie-Sample') as Dexie & {
 	items: EntityTable<
@@ -15,6 +16,9 @@ const db = new Dexie('Database-Dexie-Sample') as Dexie & {
 	houseTasks: EntityTable<HouseTask,'id'>,
 	communityTasks: EntityTable<CommunityTask, 'id'>,
 	communityRecords: EntityTable<CommunityRecord,'id'>
+
+	communityTaskGroups: EntityTable<TaskGroup,'id'>
+	houseTaskGroups: EntityTable<TaskGroup,'id'>
 
 	tempBatchHouse: EntityTable<{id?:number,hidList:string[]},'id'> //batch house时, 通过此表options页面向sidebar页面传递hidList
 	tempBatchCommunity: EntityTable<{id?:number,communityList:CommunityTask[]},'id'>
@@ -32,6 +36,8 @@ db.version(102).stores({
 	houseTasks: '++id, &hid, cid, city, status, createdAt,totalPrice,unitPrice, lastRunningAt,autoRecord',
 	houseStatusChanges: '++id, hid, cid, at, newValue,oldValue',
 	communityTasks: '++id, &cid, city, status,name, createdAt, lastRunningAt',
+	communityTaskGroups: '++id, name, createdAt',
+	houseTaskGroups: '++id, name, createdAt',
 	communityRecords: '++id, cid, city, at',
 	tempBatchHouse: '++id',
 	tempBatchCommunity: "++id",

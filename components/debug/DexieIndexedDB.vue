@@ -4,6 +4,7 @@ import {random} from "radash";
 import {DexieSampleItem} from "@/types/sample-models";
 import {ref, toRaw} from "vue";
 import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
 
 
 const genNewItem = () => ({
@@ -18,8 +19,8 @@ const query = ref({
   id: null,
   priceMin: 10,
   priceMax: 100,
-  createdAtMin: null,
-  createdAtMax: null,
+  createdAtMin: 0,
+  createdAtMax: Infinity,
   name: ''
 });
 const items = ref<DexieSampleItem[]>([]);
@@ -36,7 +37,7 @@ const addItem = async () => {
 
 // Load all items
 const loadItems = async () => {
-  items.value = await db.items.toArray();
+  items.value = await db.items.limit(10).toArray();
 };
 
 // Delete Item
@@ -59,9 +60,10 @@ const queryItemsById = async () => {
 const queryItemsByPrice = async () => {
   if (query.value.priceMin != null && query.value.priceMax != null) {
     items.value = await db.items
-        .where('price')
-        .between(query.value.priceMin, query.value.priceMax, true, true)
-        .toArray();
+      .where('price')
+      .between(query.value.priceMin, query.value.priceMax, true, true)
+      .limit(10)
+      .toArray();
   }
 };
 
@@ -69,9 +71,10 @@ const queryItemsByPrice = async () => {
 const queryItemsByCreatedAt = async () => {
   if (query.value.createdAtMin != null && query.value.createdAtMax != null) {
     items.value = await db.items
-        .where('createdAt')
-        .between(query.value.createdAtMin, query.value.createdAtMax, true, true)
-        .toArray();
+      .where('createdAt')
+      .between(query.value.createdAtMin, query.value.createdAtMax, true, true)
+      .limit(10)
+      .toArray();
   }
 };
 
@@ -79,22 +82,92 @@ const queryItemsByCreatedAt = async () => {
 const queryItemsByName = async () => {
   if (query.value.name) {
     items.value = await db.items
-        .where('name')
-        .startsWithIgnoreCase(query.value.name)
-        .toArray();
+      .where('name')
+      .startsWithIgnoreCase(query.value.name)
+      .limit(10)
+      .toArray();
   }
 };
 
 /**
  * select * from TABLE where a='a' and b between 1 and 10 实验
  */
-async function queryByEqualAndBetween(name:string, begin:number,end:number){
-  items.value=await db.items.where({'name':name}).and(x => x.createdAt>begin && x.createdAt<end).toArray()
-
-
+async function queryByEqualAndBetween(name: string, begin: number, end: number) {
+  items.value = await db.items
+    .where({'name': name})
+    .and(x => x.createdAt > begin && x.createdAt < end)
+    .limit(10)
+    .toArray()
 }
+
+
+let START_INDEX = 100
+let SIZE = 100_000
+const BATCH_SIZE = 1000
+
+async function genBatchData() {
+  await deleteGenData()
+  for (let i = START_INDEX; i < START_INDEX + SIZE; i += BATCH_SIZE) {
+    const data: DexieSampleItem[] = []
+    for (let j = i; j < i + BATCH_SIZE; j++) {
+      data.push({
+        createdAt: Date.now() - random(0, 1000) * 24 * 60 * 60 * 1000, id: j, name: "gen-" + j, price: random(0, 100)
+      })
+    }
+    await db.items.bulkAdd(data)
+  }
+  alert(`insert ${SIZE} data suc.`)
+}
+
+async function deleteGenData() {
+  await db.items.where('id').between(START_INDEX, START_INDEX + SIZE).delete()
+}
+
+async function costWrapper(name: string, fn: () => Promise<any>) {
+  const start = Date.now()
+  const rs = await fn()
+
+  console.log(name, 'cost:', Date.now() - start, 'ms')
+}
+
+/**
+ * price=55
+ */
+async function queryCostTest() {
+  const randPrice = () => random(1, 100)
+  await costWrapper('[price=].count', () => db.items.where('price').equals(randPrice()).count())
+  await costWrapper('[price=].limit(10)', () => db.items.where('price').equals(randPrice()).limit(10).toArray())
+  await costWrapper('[price=].limit(1000)', () => db.items.where('price').equals(randPrice()).limit(1000).toArray())
+  await costWrapper('[price=].limit(10000)', () => db.items.where('price').equals(randPrice()).limit(10000).toArray())
+  await costWrapper('where().between().count()', async () => {
+    const begin = random(0, 80)
+    return db.items.where('price').between(begin, begin + 10).count()
+  })
+  await costWrapper('where().between().limit(10)', async () => {
+    const begin = random(0, 80)
+    return db.items.where('price').between(begin, begin + 10).limit(10).toArray()
+  })
+  await costWrapper('where().between().sort(createdAt)', async () => {
+    const begin = random(0, 80)
+    return db.items.where('price').between(begin, begin + 10).limit(100).sortBy('createdAt')
+  })
+
+  await costWrapper('where().between().filter().sort(createdAt)', async () => {
+    const begin = random(0, 80)
+    return db.items
+      .where('price')
+      .between(begin, begin + 10)
+      .filter(x=>x.id<50000)
+      .limit(100)
+      .reverse()
+      .sortBy('createdAt')
+  })
+}
+
+
 // Load initial items
 loadItems();
+
 </script>
 
 <template>
@@ -142,7 +215,9 @@ loadItems();
         <input v-model="query.name" placeholder="Name (fuzzy)"/>
         <input v-model="query.createdAtMin" placeholder="Created At Min" type="number"/>
         <input v-model="query.createdAtMax" placeholder="Created At Max" type="number"/>
-        <button @click="queryByEqualAndBetween(query.name,query.createdAtMin,query.createdAtMax)">Query as "select from TABLE where name={name} and createdAt between {begin} and {end}</button>
+        <button @click="queryByEqualAndBetween(query.name,query.createdAtMin,query.createdAtMax)">Query as "select from
+          TABLE where name={name} and createdAt between {begin} and {end}
+        </button>
       </div>
     </div>
 
@@ -157,6 +232,18 @@ loadItems();
           <button @click="deleteItem(item.id)">Delete</button>
         </li>
       </ul>
+    </div>
+
+
+    <div>
+      <h2>BULK Insert/Delete size:{{ SIZE }}</h2>
+      <Button @click="genBatchData">genBatchData</Button>
+      <Button @click="deleteGenData">deleteGenData</Button>
+    </div>
+
+    <div>
+      <h2>Query Cost Test</h2>
+      <Button @click="queryCostTest">queryCostTest</Button>
     </div>
   </div>
 </template>

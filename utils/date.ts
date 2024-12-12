@@ -1,6 +1,7 @@
-import { formatDistanceToNowStrict, isDate } from 'date-fns'
+import {formatDistanceToNowStrict, isDate} from 'date-fns'
 import {CalendarDate, getLocalTimeZone} from "@internationalized/date";
 import {zhCN} from 'date-fns/locale/zh-CN'
+
 /**
  * 返回输入时间距离当前的距离,如果小于24小时仅返回小时单位, 超过24小时仅返回天数但额外i, (封装date-fns)
  */

@@ -43,6 +43,11 @@
       <CommunityQueryBox v-model="communityQueryValue"/>
     </div>
 
+    <div class="flex flex-col">
+      <label class="text-sm mb-2">分组</label>
+      <TaskGroupQueryBox v-model="groupQueryValue" type="house"/>
+    </div>
+
     <!-- 数值范围输入区块 -->
     <div class="flex flex-col">
       <label class="text-sm mb-2">总价</label>
@@ -125,6 +130,7 @@ import {HouseTaskStatus, TaskAddedType} from "@/types/lj";
 import SelectButton from "@/components/custom/SelectButton.vue";
 import CommunityQueryDock from "@/entrypoints/options/components/CommunityQueryDock.vue";
 import CommunityQueryBox from "@/components/lj/community/CommunityQueryBox.vue";
+import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
 
 const NumSelectButton=SelectButton<number>
 
@@ -145,8 +151,14 @@ const queryCondition = defineModel<HouseTaskQueryCondition>({
 
 //子组件model
 const communityQueryValue=ref<{cid:string,name:string}|null>()
+const groupQueryValue=ref<{ groupId: number, name: string }|null>()
 watch(communityQueryValue,(newValue)=>{
   queryCondition.value.cidEqual=newValue?.cid
+})
+
+watch(groupQueryValue,(newValue)=>{
+  console.log(newValue)
+  queryCondition.value.groupId=newValue?.groupId
 })
 
 // 定义更新事件
