@@ -11,15 +11,26 @@ import {cn} from "@/utils/shadcn-utils";
 import {useInfiniteQuery} from '@tanstack/vue-query'
 import {debounce} from "radash";
 import {Icon} from "@iconify/vue";
-import {useRoute} from "vue-router";
-const {query:{cid,name}}=useRoute()
+
+const {initialCid}=defineProps<{
+  initialCid?:string
+}>()
+
 
 const value=defineModel<{cid:string,name:string}>( )
-if(cid && name){
-  value.value={cid:cid as string,name: name as string}
-}
+
 const open=ref(false)
 const searchNameStr=ref('')
+
+async function queryInitData(){
+  if(initialCid){
+    const task=await db.communityTasks.where({cid:initialCid}).first()
+    if(task){
+      value.value={cid:task?.cid,name:task!.name??''}
+    }
+  }
+}
+
 const queryData = async ( {pageParam=0}) => {
   if(searchNameStr.value){
     const res=await db.communityTasks
@@ -68,8 +79,11 @@ const {
 
 
 onMounted(async ()=>{
-
+  await queryInitData()
 })
+
+
+
 
 function resetScroll(){
 
@@ -89,7 +103,6 @@ const onSearchTermChange=debounce({delay:1000},(v)=>searchNameStr.value=v)
           :class="value?.name?'':'font-light text-gray-300 '"
         >
           {{ value? value.name: '输入名称前缀查询...' }}
-
 
 
         </Button>

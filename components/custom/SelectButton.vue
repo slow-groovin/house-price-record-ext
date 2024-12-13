@@ -26,7 +26,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const model = defineModel<T | null>()
 
-console.log(typeof props.value, typeof model.value)
 // 计算当前按钮是否被选中
 const isSelected = computed(() => model.value === props.value)
 

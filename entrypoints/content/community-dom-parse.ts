@@ -52,7 +52,8 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 	// .info.clear > .title > a .info.clear > .priceInfo > .totalPrice
 	document.querySelectorAll('.info.clear ').forEach((element) => {
 		const {city,hid}=extractCityAndHidFromHouseUrl(element.querySelector('.title > a')?.getAttribute('href'))
-		const price=extractNumber(element.querySelector('.priceInfo > .totalPrice')?.textContent)
+		const totalPrice=extractNumber(element.querySelector('.priceInfo > .totalPrice')?.textContent)
+		const unitPrice=extractNumber(element.querySelector('.priceInfo > .unitPrice')?.getAttribute('data-price'))??undefined
 		const name=element.querySelector('.title > a')?.textContent??undefined
 		const info=element.querySelector('.houseInfo ')?.textContent?.split('|')??[]
 		//2室1厅 ', ' 79平米 ', ' 西 ', ' 精装 ', ' 顶层(共26层) ', ' 2023年 ', ' 板楼'
@@ -65,11 +66,11 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 
 
 		// console.log(name,info)
-		if(!hid || !price){
-			console.warn('hid or price is undefined',`hid:${hid},price:${price}}`)
+		if(!hid || !totalPrice){
+			console.warn('hid or price is undefined',`hid:${hid},price:${totalPrice}}`)
 			return
 		}
-		houseItems.push({hid,price, roomType, area, orientation, roomSubType, yearBuilt, buildingType, name})
+		houseItems.push({hid,price: totalPrice,unitPrice, roomType, area, orientation, roomSubType, yearBuilt, buildingType, name})
 	});
 
 

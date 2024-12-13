@@ -14,18 +14,26 @@ import {useRoute} from "vue-router";
 import {TaskGroup} from "@/types/group";
 import {db} from "@/utils/client/Dexie";
 
-const {query: {groupId, name}} = useRoute()
-
 const value = defineModel<{ groupId: number, name: string }>()
-const props = defineProps<{ type?: 'community' | 'house' }>()
+const props = defineProps<{
+  type?: 'community' | 'house',
+  initialGroupId?:number
+}>()
 const data = ref<TaskGroup[]>([])
 const open = ref(false)
 const searchNameStr = ref('')
 
-if (groupId && name ) {
+async function queryInitialData(){
+  //console.log(props.initialGroupId)
+  if(!props.initialGroupId) return
+  if (props.type === 'house') {
+    data.value = await db.houseTaskGroups.where({'id':props.initialGroupId}).toArray()
+  } else {
+    data.value = await db.communityTaskGroups.where({'id':props.initialGroupId}).toArray()
+  }
   value.value = {
-    groupId: Number( groupId as string),
-    name: name as string,
+    groupId: props.initialGroupId,
+    name: data.value[0]?.name,
   }
 }
 
@@ -49,6 +57,7 @@ const searchData = computed(() => {
 
 
 onMounted(async () => {
+  await queryInitialData()  //没有作用,因为先于queryCondition渲染
   queryData()
 })
 
@@ -95,7 +104,7 @@ const onSearchTermChange = debounce({delay: 1000}, (v) => searchNameStr.value = 
                   value?.name === item?.name ? 'opacity-100' : 'opacity-0',
                 )"
                 />
-                {{ item?.name }}
+                {{ item?.name }}  ({{item?.idList?.length}}个)
               </CommandItem>
             </template>
           </CommandGroup>

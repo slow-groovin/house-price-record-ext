@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {db} from "@/utils/client/Dexie";
-import {HouseTask} from "@/types/lj";
+import {HouseTask, HouseTaskStatus} from "@/types/lj";
 import {calcOffset} from "@/utils/table-utils";
 import HouseTasksTable from "@/entrypoints/options/components/HouseTasksTable.vue";
 import {computed, onMounted, ref} from "vue";
@@ -8,7 +8,12 @@ import {RowSelectionState} from "@tanstack/vue-table";
 import {Button} from "@/components/ui/button";
 import {browser} from "wxt/browser";
 import HouseTaskTableQueryDock from "@/entrypoints/options/components/HouseTaskTableQueryDock.vue";
-import {HouseTaskQueryCondition, SortState} from "@/types/query-condition";
+import {
+  communityQueryConditionTemplate,
+  houseQueryConditionTemplate,
+  HouseTaskQueryCondition,
+  SortState
+} from "@/types/query-condition";
 import {ArgCache} from "@/utils/lib/ArgCache";
 import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
 import {Collection, InsertType} from "dexie";
@@ -28,16 +33,53 @@ import {
 import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
 import {toast} from "vue-sonner";
 import {sendMessage} from "webext-bridge/options";
+import {useRouterQuery} from "@/composables/useRouterQuery";
+import {parseToType} from "@/utils/variable";
+import {newQueryConditionFromQueryParam} from "@/entrypoints/reuse/query-condition";
+
+/*
+route handle BEGIN
+ */
+const {pushQuery, removeQuery, pushQueries, removeQueries} = useRouterQuery()
+const {query} = useRoute()
+const {_pageIndex, _pageSize} = query
+
+
+const queryScopeLabel = ref('')
+
+/*
+route handle END
+ */
+
+/*
+const BEGIN
+ */
+const queryCondTemplate: HouseTaskQueryCondition = {
+  addedType: 0, cidEqual: "", cidInclude: "", city: "", createdAtMax: "", createdAtMin: "", groupId: 0, hidInclude: "",
+  status: HouseTaskStatus.running, totalPriceMax: 0, totalPriceMin: 0
+}
+/*
+const END
+ */
+
 /*
 ref definition
  */
 const data = ref<HouseTask[]>([])
 const rowCount = ref(0)
 
+const queryCondition = ref<HouseTaskQueryCondition>(newQueryConditionFromQueryParam(houseQueryConditionTemplate,query))
+
+if (query.groupId) {
+  queryScopeLabel.value = `分组:[${query.groupId}]`
+} else if (query.cidEqual) {
+  queryScopeLabel.value = `小区: [${query.cidEqual}]`
+}
+
+
 const rowSelection = ref<RowSelectionState>({})
 const queryCache = new ArgCache()
 const queryCost = ref(0)
-const queryCondition = ref<HouseTaskQueryCondition>({})
 
 const sortFields: (keyof HouseTask)[] = ['id', 'createdAt', 'totalPrice', 'lastRunningAt']
 
@@ -46,16 +88,7 @@ const selectionCount = computed(() => Object.keys(rowSelection.value).length)
 
 const groupForAdd = ref<{ groupId: number, name: string }>()
 
-const queryScopeLabel=ref('')
-const {query: {cid, name, groupId, type}} = useRoute()
-if (cid && name) {
-  queryCondition.value = {cidEqual: cid as string}
-  queryScopeLabel.value='小区:'+name
-}
-if (groupId && name) {
-  queryCondition.value = {groupId: Number(groupId)}
-  queryScopeLabel.value='分组:'+name
-}
+
 /*
 ref definition DONE
  */
@@ -64,6 +97,7 @@ ref definition DONE
 data
  */
 async function queryData(_pageIndex?: number, _pageSize?: number) {
+  rowSelection.value = {}
   const beginAt = Date.now()
 
   const {
@@ -82,14 +116,13 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   const {field, order} = sortCondition.value
   const filters: ((task: HouseTask) => boolean)[] = []
 
-  let groupIdList:string[]=[]
-  if(groupId){
-    const group=await db.houseTaskGroups.get(groupId)
-    groupIdList=group?.idList??[]
+  let groupIdList: string[] = []
+  if (groupId) {
+    const group = await db.houseTaskGroups.get(groupId)
+    groupIdList = group?.idList ?? []
   }
 
   let query: Collection<HouseTask, number | undefined, InsertType<HouseTask, "id">>
-
 
 
   /**
@@ -97,13 +130,17 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
    * 如果有排序, 则使用索引排序
    * 否则, 优先使用可能范围更小的的索引
    */
- if (order && field) {
-    query = db.houseTasks.orderBy(field)
-    if (order !== 'desc') {
-      query = query.reverse()
-    }
+  if (groupIdList.length > 0) {
+    //后面处理
+    query = db.houseTasks.where('id').notEqual(-1)
   } else if (cidEqual) {
     query = db.houseTasks.where('cid').equals(cidEqual)
+  } else if (order && field) {
+    console.log(order, field)
+    query = db.houseTasks.orderBy(field)
+    if (order !== 'asc') {
+      query = query.reverse()
+    }
   } else if (createdAtMax || createdAtMin) {
     if (!createdAtMin && createdAtMax) {
       query = db.houseTasks.where('createdAt').belowOrEqual(new Date(createdAtMax).getTime())
@@ -138,6 +175,9 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   if (cidInclude) {
     filters.push(s => s.cid.includes(cidInclude))
   }
+  if (cidEqual) {
+    filters.push(s => s.cid === cidEqual)
+  }
   if (city) {
     filters.push(s => s.city.includes(city))
   }
@@ -162,35 +202,64 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   if (status) {
     filters.push(s => s.status === status)
   }
-  if(filters.length)
+  if (filters.length)
     query = query.filter(t => filters.every(f => f(t)))
 
   rowCount.value = await query.count()
 
   //这里anyOf(...).count(...)有bug,会导致查询失效, 所以需要单独处理
-  if(groupIdList.length){
-    query=db.houseTasks.where('hid').anyOf(groupIdList).filter(t => filters.every(f => f(t)))
-    rowCount.value=await db.houseTasks.where('hid').anyOf(groupIdList).filter(t => filters.every(f => f(t))).count()
+  if (groupIdList.length) {
+    query = db.houseTasks.where('hid').anyOf(groupIdList).filter(t => filters.every(f => f(t)))
+    rowCount.value = await db.houseTasks.where('hid').anyOf(groupIdList).filter(t => filters.every(f => f(t))).count()
   }
-
 
 
   const pageIndex = queryCache.retrieve('pageIndex', _pageIndex, 1)
   const pageSize = queryCache.retrieve('pageSize', _pageSize, 10)
-  data.value = await query.offset(calcOffset(pageIndex, pageSize)).limit(pageSize).toArray()
+  query = query.offset(calcOffset(pageIndex, pageSize)).limit(pageSize)
+
+  //如果没有用索引进行排序,需要查询后排序
+  if ((groupIdList.length > 0 || cidEqual) && (order && field)) {
+    if (order === 'asc') {
+      data.value = await query.sortBy(field)
+
+    } else {
+      data.value = await query.reverse().sortBy(field)
+    }
+  } else {
+    data.value = await query.toArray()
+  }
   queryCost.value = Date.now() - beginAt
 }
 
 /*
 data END
  */
-
-async function onUpdateQueryCondition() {
-  // console.log(queryCondition.value)
-  queryCache.del('pageIndex') //重置pageIndex
-  queryData()
+/**更新分页*/
+async function onPaginationUpdate(pageIndex: number, pageSize: number) {
+  await pushQuery('_pageIndex', pageIndex)
+  await pushQuery('_pageSize', pageSize)
+  await queryData(pageIndex, pageSize)
 }
 
+/**更新查询条件*/
+async function onUpdateQueryCondition() {
+  await removeQueryConditionQueryParam()
+  const condition = queryCondition.value
+  await pushQueries(condition)
+
+  // queryCache.del('pageIndex') //重置pageIndex
+  // await removeQuery('_pageIndex')
+  await queryData()
+}
+
+
+
+async function removeQueryConditionQueryParam() {
+  await removeQueries(Object.keys(queryCondTemplate))
+}
+
+/**开始选中的任务运行*/
 async function goBeginBatchSelectedTasks() {
   const hidList = Object.keys(rowSelection.value)
     .map(s => Number(s))
@@ -203,6 +272,7 @@ async function goBeginBatchSelectedTasks() {
   await chrome.sidePanel.setOptions({path: '/sidepanel.html#/h/batch?id=' + id})
 }
 
+/**开始查询的所有的任务运行*/
 async function goBeginAllSelectedTasks() {
   const hidList = Object.keys(rowSelection.value)
     .map(s => Number(s))
@@ -216,12 +286,14 @@ async function goBeginAllSelectedTasks() {
 }
 
 async function deleteSelectedTasks() {
-  const ids = Object.keys(rowSelection.value).map(s => Number(s)).map(index => data.value[index].id)
+  const ids = Object.keys(rowSelection.value).map(s => Number(s)).filter(index => data.value[index]?.id).map(index => data.value[index].id)
   await db.houseTasks.bulkDelete(ids)
   alert(`删除成功!${ids.length}个任务`)
   data.value = data.value.filter(item => !ids.includes(item.id))
   rowSelection.value = {}
 }
+
+
 
 async function addToGroup() {
   if (!groupForAdd.value) {
@@ -253,10 +325,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1 class="text-2xl mx-2 my-4 font-bold">房源任务<span v-if="queryScopeLabel">({{queryScopeLabel}})</span></h1>
+  <h1 class="text-2xl mx-2 my-4 font-bold">房源任务<span v-if="queryScopeLabel">({{ queryScopeLabel }})</span></h1>
   <div class="border rounded-lg p-2">
     <h2 class="mb-3 mx-2">查询条件:</h2>
-    <HouseTaskTableQueryDock v-model="queryCondition" @update="onUpdateQueryCondition"/>
+    <HouseTaskTableQueryDock v-if="queryCondition" v-model="queryCondition" @update="onUpdateQueryCondition"/>
   </div>
   <div class="flex items-center p-2 gap-4 border rounded">
     <span>排序:</span>
@@ -322,7 +394,11 @@ onMounted(() => {
   </div>
 
   <div class="overflow-x-auto">
-    <HouseTasksTable :data="data" :row-count="rowCount" @on-pagination-change="queryData"
+    <HouseTasksTable :data="data"
+                     :row-count="rowCount"
+                     :init-page-index="_pageIndex?Number(_pageIndex):undefined"
+                     :init-page-size="_pageSize?Number(_pageSize):undefined"
+                     @on-pagination-change="onPaginationUpdate"
                      v-model:row-selection="rowSelection"/>
 
   </div>

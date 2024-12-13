@@ -63,9 +63,9 @@ const router=createRouter({
 })
 console.log("init options vue")
 
-// if (import.meta.env.VITE_HIDE === 'true') {
-// 	console.log("import '******.css'")
-// 	import('~/assets/disguise.css');
-// }
+if (import.meta.env.VITE_HIDE === 'true') {
+	console.log("import '******.css'")
+	import('~/assets/disguise.css');
+}
 
 createApp(App).use(router).use(VueQueryPlugin).mount('#app');

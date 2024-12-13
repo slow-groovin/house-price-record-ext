@@ -106,6 +106,22 @@ export class HouseTask implements HouseItem {
 		return task;
 	}
 
+	static newFromListItem(item: HouseListDetailItem,cid:string,city:string) {
+		const task = new HouseTask(item.hid,cid,city)
+		task.totalPrice = item.price
+		task.area = item.area
+		task.name = item.name
+		task.buildingType = item.buildingType
+		task.yearBuilt = item.yearBuilt
+		task.roomType = item.roomType
+		task.roomSubType = item.roomSubType
+		task.orientation = item.orientation
+
+		task.unitPrice = item.unitPrice
+
+		return task;
+	}
+
 	static fromHouseTask(variable: HouseTask) {
 		const task = Object.assign(new HouseTask('', '', ''), variable)
 		task.accessRecord = Object.assign(new AccessRecord(), variable.accessRecord)
@@ -150,6 +166,7 @@ export interface HousePriceChangeItem extends HousePriceItem {
  */
 export interface HouseListDetailItem extends HousePriceItem {
 	name?: string;
+	unitPrice?:number;
 	area?: number;
 	buildingType?: string;
 	yearBuilt?: string;

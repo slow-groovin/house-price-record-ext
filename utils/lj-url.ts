@@ -137,3 +137,8 @@ export function genHousePageUrl(city: string, hid: string): string {
 	return `https://${city}.lianjia.com/ershoufang/${hid}.html`;
 }
 
+
+
+export function genOptionCommunityUrl(cid:string):string{
+	return '#/c/task/detail?id='+cid
+}

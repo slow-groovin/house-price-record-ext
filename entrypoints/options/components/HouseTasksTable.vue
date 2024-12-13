@@ -42,17 +42,23 @@ type RelatedData = {
   priceChangeCount?: number,
   priceLastChange?: { value: number, at: number }
 }
+const {data, rowCount,initPageSize,initPageIndex} = defineProps<{
+  data: HouseTask[],
+  initPageIndex?:number,
+  initPageSize?:number,
+  rowCount: number
+}>()
+const rowSelection = defineModel<RowSelectionState>('rowSelection')
+
+const emit = defineEmits<{
+  (e: 'onPaginationChange', pageIndex: number, pageSize: number): void
+}>()
 /*
 ref definition
  */
 const sorting = ref<SortingState>([])
 const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = useLocalStorage<VisibilityState>('house-tasks-column-visibility', {})
-const rowSelection = defineModel<RowSelectionState>('rowSelection')
-const {data, rowCount} = defineProps<{
-  data: HouseTask[],
-  rowCount: number
-}>()
 const relatedCommunity = ref(new Map<string, CommunityTask>())
 const relatedData = ref(new Map<string, RelatedData>())
 const priceRelatedShowType = ref<undefined | 'last' | 'max' | 'min' | 'init' | 'count'>()
@@ -64,12 +70,10 @@ ref definition DONE
 /**
  * pagination
  */
-const emit = defineEmits<{
-  (e: 'onPaginationChange', pageIndex: number, pageSize: number): void
-}>()
-// const pagination = defineModel<PageState>('pagination')
-const pagination = ref({pageIndex: 1, pageSize: 10})
 
+// const pagination = defineModel<PageState>('pagination')
+const pagination = ref({pageIndex: initPageIndex??1, pageSize: initPageSize??10})
+console.log('HouseTaskTable.vue init.',pagination.value)
 //初始化默认查询
 emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
 /**
@@ -286,7 +290,6 @@ let options: TableOptions<HouseTask> = {
   onPaginationChange: updaterOrValue => {
     // console.log('updaterOrValue',updaterOrValue ,'before:',pagination.value)
     valueUpdater(updaterOrValue, pagination)
-    // console.log('after:',pagination.value)
     emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
   }
 }

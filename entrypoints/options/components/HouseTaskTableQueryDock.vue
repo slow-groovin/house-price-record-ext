@@ -40,12 +40,12 @@
 
     <div class="flex flex-col">
       <label class="text-sm mb-2">小区</label>
-      <CommunityQueryBox v-model="communityQueryValue"/>
+      <CommunityQueryBox v-model="communityQueryValue" :initial-cid="queryCondition.cidEqual"/>
     </div>
 
     <div class="flex flex-col">
       <label class="text-sm mb-2">分组</label>
-      <TaskGroupQueryBox v-model="groupQueryValue" type="house"/>
+      <TaskGroupQueryBox v-model="groupQueryValue" type="house" :initial-group-id="queryCondition.groupId"/>
     </div>
 
     <!-- 数值范围输入区块 -->
@@ -110,12 +110,18 @@
     </div>
 
     <!-- 操作按钮区块 -->
-    <div class="flex flex-col justify-end">
+    <div class="flex flex-nowrap items-end justify-end gap-2">
       <button
         @click="handleApply"
         class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2"
       >
         应用
+      </button>
+      <button
+        @click="resetCondition"
+        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2"
+      >
+        重置
       </button>
     </div>
   </div>
@@ -128,7 +134,6 @@ import {HouseTaskQueryCondition} from "@/types/query-condition";
 import {Label} from '@/components/ui/label'
 import {HouseTaskStatus, TaskAddedType} from "@/types/lj";
 import SelectButton from "@/components/custom/SelectButton.vue";
-import CommunityQueryDock from "@/entrypoints/options/components/CommunityQueryDock.vue";
 import CommunityQueryBox from "@/components/lj/community/CommunityQueryBox.vue";
 import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
 
@@ -150,8 +155,8 @@ const queryCondition = defineModel<HouseTaskQueryCondition>({
 })
 
 //子组件model
-const communityQueryValue=ref<{cid:string,name:string}|null>()
-const groupQueryValue=ref<{ groupId: number, name: string }|null>()
+const communityQueryValue=ref<{cid:string,name:string}>()
+const groupQueryValue=ref<{ groupId: number, name: string }>()
 watch(communityQueryValue,(newValue)=>{
   queryCondition.value.cidEqual=newValue?.cid
 })
@@ -170,4 +175,12 @@ const emit = defineEmits<{
 const handleApply = () => {
   emit('update')
 }
+const resetCondition = () => {
+  queryCondition.value = {}
+  emit('update')
+}
+
+watch(groupQueryValue, (newValue) => {
+  queryCondition.value.groupId = newValue?.groupId
+})
 </script>

@@ -107,3 +107,36 @@ export function tryMax(...nums: (number|undefined)[]):number|undefined{
 		return Math.max(acc,cur)
 	})
 }
+
+/**
+ * Prompt: 将一个字符串转换为常规的基本类型，如 number、boolean 或 string。
+ * 简介: 提供了一个通用函数，可以根据指定的类型将字符串解析为对应的常规类型。
+ *       如果类型不被支持或无法正确解析，则返回 null。
+ */
+export function parseToType<T>(val: string, type: 'string' | 'number' | 'boolean'): T | null {
+	// 确保输入值和类型均有效
+	if (!val || !type) return null;
+
+	// 根据类型解析输入值
+	switch (type) {
+		case 'string':
+			// 字符串类型直接返回输入值
+			return val as T;
+
+		case 'number':
+			// 将字符串转换为数字
+			const parsedNumber = Number(val);
+			// 如果解析失败返回 NaN，返回 null
+			return isNaN(parsedNumber) ? null : (parsedNumber as T);
+
+		case 'boolean':
+			// 解析为布尔类型，支持 'true' 和 'false'
+			if (val.toLowerCase() === 'true') return true as T;
+			if (val.toLowerCase() === 'false') return false as T;
+			return null;
+
+		default:
+			// 对于未知的类型，返回 null
+			return null;
+	}
+}

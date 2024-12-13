@@ -1,6 +1,8 @@
 <script setup lang="tsx">
 //
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {toast} from "vue-sonner";
+import {sendMessage} from "webext-bridge/options";
 import {
   AccessorKeyColumnDef,
   ColumnDef,
@@ -27,7 +29,7 @@ import {Button} from "@/components/ui/button";
 import {toInt} from "radash";
 import {startPageEntry} from "@/entrypoints/reuse/community-control2";
 import CommunityQueryDock from "@/entrypoints/options/components/CommunityQueryDock.vue";
-import {CommunityQueryCondition, SortState} from "@/types/query-condition";
+import {CommunityQueryCondition, communityQueryConditionTemplate, SortState} from "@/types/query-condition";
 import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
 import {ArgCache} from "@/utils/lib/ArgCache";
 import {Collection, InsertType} from "dexie";
@@ -41,10 +43,19 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader, DialogTitle,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
 import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
+import {useRoute} from "vue-router";
+import {newQueryConditionFromQueryParam} from "@/entrypoints/reuse/query-condition";
+import {useRouterQuery} from "@/composables/useRouterQuery";
+import CidAndName from "@/components/lj/column/CidAndName.vue";
+
+const {query} = useRoute()
+const {_pageIndex, _pageSize} = query
+const {pushQuery, removeQueries, pushQueries, removeQuery} = useRouterQuery()
 
 
 /*
@@ -55,15 +66,21 @@ const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = useLocalStorage<VisibilityState>('community-list-column-visibility', {})
 const rowSelection = ref<RowSelectionState>({})
 
-const queryCondition = ref<CommunityQueryCondition>({})
+let value = newQueryConditionFromQueryParam(communityQueryConditionTemplate, query);
+const queryCondition = ref<CommunityQueryCondition>(value)
 const sortCondition = ref<SortState<CommunityTask>>({})
-const groupForAdd=ref<{groupId:number,name:string}>()
+const groupForAdd = ref<{ groupId: number, name: string }>()
 
 const queryCost = ref(0)
 const isPending = ref(false)
 
 const selectionCount = computed(() => Object.keys(rowSelection.value).length)
+const queryScopeLabel = ref('')
 
+
+if (query.groupId) {
+  queryScopeLabel.value = `分组:[${query.groupId}]`
+}
 
 /*
 ref definition DONE
@@ -75,9 +92,10 @@ ref definition DONE
  */
 
 const pagination = ref<PageState>({
-  pageSize: 10,
-  pageIndex: 1,
+  pageSize: _pageSize?Number(_pageSize):10,
+  pageIndex:_pageIndex? Number(_pageIndex):1,
 })
+
 const argCache = new ArgCache()
 /**
  * pagination end
@@ -90,10 +108,12 @@ const data = ref<CommunityTask[]>([])
 const rowCount = ref(0)
 
 async function queryData(_pageIndex?: number, _pageSize?: number) {
+  console.debug('[CommunityTaskList] queryData()',_pageIndex,_pageSize)
   const pageIndex = argCache.retrieve('pageIndex', _pageIndex, 1)
   const pageSize = argCache.retrieve('pageSize', _pageSize, 10)
   const beginAt = Date.now()
   isPending.value = true
+
 
   let query: Collection<CommunityTask, number | undefined, InsertType<CommunityTask, "id">>
 
@@ -102,9 +122,14 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
    */
   const {
     cidInclude, nameInclude, city, lastRunningAtMax, lastRunningAtMin, createdAtMin, createdAtMax, avgTotalPriceMax,
-    avgTotalPriceMin, avgUnitPriceMax, avgUnitPriceMin, onSellCountMin, onSellCountMax
+    avgTotalPriceMin, avgUnitPriceMax, avgUnitPriceMin, onSellCountMin, onSellCountMax, groupId
   } = queryCondition.value
   const {field, order} = sortCondition.value
+  let groupIdList: string[] = []
+  if (groupId) {
+    const group = await db.communityTaskGroups.get(groupId)
+    groupIdList = group?.idList ?? []
+  }
 
   if (order && field) {
     query = db.communityTasks.orderBy(field)
@@ -140,6 +165,7 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   if (avgUnitPriceMin) filters.push(item => tryGreaterThanOrFalse(item?.avgUnitPrice, avgUnitPriceMin))
   if (onSellCountMax) filters.push(item => tryLessThanOrFalse(item?.onSellCount, onSellCountMax))
   if (onSellCountMin) filters.push(item => tryGreaterThanOrFalse(item?.onSellCount, onSellCountMin))
+  if(groupIdList.length>0) filters.push(item=>groupIdList.includes(item.cid))
 
   //应用filter
   if (filters.length) {
@@ -149,24 +175,18 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
 
   rowCount.value = await query.count()
 
-  if (order !== 'asc') {
-    query = query.reverse()
+  if(order && field){
+    if(order==='desc')
+      query=query.reverse()
   }
 
-  data.value = await query
-    .offset(calcOffset(pageIndex, pageSize))
-    .limit(pageSize)
-    .toArray()
+  data.value = await query.offset(calcOffset(pageIndex, pageSize)).limit(pageSize).toArray()
+
 
   queryCost.value = Date.now() - beginAt
   isPending.value = false
 }
 
-async function onApplyQueryCondition() {
-  if (isPending.value) return
-  argCache.del('pageIndex')
-  queryData()
-}
 
 /*
 data END
@@ -176,7 +196,7 @@ data END
 column BEGIN
  */
 const columnHelper = createColumnHelper<CommunityTask>()
-const columnDef: (ColumnDef<CommunityTask> | AccessorKeyColumnDef<CommunityTask, any>)[] = [
+const columnDef: (ColumnDef<CommunityTask>)[] = [
   {
     id: 'select',
     header: ({table}: { table: any }) => {
@@ -197,40 +217,33 @@ const columnDef: (ColumnDef<CommunityTask> | AccessorKeyColumnDef<CommunityTask,
       )
     },
   },
-  columnHelper.accessor('id', {}),
+  {    accessorKey:'id',     },
 
   {
     accessorKey: 'cid',
     id: 'cid',
     header: 'cid header',
     cell: ({cell}) => h('a', {
-      'class': 'text-green-500',
+      'class': 'link',
+      'target':'_blank',
       'href': '#/c/task/detail?id=' + cell.getValue()
     }, cell.getValue() as string)
   } as ColumnDef<CommunityTask>,
-  columnHelper.accessor('name', {}),
-  columnHelper.accessor('city', {}),
-  columnHelper.accessor('onSellCount', {}),
-
-  columnHelper.accessor('avgTotalPrice', {}),
-  columnHelper.accessor('avgUnitPrice', {}),
-  // columnHelper.accessor('status', {}),
-  columnHelper.accessor('runningCount', {}),
-  columnHelper.accessor('visitCountIn90Days', {}),
-  columnHelper.accessor('doneCountIn90Days', {}),
-  columnHelper.accessor('createdAt', {
-    cell: ({cell}) => new Date(cell.getValue()).toLocaleString()
-  }),
-  columnHelper.accessor('lastRunningAt', {
-    cell: ({cell}) => new Date(cell.getValue()).toLocaleString()
-  }),
-
-
+  {accessorKey:'name',cell:({cell})=><CidAndName name="123" id="456"/>},
+  {accessorKey:'city'},
+  {accessorKey:'onSellCount'},
+  {accessorKey:'avgTotalPrice'},
+  {accessorKey:'avgUnitPrice'},
+  {accessorKey:'runningCount'},
+  {accessorKey:'visitCountIn90Days'},
+  {accessorKey:'doneCountIn90Days'},
+  {accessorKey:'visitCountIn90Days'},
+  {accessorKey:'createdAt'},
+  {accessorKey:'lastRunningAt'},
 ]
 /*
 column END
  */
-
 
 /*
 table BEGIN
@@ -277,37 +290,78 @@ let options: TableOptions<CommunityTask> = {
 
   onPaginationChange: updaterOrValue => {
     valueUpdater(updaterOrValue, pagination)
-    queryData(pagination.value.pageIndex, pagination.value.pageSize)
+    onPaginationUpdate(pagination.value.pageIndex, pagination.value.pageSize)
 
   }
 }
 const table = useVueTable(options)
+
 /*
 table END
  */
 
+/**更新分页*/
+async function onPaginationUpdate(pageIndex: number, pageSize: number) {
+  await pushQuery('_pageIndex', pageIndex)
+  await pushQuery('_pageSize', pageSize)
+  await queryData(pageIndex, pageSize)
+}
 
+
+/**更新查询条件*/
+async function onQueryConditionUpdate() {
+  await removeQueryConditionQueryParam()
+  const condition = queryCondition.value
+  await pushQueries(condition)
+
+  // queryCache.del('pageIndex') //重置pageIndex
+  // await removeQuery('_pageIndex')
+  await queryData()
+}
+
+
+async function removeQueryConditionQueryParam() {
+  await removeQueries(Object.keys(communityQueryConditionTemplate))
+}
 
 async function beginCrawlCommunities() {
   const communityList = Object.keys(rowSelection.value).map(s => toInt(s)).map(i => toRaw(data.value[i]))
   startPageEntry(communityList)
 }
-async function deleteSelectedTasks(){
+
+async function deleteSelectedTasks() {
   const ids = Object.keys(rowSelection.value).map(s => Number(s)).map(index => data.value[index].id)
   await db.communityTasks.bulkDelete(ids)
   alert(`删除成功!${ids.length}个任务`)
-  rowSelection.value={}
-  data.value=data.value.filter(item=>!ids.includes(item.id))
+  rowSelection.value = {}
+  data.value = data.value.filter(item => !ids.includes(item.id))
 }
 
-async function addToGroup(){
-  if(!groupForAdd.value) return
-  const group=await db.houseTaskGroups.get(groupForAdd.value.groupId)
-  group.idList=new Set<string>([...group.idList,...Object.keys(rowSelection.value)])
-  await db.houseTaskGroups.update(groupForAdd.value.groupId,group)
+async function addToGroup() {
+  if (!groupForAdd.value) return
+  const group = await db.communityTaskGroups.get(groupForAdd.value.groupId)
+  if (!group) {
+    toast.error('没有找到分组')
+    return
+  }
+ const selectedIdList = Object.keys(rowSelection.value)
+    .map(s => Number(s))
+    .map(i => data.value[i].cid)
+  group.idList = Array.from(new Set<string>([...group?.idList ?? [], ...selectedIdList]))
+  await db.communityTaskGroups.update(groupForAdd.value.groupId, {
+    idList: group.idList
+  })
+  toast.success('添加成功', {
+    action: {
+      label: '去查看', onClick: () => {
+        sendMessage('openOptionPage', '/options.html#/c/group/list', 'background')
+      }
+    }
+  })
 }
+
 onMounted(() => {
-  queryData()
+  queryData(pagination.value.pageIndex, pagination.value.pageSize)
 })
 
 </script>
@@ -318,15 +372,15 @@ onMounted(() => {
   <div class="relative flex  flex-col p-2 rounded border">
     <h2 class="text-2xl font-bold">查询条件</h2>
     <LoadingOverlay v-if="isPending"/>
-    <CommunityQueryDock v-model="queryCondition" @update="onApplyQueryCondition"/>
+    <CommunityQueryDock v-if="queryCondition" v-model="queryCondition" @update="onQueryConditionUpdate"/>
   </div>
 
   <div class="relative mb-5 rounded p-2 border">
     排序:
-    <HouseTaskSortDock v-model="sortCondition" :fields="['lastRunningAt','createdAt']" @update="onApplyQueryCondition"/>
+    <HouseTaskSortDock v-model="sortCondition" :fields="['lastRunningAt','createdAt']"
+                       @update="onQueryConditionUpdate"/>
     <LoadingOverlay v-if="isPending" disable-anim/>
   </div>
-
 
 
   <div class="relative flex items-center p-1 my-2 gap-4">
@@ -385,7 +439,7 @@ onMounted(() => {
   <div class="flex">
     <h1 class="p-1 m-1 border rounded">DEBUG:</h1>
     <div> {{ queryCondition }}</div>
-    <div> {{sortCondition}} </div>
+    <div> {{ sortCondition }}</div>
 
   </div>
 

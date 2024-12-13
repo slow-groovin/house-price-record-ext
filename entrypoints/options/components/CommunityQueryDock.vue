@@ -23,6 +23,10 @@
     </div>
 
     <div class="flex flex-col">
+      <label class="text-sm mb-2">分组</label>
+      <TaskGroupQueryBox v-model="groupQueryValue" type="community" :initial-group-id="queryCondition.groupId"/>
+    </div>
+    <div class="flex flex-col">
       <label class="text-sm mb-2">城市代码</label>
       <input
         type="text"
@@ -31,8 +35,6 @@
         placeholder="请输入关键词"
       />
     </div>
-
-
 
 
     <div class="flex flex-col">
@@ -115,12 +117,18 @@
 
 
     <!-- 操作按钮区块 -->
-    <div class="flex flex-col justify-end">
+    <div class="flex flex-nowrap items-end justify-end gap-2">
       <button
         @click="handleApply"
         class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2"
       >
         应用
+      </button>
+      <button
+        @click="resetCondition"
+        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2"
+      >
+        重置
       </button>
     </div>
   </div>
@@ -128,9 +136,11 @@
 
 <script setup lang="ts">
 import type {HTMLAttributes} from 'vue'
+import {ref, watch} from 'vue'
 import {cn} from "@/utils/shadcn-utils"
 import {CommunityQueryCondition} from "@/types/query-condition";
 import {Label} from '@/components/ui/label'
+import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
 
 
 // Props定义
@@ -142,6 +152,7 @@ const props = withDefaults(defineProps<Props>(), {
   class: undefined
 })
 
+const groupQueryValue = ref<{ groupId: number, name: string }>()
 
 // 双向绑定模型
 const queryCondition = defineModel<CommunityQueryCondition>({
@@ -158,4 +169,12 @@ const handleApply = () => {
   emit('update')
 
 }
+const resetCondition = () => {
+  queryCondition.value = {}
+  emit('update')
+}
+
+watch(groupQueryValue, (newValue) => {
+  queryCondition.value.groupId = newValue?.groupId
+})
 </script>
