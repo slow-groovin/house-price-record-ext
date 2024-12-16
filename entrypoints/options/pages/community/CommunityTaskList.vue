@@ -4,7 +4,6 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/c
 import {toast} from "vue-sonner";
 import {sendMessage} from "webext-bridge/options";
 import {
-  AccessorKeyColumnDef,
   ColumnDef,
   ColumnFiltersState,
   createColumnHelper,
@@ -23,7 +22,7 @@ import {CommunityTask} from "@/types/lj";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import {valueUpdater} from "@/utils/shadcn-utils";
 import {calcOffset, PageState} from "@/utils/table-utils";
-import {computed, h, onMounted, ref, toRaw} from "vue";
+import {computed, onMounted, ref, toRaw} from "vue";
 import {useLocalStorage} from "@vueuse/core";
 import {Button} from "@/components/ui/button";
 import {toInt} from "radash";
@@ -33,7 +32,7 @@ import {CommunityQueryCondition, communityQueryConditionTemplate, SortState} fro
 import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
 import {ArgCache} from "@/utils/lib/ArgCache";
 import {Collection, InsertType} from "dexie";
-import {tryGreaterThanOrFalse, tryLessThanOrFalse} from "@/utils/operator";
+import {tryGreaterThanOrFalse, tryLessThanOrFalse, tryMinusOrUndefined} from "@/utils/operator";
 import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
@@ -52,6 +51,9 @@ import {useRoute} from "vue-router";
 import {newQueryConditionFromQueryParam} from "@/entrypoints/reuse/query-condition";
 import {useRouterQuery} from "@/composables/useRouterQuery";
 import CidAndName from "@/components/lj/column/CidAndName.vue";
+import AvgTotalPrice from "@/components/lj/column/AvgTotalPrice.vue";
+import OnSellCount from "@/components/lj/column/OnSellCount.vue";
+import TwoLineAt from "@/components/lj/column/TwoLineAt.vue";
 
 const {query} = useRoute()
 const {_pageIndex, _pageSize} = query
@@ -92,8 +94,8 @@ ref definition DONE
  */
 
 const pagination = ref<PageState>({
-  pageSize: _pageSize?Number(_pageSize):10,
-  pageIndex:_pageIndex? Number(_pageIndex):1,
+  pageSize: _pageSize ? Number(_pageSize) : 10,
+  pageIndex: _pageIndex ? Number(_pageIndex) : 1,
 })
 
 const argCache = new ArgCache()
@@ -104,11 +106,20 @@ const argCache = new ArgCache()
 /*
 data
  */
+type RelatedData = {
+  totalPriceChange?: number, //相比之前一次记录的总价变化
+  onSellCountChange?: number//相比之前一次记录的售卖数量变化,
+  priceUpCount?: number,
+  priceDownCount?: number,
+  addedCount?: number,
+  removedCount?: number,
+}
 const data = ref<CommunityTask[]>([])
 const rowCount = ref(0)
+const relatedData = ref<Record<string, RelatedData>>({})
 
 async function queryData(_pageIndex?: number, _pageSize?: number) {
-  console.debug('[CommunityTaskList] queryData()',_pageIndex,_pageSize)
+  console.debug('[CommunityTaskList] queryData()', _pageIndex, _pageSize)
   const pageIndex = argCache.retrieve('pageIndex', _pageIndex, 1)
   const pageSize = argCache.retrieve('pageSize', _pageSize, 10)
   const beginAt = Date.now()
@@ -165,7 +176,7 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   if (avgUnitPriceMin) filters.push(item => tryGreaterThanOrFalse(item?.avgUnitPrice, avgUnitPriceMin))
   if (onSellCountMax) filters.push(item => tryLessThanOrFalse(item?.onSellCount, onSellCountMax))
   if (onSellCountMin) filters.push(item => tryGreaterThanOrFalse(item?.onSellCount, onSellCountMin))
-  if(groupIdList.length>0) filters.push(item=>groupIdList.includes(item.cid))
+  if (groupIdList.length > 0) filters.push(item => groupIdList.includes(item.cid))
 
   //应用filter
   if (filters.length) {
@@ -175,9 +186,9 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
 
   rowCount.value = await query.count()
 
-  if(order && field){
-    if(order==='desc')
-      query=query.reverse()
+  if (order && field) {
+    if (order === 'desc')
+      query = query.reverse()
   }
 
   data.value = await query.offset(calcOffset(pageIndex, pageSize)).limit(pageSize).toArray()
@@ -185,8 +196,28 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
 
   queryCost.value = Date.now() - beginAt
   isPending.value = false
+
+  await queryRelatedData()
 }
 
+async function queryRelatedData() {
+  // relatedData.value = {}
+  const cidList = data.value.map(item => item.cid)
+  for (let cid of cidList) {
+    const lastTwoRecords = await db.communityRecords.where('cid').equals(cid).reverse().limit(2).toArray()
+    if (lastTwoRecords[0]) {
+      relatedData.value[cid] = {}
+      relatedData.value[cid].addedCount = lastTwoRecords[0].addedItem?.length
+      relatedData.value[cid].removedCount = lastTwoRecords[0].removedItem?.length
+      relatedData.value[cid].priceUpCount = lastTwoRecords[0].priceUpList?.length
+      relatedData.value[cid].priceDownCount = lastTwoRecords[0].priceDownList?.length
+    }
+    if (lastTwoRecords[0] && lastTwoRecords[1]) {
+      relatedData.value[cid].totalPriceChange = tryMinusOrUndefined(lastTwoRecords[0]?.avgTotalPrice, lastTwoRecords[1]?.avgTotalPrice)
+      relatedData.value[cid].onSellCountChange = tryMinusOrUndefined(lastTwoRecords[0]?.onSellCount, lastTwoRecords[1]?.onSellCount)
+    }
+  }
+}
 
 /*
 data END
@@ -217,29 +248,66 @@ const columnDef: (ColumnDef<CommunityTask>)[] = [
       )
     },
   },
-  {    accessorKey:'id',     },
+  // {accessorKey: 'id',},
+  {
+    accessorKey: 'name',
+    id: '名字',
+    header: '名字',
+    accessorFn: (originalRow, index) => {
+      return {name: originalRow.name, cid: originalRow.cid, city: originalRow.city}
+    },
+    cell: ({cell}) => {
+      const {name, cid, city} = cell.getValue() as { name: string, cid: string, city: string }
+      return <CidAndName name={name} id={cid} city={city}/>
+    },
+  },
+  {accessorKey: 'city', id: "城市", header: '城市'},
+  {
+    accessorKey: 'onSellCount',
+    header: '在售数量',
+    id: '在售数量',
+    cell: ({cell}) => <OnSellCount value={cell.getValue() as number}
+                                   change={relatedData.value[cell.row.original.cid]?.onSellCountChange}/>
+  },
 
   {
+    accessorKey: 'avgTotalPrice',
+    header: '平均总价',
+    id: '平均总价',
+    cell: ({cell}) => <AvgTotalPrice value={cell.getValue() as number}
+                                     change={relatedData.value[cell.row.original.cid]?.totalPriceChange}/>
+
+  },
+  {accessorKey: 'avgUnitPrice', header: '平均单价', id: '平米单价'},
+  {
     accessorKey: 'cid',
-    id: 'cid',
-    header: 'cid header',
-    cell: ({cell}) => h('a', {
-      'class': 'link',
-      'target':'_blank',
-      'href': '#/c/task/detail?id=' + cell.getValue()
-    }, cell.getValue() as string)
-  } as ColumnDef<CommunityTask>,
-  {accessorKey:'name',cell:({cell})=><CidAndName name="123" id="456"/>},
-  {accessorKey:'city'},
-  {accessorKey:'onSellCount'},
-  {accessorKey:'avgTotalPrice'},
-  {accessorKey:'avgUnitPrice'},
-  {accessorKey:'runningCount'},
-  {accessorKey:'visitCountIn90Days'},
-  {accessorKey:'doneCountIn90Days'},
-  {accessorKey:'visitCountIn90Days'},
-  {accessorKey:'createdAt'},
-  {accessorKey:'lastRunningAt'},
+    header: '近期涨价',
+    id: '近期涨价',
+    cell: ({cell}) => relatedData.value[cell.row.original.cid]?.priceUpCount
+  },
+  {
+    accessorKey: 'cid',
+    header: '近期降价',
+    id: '近期降价',
+    cell: ({cell}) => relatedData.value[cell.row.original.cid]?.priceDownCount
+  },
+  {
+    accessorKey: 'cid',
+    header: '近期上架',
+    id: '近期上架',
+    cell: ({cell}) => relatedData.value[cell.row.original.cid]?.addedCount
+  },
+  {
+    accessorKey: 'cid',
+    header: '近期下架',
+    id: '近期下架',
+    cell: ({cell}) => relatedData.value[cell.row.original.cid]?.removedCount
+  },
+  {accessorKey: 'visitCountIn90Days', header: '过去90天带看数', id: '过去90天带看数'},
+  {accessorKey: 'doneCountIn90Days', header: '过去90天成交量', id: '过去90天成交量'},
+  {accessorKey: 'runningCount', header: '运行次数', id: '运行次数'},
+  {accessorKey: 'createdAt', header: '创建时间', id: '创建时间',cell:({cell})=><TwoLineAt at={cell.getValue()}/>},
+  {accessorKey: 'lastRunningAt', header: '最后运行时间', id: '最后运行时间',cell:({cell})=><TwoLineAt at={cell.getValue()}/>},
 ]
 /*
 column END
@@ -344,7 +412,7 @@ async function addToGroup() {
     toast.error('没有找到分组')
     return
   }
- const selectedIdList = Object.keys(rowSelection.value)
+  const selectedIdList = Object.keys(rowSelection.value)
     .map(s => Number(s))
     .map(i => data.value[i].cid)
   group.idList = Array.from(new Set<string>([...group?.idList ?? [], ...selectedIdList]))

@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import {genOptionCommunityUrl} from "@/utils/lj-url";
+import {genOptionCommunityUrl,genCommunityPageUrl} from "@/utils/lj-url";
+import {Icon} from "@iconify/vue";
 
 const {id,name}=defineProps<{
   name?:string,
-  id?:string
+  id?:string,
+  city?:string,
 }>()
 
 </script>
@@ -15,7 +17,13 @@ const {id,name}=defineProps<{
         <div>{{id}}</div>
       </a> &nbsp;&nbsp;&nbsp;
     </div>
-    <div>{{name}}</div>
+    <div class="text-nowrap flex flex-nowrap">
+      {{ name }}
+      <a class="inline-block link text-base hover:bg-gray-200" :href="genCommunityPageUrl(city??'',id??'',1)" target="_blank"
+         rel="noreferrer">
+        <Icon icon="tdesign:jump"/>
+      </a>
+    </div>
   </div>
 
 </template>

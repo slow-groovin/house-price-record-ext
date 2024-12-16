@@ -6,7 +6,8 @@ module.exports = {
   safelist:[
 	  'bg-green-500/20','hover:bg-green-500/20','border-l-green-500',
 	  'bg-yellow-500/20','hover:bg-yellow-500/20','border-l-yellow-500',
-	  'bg-blue-500/20','hover:bg-blue-500/20','border-l-blue-500',
+	  'bg-blue-500/20','hover:bg-blue-500/20','border-l-blue-500',,
+	  'text-green-500','text-red-500'
   ],
   content: [
     './pages/**/*.{ts,tsx,vue}',

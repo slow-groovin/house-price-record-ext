@@ -124,10 +124,11 @@ onMounted(() => {
 
     <CommunityTitleHead v-if="task" :community="task" class="shadow my-10 px-3 py-4 rounded-lg"/>
 
-    <FieldCardGroup v-if="task" :community="task" :last-record="records[0]" :at-before-last="records[1]?.at"/>
+
+    <FieldCardGroup v-if="task" :community="task" :last-record="records[0]" :at-before-last="records[1]?.at" class="mb-8"/>
 
 
-    <div class="flex flex-col gap-4">
+    <div class="relative flex flex-col gap-4">
       <div class="border p-2 rounded-lg sticky top-0 z-10 bg-white shadow">
         <DateRangePicker v-model:start-date="startDate" v-model:end-date="endDate" @confirm="resetDateRange"/>
       </div>

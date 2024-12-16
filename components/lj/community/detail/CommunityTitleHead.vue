@@ -33,7 +33,7 @@ function openLjListUrl() {
 <!--  <div class="min-w-10"></div>-->
 
 
-  <Button class="py-0.5 pl-1 [&_svg]:size-6 gap-x-0 bg-blue-600"  size="sm" @click="startPageEntry([toRaw(community)])">
+  <Button class="py-0.5 pl-1 [&_svg]:size-6 gap-x-0 bg-green-600"  size="sm" @click="startPageEntry([toRaw(community)])">
     <Icon icon="solar:refresh-circle-linear" class="h-8 w-8" width="20px" height="20px"/>
     <div class="text-base">运行任务</div>
   </Button>
@@ -47,7 +47,7 @@ function openLjListUrl() {
 
   <Button @click="openLjListUrl" class="self-end ml-[-1rem] text-sm  bg-primary/80   h-fit py-0 px-1  ">
     <Icon icon="tdesign:jump" />
-     去访问
+     去访问网页
   </Button>
 
 
