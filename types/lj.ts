@@ -256,3 +256,24 @@ export interface HouseStatusChange{
 	at: number
 }
 
+
+export const CommunityColumnZhTest:Record<keyof CommunityRecord, string>={
+	addedItem: "",
+	at: "",
+	avgTotalPrice: "",
+	avgUnitPrice: "",
+	calcOnSellCount: "",
+	cid: "",
+	city: "",
+	doneCountIn90Days: "",
+	houseList: "",
+	id: "",
+	maxPageNo: "",
+	name: "",
+	onSellCount: "",
+	pageNo: "",
+	priceDownList: "",
+	priceUpList: "",
+	removedItem: "",
+	visitCountIn90Days: ""
+}as const

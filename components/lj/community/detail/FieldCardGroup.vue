@@ -46,7 +46,10 @@ const lastInfo=computed<CardInfo[]>(()=>{
 })
 
 const lastPeriod=computed(()=>{
-  return `从 ${new Date(atBeforeLast).toLocaleString()} 到 ${new Date(lastRecord.at).toLocaleString()}`
+  if(atBeforeLast && lastRecord?.at)
+    return `从 ${new Date(atBeforeLast).toLocaleString()} 到 ${new Date(lastRecord.at).toLocaleString()}`
+  else
+    return ``
 })
 
 

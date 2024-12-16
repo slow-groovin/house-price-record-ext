@@ -5,7 +5,7 @@ import {ComputedRef, MaybeRef, toRef} from "vue";
 import {VisAxis, VisLine, VisScatter, VisStackedBar, VisTooltip, VisXYContainer} from '@unovis/vue'
 import {
   computeDataSequence,
-  expandYDomain,
+  expandYDomain, graphWidth,
   tickFormatDate,
   triggerWithDatePrefix,
   X,
@@ -43,7 +43,7 @@ const computedDomain = reactify(expandYDomain)
 const graphDataList: ({
   title: string,
   type: 'line' | 'stack bar',
-  data: ComputedRef<{ x: number, y: number | undefined, index: number }[] | undefined>,
+  data: ComputedRef<{ x: number, y: number | undefined, index: number }[]>,
   yDomain: MaybeRef<[number, number?]>,
 })[] = [
   {
@@ -56,13 +56,13 @@ const graphDataList: ({
     title: '平均总价',
     type: 'line',
     data: avgTotalPriceData,
-    yDomain: computedDomain(avgTotalPriceData, 100),
+    yDomain: computedDomain(avgTotalPriceData, 10),
   },
   {
     title: '平均平米均价',
     type: 'line',
     data: avgUnitPriceData,
-    yDomain: computedDomain(avgUnitPriceData, 10000),
+    yDomain: computedDomain(avgUnitPriceData, 500),
   },
   {
     title: '涨价数量',
@@ -95,13 +95,15 @@ const triggers = {
   [Scatter.selectors.point]: triggerWithDatePrefix,
   [StackedBar.selectors.bar]: triggerWithDatePrefix
 }
+
+
 </script>
 
 <template>
   <div class="flex flex-row flex-wrap gap-6">
-    <div class="w-full rounded-xl p-1 border " v-for="{title,type,data,yDomain} in graphDataList" :key="title">
-      <h2 class="text-xl font-bold text-center"> {{ title }}</h2>
-      <VisXYContainer v-if="type==='line'" :data="data" :yDomain="yDomain">
+    <div class="rounded-xl p-1 border min-w-[16rem] max-w-full" :style="{'width':graphWidth(data?.value?.length)}" v-for="{title,type,data,yDomain} in graphDataList" :key="title">
+      <h3 class="text-xl font-bold text-center"> {{ title }}</h3>
+      <VisXYContainer v-if="type==='line'" :data="data.value" :yDomain="yDomain" >
         <VisLine :x="X" :y="Y"/>
         <VisScatter :x="X" :y="Y" :color="'rgba(0,0,0,0)'"/>        <!-- 第一个scatter作用: 全部点可以tooltip(点本身透明)-->
         <VisScatter :x="X" :y="Y" :label="Y" :labelHideOverlapping="true"/>  <!-- 第二个scatter作用: 极值点上显示数值的label-->
@@ -113,7 +115,7 @@ const triggers = {
       <VisXYContainer v-else-if="type==='stack bar'" :data="data" :yDomain="yDomain">
         <VisScatter :x="X" :y="Y" :label="Y" color='rgba(0,0,0,0)' :labelPosition="()=>'top'" :size="0" />
         <!--          第一个scatter作用: 显示label数值(点本身透明)-->
-        <VisStackedBar :x="X" :y="Y" :barPadding="0.5"/>
+        <VisStackedBar :x="X" :y="Y" :barPadding="0.1" :barMaxWidth="16" :barMinHeight1Px="true"/>
         <VisAxis type="x" :x="X" :tickFormat="tickFormatDate" :minMaxTicksOnly="false"/>
         <VisAxis type="y"/>
         <VisTooltip :triggers="triggers"/>

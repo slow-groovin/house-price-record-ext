@@ -29,7 +29,8 @@ const {data, rowCount, isShowDetail, type, class: classNames} = defineProps<{
 }>()
 const deletedIds = ref<(number|undefined)[]>([])
 const checkDisableConfirmDelete=ref(false)
-const {state:confirmDelete}=useWxtStorage('local:confirmDeleteChangeItem',true)
+// const {state:confirmDelete}=useWxtStorage('local:confirmDeleteChangeItem',true)
+const confirmDelete=true
 /*
 ref definition DONE
  */
@@ -122,7 +123,6 @@ function deleteChange(index: number) {
 
 <template>
   <div id="change-timeline" :class="cn('flex flex-col flex-wrap  items-start justify-start ',classNames)">
-    'confirmDelete:{{confirmDelete}}
     <TransitionGroup name="list" tag="div">
       <template v-for="(change,index) in data" :key="change.id">
         <TimelineItem v-if="!deletedIds.includes(change.id)" class="max-w-full" :spacing="80" :color="'bg-green-300'">
@@ -145,9 +145,9 @@ function deleteChange(index: number) {
                   <Icon icon="lets-icons:remove" class="text-red-500 hover:bg-gray-200"/>
                 </template>
                 删除这条任务?
-                <label class="flex items-center text-sm font-light italic">
-                  <Checkbox v-model:checked="checkDisableConfirmDelete"/>不再进行删除确认   (可以在'设置'页面中调整)
-                </label>
+<!--                <label class="flex items-center text-sm font-light italic">-->
+<!--                  <Checkbox v-model:checked="checkDisableConfirmDelete"/>不再进行删除确认   (可以在'设置'页面中调整)-->
+<!--                </label>-->
               </ConfirmDialog>
 
             </div>

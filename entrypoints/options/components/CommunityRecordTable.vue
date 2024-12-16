@@ -28,6 +28,7 @@ import ValueChangeBudget from "@/components/lj/house/ValueChangeBudget.vue";
 import TableRowExpandPriceChange from "@/components/lj/community/detail/TableRowExpandPriceChange.vue";
 import {CommunityRecordUrl} from "@/utils/url-component";
 import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
+import TwoLineAt from "@/components/lj/column/TwoLineAt.vue";
 
 /*
 ref definition
@@ -116,6 +117,7 @@ emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize
 
 const cellRenderWithValueChange=({cell}:CellContext<RENDER_DATA_TYPE, any>)=>{
   const {value,diff}=cell.getValue()
+  if(value===undefined) return '-'
   if(diff){
     return <div class="flex items-center flex-nowrap">{value} <ValueChangeBudget type="number" value={diff} /></div>
   }
@@ -128,37 +130,51 @@ column BEGIN
  */
 const columnHelper = createColumnHelper<RENDER_DATA_TYPE>()
 
-const columnDef: (ColumnDef<RENDER_DATA_TYPE> | AccessorKeyColumnDef<RENDER_DATA_TYPE, any>)[] = [
-  columnHelper.accessor('id', {cell:({cell})=>CommunityRecordUrl(cell.getValue().value)}),
-  columnHelper.accessor('at', {
-    cell: ({cell}) => formatDistanceToNowHoursOrDays(cell.getValue().value)
-  }),
-  columnHelper.accessor('avgTotalPrice', {
+const columnDef: (ColumnDef<RENDER_DATA_TYPE,ValueDiff>)[] = [
+  {
+    accessorKey:'id',header:'id',id:'id',
+    cell:({cell})=>CommunityRecordUrl(cell.getValue()?.value)
+  },
+  {
+    accessorKey:'at',header:'运行时间',id:'运行时间',
+    cell:({cell})=><TwoLineAt  at={cell.getValue()?.value}/>
+  },
+  {
+    accessorKey:'onSellCount',header:'在售数量',id:'在售数量',
     cell:cellRenderWithValueChange
-  }),
-  columnHelper.accessor('avgUnitPrice', {
-    cell: cellRenderWithValueChange,
-  }),
-
-  columnHelper.accessor('addedItem', {
-    cell: ({cell}) => cell.getValue().value
-  }),
-  columnHelper.accessor('removedItem', {
-    cell: ({cell}) => cell.getValue().value
-  }),
-  columnHelper.accessor('priceUpList', {
-    cell: ({cell}) => cell.getValue().value
-  }),
-  columnHelper.accessor('priceDownList', {
-    cell: ({cell}) => cell.getValue().value
-  }),
-
-  columnHelper.accessor('onSellCount', {cell:cellRenderWithValueChange}),
-  columnHelper.accessor('visitCountIn90Days', {cell:cellRenderWithValueChange}),
-  columnHelper.accessor('doneCountIn90Days', {cell:cellRenderWithValueChange}),
-
-
-
+  },
+  {
+    accessorKey:'avgTotalPrice',header:'平均总价',id:'平均总价',
+    cell:cellRenderWithValueChange
+  },
+  {
+    accessorKey:'avgUnitPrice',header:'平均单价',id:'平均单价',
+    cell:cellRenderWithValueChange
+  },
+  {
+    accessorKey:'priceUpList',header:'涨价数',id:'涨价数',
+    cell:cellRenderWithValueChange
+  },
+  {
+    accessorKey:'priceDownList',header:'降价数',id:'降价数',
+    cell:cellRenderWithValueChange
+  },
+  {
+    accessorKey:'addedItem',header:'新增上架',id:'新增上架',
+    cell:cellRenderWithValueChange
+  },
+  {
+    accessorKey:'removedItem',header:'新增下架',id:'新增下架',
+    cell:cellRenderWithValueChange
+  },
+  {
+    accessorKey:'visitCountIn90Days',header:'过去90天带看',id:'过去90天带看',
+    cell:cellRenderWithValueChange
+  },
+  {
+    accessorKey:'doneCountIn90Days',header:'过去90天成交',id:'过去90天成交',
+    cell:cellRenderWithValueChange
+  },
 ]
 /*
 column END

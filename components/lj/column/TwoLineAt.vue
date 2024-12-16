@@ -7,13 +7,13 @@ const {at}=defineProps<{
 </script>
 
 <template>
-  <div v-if="at" class="text-xs">
-    <div class="">{{formatDistanceToNowHoursOrDays(at)}}</div>
-    <div>{{new Date(at).toLocaleString()}}</div>
-  </div>
-  <div v-else>
+  <template v-if="at">
+    <div class="text-xs">{{formatDistanceToNowHoursOrDays(at)}}</div>
+    <div class="text-xs">{{new Date(at).toLocaleString()}}</div>
+  </template>
+  <template v-else>
     -
-  </div>
+  </template>
 </template>
 
 <style scoped>

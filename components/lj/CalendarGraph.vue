@@ -150,7 +150,7 @@ console.log('CalendarGraph render.')
                   @mouseenter="showTooltip($event, year+' '+(month.monthIndex+1)+'/'+(1+index))"
                   @mouseleave="hideTooltip()"
                   :class="cn(
-            'h-6 w-6 rounded hover:border border-neutral-700',
+            'h-6 w-4 rounded hover:border border-neutral-700',
             item ? 'bg-green-500' : 'bg-gray-300'
             )"/>
             </div>

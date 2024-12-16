@@ -122,41 +122,38 @@ onMounted(() => {
 
   <div class="relative" >
 
-    <CommunityTitleHead v-if="task" :community="task" class="shadow my-10 px-3 py-4 rounded-lg"/>
+    <CommunityTitleHead id="basic-nav" v-if="task" :community="task" class="shadow my-10 px-3 py-4 rounded-lg"/>
 
 
     <FieldCardGroup v-if="task" :community="task" :last-record="records[0]" :at-before-last="records[1]?.at" class="mb-8"/>
 
 
-    <div class="relative flex flex-col gap-4">
-      <div class="border p-2 rounded-lg sticky top-0 z-10 bg-white shadow">
+    <div  class="relative  flex flex-col gap-4">
+      <div  class="border-b w-fit p-2 rounded-lg sticky top-0 z-10 bg-white shadow">
         <DateRangePicker v-model:start-date="startDate" v-model:end-date="endDate" @confirm="resetDateRange"/>
       </div>
 
-      <div class="flex flex-wrap gap-6" >
-        <div class="border p-2 rounded w-fit" id="changes-nav">
+      <div id="changes-nav" class="flex flex-wrap gap-16" >
+        <div class="border-b p-2 px-8 rounded w-fit " >
           <!-- changes history -->
-          <h1 class="font-bold text-2xl text-center">价格变动历史</h1>
+          <h2 >价格变动历史</h2>
           <HouseChangesTimeLine :data="changes ?? []" :row-count="changesCount ?? 0" type="price"  @on-pagination-change="queryChanges"/>
         </div>
 
-        <div class="border p-2 rounded w-fit" id="changes-nav">
+        <div class="border-b p-2 px-8 rounded w-fit">
           <!-- changes history -->
-          <h1 class="font-bold text-2xl text-center">状态变动历史</h1>
+          <h2 >状态变动历史</h2>
           <HouseChangesTimeLine :data="statusChanges ?? []" :row-count="statusChangesCount ?? 0" type="status"  @on-pagination-change="queryStatusChanges"/>
         </div>
-
-
-
       </div>
 
-      <div class="p-2 border">
-        <h2 class="text-center text-2xl">community record</h2>
+      <div id="records-nav" class="p-2 border-b">
+        <h2 class=" ">运行历史</h2>
         <CommunityRecordTable :data="records" :row-count="recordsCount" @on-pagination-change="queryRecords"/>
       </div>
 
-      <div class="p-2 border">
-        <h2 class="text-2xl text-center"> records graph</h2>
+      <div id="charts-nav" class="p-2  border-b">
+        <h2 class=" "> 数据图表</h2>
         <CommunityRecordGraphs :data="records"/>
       </div>
     </div>
@@ -164,14 +161,13 @@ onMounted(() => {
 
     <!-- graph -->
     <!-- house list -->
-    <div class="" id="houses-nav" v-if="task?.cid && task?.name">
-      <h2>house list</h2>
-
-      <a :href="`/options.html#/h/task/list?cid=${task.cid}&name=${task.name}`" target="_blank" class="link" >去查看</a>
+    <div id="houses-nav" v-if="task?.cid && task?.name" class="my-8 border-b ">
+      <h2 class="border-b my-8">房源列表</h2>
+      <a :href="`/options.html#/h/task/list?cid=${task.cid}&name=${task.name}`" target="_blank" class="link my-8 font-bold" >去查看</a>
     </div>
 
-    <div class=" w-fit">
-      <h2>历史运行记录</h2>
+    <div id="calendar-nav" class=" w-fit border-b">
+      <h2>历史运行日历</h2>
       <CalendarGraph v-if="task?.accessRecord" :access-record="AccessRecord.fromAccessRecord(task?.accessRecord)"/>
     </div>
 
@@ -183,14 +179,24 @@ onMounted(() => {
 
 
     <TocNav :items="[
-    {id:'changes-nav',text:'价格变化'},
-    {id:'status-changes-nav',text:'状态变化'},
+    {id:'basic-nav',text:'基本信息'},
+
+    {id:'changes-nav',text:'变更记录'},
+    {id:'records-nav',text:'运行记录'},
+    {id:'charts-nav',text:'数据图表'},
     {id:'houses-nav',text:'房源列表'},
+    {id:'calendar-nav',text:'运行日历'},
+
     ]"/>
   </div>
 
 </template>
 
-<style scoped>
-
+<style scoped lang="postcss">
+h2{
+  @apply text-lg font-bold border-b mb-2
+}
+div{
+  scroll-margin-top: 4rem;
+}
 </style>

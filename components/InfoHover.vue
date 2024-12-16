@@ -2,12 +2,18 @@
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Icon } from '@iconify/vue'
+import {cn} from "@/utils/shadcn-utils";
+
+import {HTMLAttributes} from "vue";
+const props=defineProps<{
+  class?:HTMLAttributes['class']
+}>()
 </script>
 
 <template>
   <HoverCard :open-delay="10" :close-delay="10">
     <HoverCardTrigger class="text-inherit   no-underline">
-      <Icon icon="stash:exclamation-circle" class="w-6 h-6  text-gray-500 hover:bg-gray-300 rounded " />
+      <Icon icon="stash:exclamation-circle" :class="cn('w-6 h-6  text-gray-500 hover:bg-gray-300 rounded',props.class) " />
     </HoverCardTrigger>
     <HoverCardContent class="w-fit ">
       <slot/>

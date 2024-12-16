@@ -12,6 +12,9 @@ export const Y = (d: any) => d.y
  */
 export const X = (d: any) => d.x
 
+export function graphWidth(dataLength: number, factor:number=7):string{
+	return `${dataLength * factor}rem`
+}
 /**
  * 生成一个UnovisXYContainer用的yDomain: [min(data.value)-expendValue, max(data.value)+expendValue]
  * @param data 数据
@@ -48,7 +51,7 @@ export function computeDataSequence<T extends {at:number}>(data: Ref<T []>, valF
 
 		return data.value
 			?.map(item => ({y: valFetcher(item), x: item.at}))
-			.filter(item => !!item.y)
+			.filter(item => item.y!==undefined && item.y!==null)
 			.sort((a, b) => a.x - b.x)
 			.map(item => ({...item, index: index++}))
 	})

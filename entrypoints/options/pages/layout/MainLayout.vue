@@ -15,13 +15,13 @@ import BackToTopBtn from "@/components/float/BackToTopBtn.vue";
     <HeaderNav :title="'Open Search'" version="0.1"  :links="[{text: 'about',href:'/about'}]"/>
 
     <div class="border-t">
-      <div class="bg-background">
-        <div class="flex">
+      <div class="bg-background max-w-full">
+        <div class="flex  w-[100vw]">
 <!--          侧边栏位置-->
-          <SidebarNav  class=" sticky top-0 h-fit " />
+          <SidebarNav  class="sticky top-0 h-fit " />
 
 <!--          内容位置-->
-          <div class="overflow-auto">
+          <div class="max-w-[calc(100vw-14rem)]">
             <router-view/>
           </div>
         </div>

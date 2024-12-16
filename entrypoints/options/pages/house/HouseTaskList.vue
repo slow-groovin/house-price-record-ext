@@ -8,12 +8,7 @@ import {RowSelectionState} from "@tanstack/vue-table";
 import {Button} from "@/components/ui/button";
 import {browser} from "wxt/browser";
 import HouseTaskTableQueryDock from "@/entrypoints/options/components/HouseTaskTableQueryDock.vue";
-import {
-  communityQueryConditionTemplate,
-  houseQueryConditionTemplate,
-  HouseTaskQueryCondition,
-  SortState
-} from "@/types/query-condition";
+import {houseQueryConditionTemplate, HouseTaskQueryCondition, SortState} from "@/types/query-condition";
 import {ArgCache} from "@/utils/lib/ArgCache";
 import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
 import {Collection, InsertType} from "dexie";
@@ -34,7 +29,6 @@ import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
 import {toast} from "vue-sonner";
 import {sendMessage} from "webext-bridge/options";
 import {useRouterQuery} from "@/composables/useRouterQuery";
-import {parseToType} from "@/utils/variable";
 import {newQueryConditionFromQueryParam} from "@/entrypoints/reuse/query-condition";
 
 /*
@@ -68,7 +62,7 @@ ref definition
 const data = ref<HouseTask[]>([])
 const rowCount = ref(0)
 
-const queryCondition = ref<HouseTaskQueryCondition>(newQueryConditionFromQueryParam(houseQueryConditionTemplate,query))
+const queryCondition = ref<HouseTaskQueryCondition>(newQueryConditionFromQueryParam(houseQueryConditionTemplate, query))
 
 if (query.groupId) {
   queryScopeLabel.value = `分组:[${query.groupId}]`
@@ -254,7 +248,6 @@ async function onUpdateQueryCondition() {
 }
 
 
-
 async function removeQueryConditionQueryParam() {
   await removeQueries(Object.keys(queryCondTemplate))
 }
@@ -292,7 +285,6 @@ async function deleteSelectedTasks() {
   data.value = data.value.filter(item => !ids.includes(item.id))
   rowSelection.value = {}
 }
-
 
 
 async function addToGroup() {
@@ -393,16 +385,13 @@ onMounted(() => {
 
   </div>
 
-  <div class="overflow-x-auto">
-    <HouseTasksTable :data="data"
-                     :row-count="rowCount"
-                     :init-page-index="_pageIndex?Number(_pageIndex):undefined"
-                     :init-page-size="_pageSize?Number(_pageSize):undefined"
-                     @on-pagination-change="onPaginationUpdate"
-                     v-model:row-selection="rowSelection"/>
-
-  </div>
-
+  <HouseTasksTable :data="data"
+                   :row-count="rowCount"
+                   :init-page-index="_pageIndex?Number(_pageIndex):undefined"
+                   :init-page-size="_pageSize?Number(_pageSize):undefined"
+                   @on-pagination-change="onPaginationUpdate"
+                   class="overflow-x-hidden"
+                   v-model:row-selection="rowSelection"/>
 
 </template>
 
