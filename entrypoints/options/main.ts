@@ -23,6 +23,9 @@ import HouseUpdatePreview from "@/entrypoints/options/pages/house/HouseUpdatePre
 import CommunityGroupList from "@/entrypoints/options/pages/community/ComuunityGroupList.vue"
 import TaskGroupDetail from "@/entrypoints/options/pages/TaskGroupDetail.vue";
 import HouseGroupList from "@/entrypoints/options/pages/house/HouseGroupList.vue";
+import BatchRunningNotice from "@/entrypoints/options/pages/community/BatchRunningNotice.vue";
+import HouseBatchRunningNotice from "@/entrypoints/options/pages/house/BatchRunningNotice.vue";
+import BlocksPage from "@/entrypoints/options/pages/BlocksPage.vue";
 
 const router=createRouter({
 
@@ -38,6 +41,7 @@ const router=createRouter({
 				},
 				{path:'/debug',component:OptionDebugEntry},
 				{path:'/settings',component:SettingsPage},
+				{path:'/blocks',component:BlocksPage},
 
 				{path:'/h/task/list',component:HouseTaskList},
 				{path:'/h/task/change',component:HouseChangeList},
@@ -58,6 +62,8 @@ const router=createRouter({
 
 			]
 		},
+		{path:'/h/running/notice',component:HouseBatchRunningNotice},
+		{path:'/c/running/notice',component:BatchRunningNotice},
 	]
 
 })

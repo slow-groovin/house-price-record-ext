@@ -96,7 +96,7 @@ onMounted(() => {
   <template v-else>
     <div :class="cn('flex flex-row flex-wrap items-center gap-x-7')">
       <h1 class="text-2xl font-bold text-primary">
-        [{{ task.hid }}] {{ task.name }}
+        🏠[{{ task.hid }}] {{ task.name }}
       </h1>
 
       <div v-if="task.status===HouseTaskStatus.running"

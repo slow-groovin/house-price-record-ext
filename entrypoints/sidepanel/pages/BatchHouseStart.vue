@@ -155,15 +155,15 @@ async function startBathHouse() {
 
     </div>
     <div class="line">
-      <label for="maxConcurrent">maxConcurrent: </label>
+      <label for="maxConcurrent">最大同时打开页面: </label>
       <Input v-model="maxConcurrent" id="maxConcurrent" type="number" class="w-24" :disabled="!isInit"/>
     </div>
     <div class="line">
-      <label for="retryTime">retryTime: </label>
+      <label for="retryTime">失败重试次数: </label>
       <Input v-model="retryTime" id="retryTime" type="number" class="w-24" :disabled="!isInit"/>
     </div>
     <div class="line">
-      <label for="interval">interval: </label>
+      <label for="interval">任务间隔: </label>
       <Input v-model="interval" id="interval" type="number" class="w-24" :disabled="!isInit"/>
     </div>
   </div>
@@ -185,12 +185,6 @@ async function startBathHouse() {
 
 
 
-  <TransitionGroup name="list" tag="ul"  class="list-disc pl-10">
-    <li>5</li>
-    <li>5</li>
-    <li>5</li>
-    <li>5</li>
-  </TransitionGroup>
 
 
   <Alert variant="destructive" v-if="batchExecutor?.isPaused && pausedContext && pausedError">
