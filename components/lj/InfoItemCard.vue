@@ -37,10 +37,12 @@ function getIcon(icon?: string, type?: 'money' | 'count' | 'area' | 'date') {
       <CardDescription>
         <div class="flex items-center">
           {{name}}
-          <slot name="hoverDesc"></slot>
-          <InfoHover v-if="desc && $slots.hoverDesc" class="w-4 h-4">
-            {{desc}}
-          </InfoHover>
+          <slot name="hoverDesc">
+            <InfoHover v-if="desc" class="w-4 h-4">
+              {{desc}}
+            </InfoHover>
+          </slot>
+
         </div>
 
       </CardDescription>

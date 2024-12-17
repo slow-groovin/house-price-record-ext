@@ -3,7 +3,8 @@
     <div class="flex flex-col">
       <div class="flex items-center gap-2">
         <slot name="logo" />
-        <h1 class="text-white text-xl font-medium">{{ title }}</h1>
+
+        <h1 class="text-white text-xl font-medium"> <a href="/options.html#/">{{ title }}</a></h1>
       </div>
       <span class="text-gray-400 text-sm">v{{ version }}</span>
     </div>

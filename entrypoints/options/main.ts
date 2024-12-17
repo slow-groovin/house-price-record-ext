@@ -9,7 +9,7 @@ import HomePage from "@/entrypoints/options/pages/HomePage.vue";
 
 import CommunityDetailPage from "@/entrypoints/options/pages/community/CommunityDetailPage.vue";
 
-import { VueQueryPlugin } from '@tanstack/vue-query'
+import {VueQueryPlugin} from '@tanstack/vue-query'
 import CommunityUpdatePreview from "@/entrypoints/options/pages/community/CommunityUpdatePreview.vue";
 
 import CommunityRecordPage from "@/entrypoints/options/pages/community/CommunityRecordPage.vue";
@@ -26,44 +26,49 @@ import HouseGroupList from "@/entrypoints/options/pages/house/HouseGroupList.vue
 import BatchRunningNotice from "@/entrypoints/options/pages/community/BatchRunningNotice.vue";
 import HouseBatchRunningNotice from "@/entrypoints/options/pages/house/BatchRunningNotice.vue";
 import BlocksPage from "@/entrypoints/options/pages/BlocksPage.vue";
+import IFrameDocSite from "@/entrypoints/options/pages/IFrameDocSite.vue";
+import StartupIntro from "@/entrypoints/options/pages/StartupIntro.vue";
+import AboutMe from "@/entrypoints/options/pages/AboutMe.vue";
+import ExportImport from "@/entrypoints/options/pages/ExportImport.vue";
 
-const router=createRouter({
+const router = createRouter({
 
 	history: createWebHashHistory(),
-	routes:[
+	routes: [
 		{
-			path:'/',
-			component:MainLayout,
-			children:[
-				{
-					path:'/',
-					component: HomePage,
-				},
-				{path:'/debug',component:OptionDebugEntry},
-				{path:'/settings',component:SettingsPage},
-				{path:'/blocks',component:BlocksPage},
+			path: '/',
+			component: MainLayout,
+			children: [
+				{path: '/', component: HomePage,},
+				{path: '/doc', component: IFrameDocSite,},
+				{path: '/startup', component: StartupIntro,},
+				{path: '/about', component: AboutMe,},
+				{path: '/debug', component: OptionDebugEntry},
+				{path: '/settings', component: SettingsPage},
+				{path: '/blocks', component: BlocksPage},
+				{path: '/export', component: ExportImport},
 
-				{path:'/h/task/list',component:HouseTaskList},
-				{path:'/h/task/change',component:HouseChangeList},
-				{path:'/h/task/status/change',component:HouseStatusChangeList},
-				{path:'/h/task/detail',component:HouseDetailPage},
-				{path:'/h/group/list',component:HouseGroupList},
-				{path:'/h/group/detail',component:TaskGroupDetail},
+				{path: '/h/task/list', component: HouseTaskList},
+				{path: '/h/task/change', component: HouseChangeList},
+				{path: '/h/task/status/change', component: HouseStatusChangeList},
+				{path: '/h/task/detail', component: HouseDetailPage},
+				{path: '/h/group/list', component: HouseGroupList},
+				{path: '/h/group/detail', component: TaskGroupDetail},
 
-				{path:'/c/task/list',component:CommunityTaskList},
-				{path:'/c/group/list',component:CommunityGroupList},
-				{path:'/c/task/detail',component:CommunityDetailPage},
-				{path:'/c/group/detail',component:TaskGroupDetail},
-				{path:'/c/record',component:CommunityRecordPage},
+				{path: '/c/task/list', component: CommunityTaskList},
+				{path: '/c/group/list', component: CommunityGroupList},
+				{path: '/c/task/detail', component: CommunityDetailPage},
+				{path: '/c/group/detail', component: TaskGroupDetail},
+				{path: '/c/record', component: CommunityRecordPage},
 
 
-				{path:'h/update/preview',component:HouseUpdatePreview},
-				{path:'c/update/preview',component:CommunityUpdatePreview},
+				{path: 'h/update/preview', component: HouseUpdatePreview},
+				{path: 'c/update/preview', component: CommunityUpdatePreview},
 
 			]
 		},
-		{path:'/h/running/notice',component:HouseBatchRunningNotice},
-		{path:'/c/running/notice',component:BatchRunningNotice},
+		{path: '/h/running/notice', component: HouseBatchRunningNotice},
+		{path: '/c/running/notice', component: BatchRunningNotice},
 	]
 
 })

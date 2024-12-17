@@ -27,7 +27,6 @@ const menuGroups = ref<MenuGroup[]>([
     emoji: '🏠',
     name: '房源',
     menus: [
-      {name: '概览', link: '/#'},
       {name: '列表', link: '/h/task/list'},
       {name: '价格变更', link: '/h/task/change'},
       {name: '状态变更', link: '/h/task/status/change'},
@@ -38,17 +37,17 @@ const menuGroups = ref<MenuGroup[]>([
   {
     name: '小区',
     menus: [
-      {name: '概览', link: '/#'},
       {name: '列表', link: '/c/task/list'},
       {name: '任务分组', link: '/c/group/list'},
     ]
   },
   {
-    name: '⚙设置',
+    emoji:'⚙️',
+    name: '️设置',
     menus: [
       {name: '设置', link: '/settings'},
       {name: '拦截规则', link: '/blocks'},
-      {name: '导入/导出', link: '/#'},
+      {name: '导入/导出', link: '/export'},
     ]
   }
 ])

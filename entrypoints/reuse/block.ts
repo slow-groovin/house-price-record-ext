@@ -1,5 +1,6 @@
 import {storage} from "wxt/storage";
 import {browser} from "wxt/browser";
+import {omit} from "radash";
 
 
 const debugRules = [
@@ -25,7 +26,7 @@ const debugRules = [
 	},
 ]
 
-const ljMetricRules = [
+export const ljMetricRules = [
 
 	{
 		// 阻止 https://dig.lianjia.com, https://ajax.api.lianjia.com, https://ex.lianjia.com 的所有请求
@@ -36,7 +37,10 @@ const ljMetricRules = [
 			initiatorDomains: ["lianjia.com"],
 			urlFilter: "||ajax.api.lianjia.com",
 			resourceTypes: ["image", "script", "xmlhttprequest"]
-		}
+		},
+		action_desc:'阻止所有 ajax.api.lianjia.com 的图片/脚本/请求',
+		effect_desc:'阻止广告/推荐数据的请求',
+		default_on:false,
 	},
 	{
 		// 阻止 https://dig.lianjia.com, https://ajax.api.lianjia.com, https://ex.lianjia.com 的所有请求
@@ -47,7 +51,10 @@ const ljMetricRules = [
 			initiatorDomains: ["lianjia.com"],
 			urlFilter: "||ex.lianjia.com",
 			resourceTypes: ["image", "script", "xmlhttprequest"]
-		}
+		},
+		action_desc:'阻止所有 ex.lianjia.com的图片/脚本/请求',
+		effect_desc:'阻止发往ex.lianjia.com的行为分析上报请求',
+		default_on:true,
 	},
 	{
 		// 阻止 https://dig.lianjia.com, https://ajax.api.lianjia.com, https://ex.lianjia.com 的所有请求
@@ -58,7 +65,10 @@ const ljMetricRules = [
 			initiatorDomains: ["lianjia.com"],
 			urlFilter: "||dig.lianjia.com",
 			resourceTypes: ["image", "script", "xmlhttprequest", "other", "ping"]
-		}
+		},
+		action_desc:'阻止所有 dig.lianjia.com的图片/脚本/请求',
+		effect_desc:'阻止上报操作行为数据',
+		default_on:true,
 	},
 	{
 		// 阻止包含 "google" 的所有请求
@@ -69,7 +79,10 @@ const ljMetricRules = [
 			initiatorDomains: ["lianjia.com"],
 			regexFilter: ".*google.*",
 			resourceTypes: ["main_frame", "sub_frame", "script", "xmlhttprequest"]
-		}
+		},
+		action_desc:'阻止所有 google.* 的请求',
+		effect_desc:'阻止发送数据到Google分析服务',
+		default_on: false,
 	},
 	{
 		// 阻止包含 "baidu.com" 的所有请求
@@ -82,7 +95,10 @@ const ljMetricRules = [
 			// urlFilter: "||baidu.com",
 			resourceTypes: ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "csp_report", "media", "websocket", "webtransport", "webbundle", "other"],
 			// excludedResourceTypes:["main_frame"]
-		}
+		},
+		action_desc:'阻止所有 baidu.com 的请求',
+		effect_desc:'阻止百度广告行为数据上报',
+		default_on: false,
 	},
 	{
 		// 阻止包含 "cnzz" 的所有请求
@@ -93,7 +109,10 @@ const ljMetricRules = [
 			initiatorDomains: ["lianjia.com"],
 			regexFilter: ".*cnzz.*",
 			resourceTypes: ["main_frame", "sub_frame", "script", "xmlhttprequest"]
-		}
+		},
+		action_desc: '阻止所有 cnzz.* 的请求',
+		effect_desc: '阻止cnzz统计行为数据上报',
+		default_on: false,
 	},
 	{
 		// 阻止包含 "bdstatic" 的所有请求
@@ -104,7 +123,10 @@ const ljMetricRules = [
 			initiatorDomains: ["lianjia.com"],
 			regexFilter: ".*bdstatic.*",
 			resourceTypes: ["main_frame", "sub_frame", "script", "xmlhttprequest"]
-		}
+		},
+		action_desc: '阻止所有 bdstatic.* 的请求',
+		effect_desc: '阻止百度统计行为数据上报',
+		default_on: false,
 	},
 	{
 		// 阻止包含 "bdimg" 的所有请求
@@ -115,7 +137,10 @@ const ljMetricRules = [
 			initiatorDomains: ["lianjia.com"],
 			regexFilter: ".*bdimg.*",
 			resourceTypes: ["main_frame", "sub_frame", "script", "xmlhttprequest"]
-		}
+		},
+		action_desc: '阻止所有 bdimg.* 的请求',
+		effect_desc: '阻止百度地图行为数据上报',
+		default_on: false,
 	},
 	{
 		// 允许包含 "ljCdn" 的图片
@@ -127,7 +152,10 @@ const ljMetricRules = [
 			initiatorDomains: ["hip.lianjia.com"],
 			urlFilter: "||s1.ljcdn.com/",
 			resourceTypes: ["image", "script", "xmlhttprequest"]
-		}
+		},
+		action_desc: '允许所有 ljcdn.com 的图片',
+		effect_desc: '允许图片加载',
+		default_on: true,
 	},
 	{
 		// 阻止包含 "baidu.com" 的所有请求
@@ -139,7 +167,10 @@ const ljMetricRules = [
 			urlFilter: "||mediav.com",
 			resourceTypes: ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "csp_report", "media", "websocket", "webtransport", "webbundle", "other"],
 			// excludedResourceTypes:["main_frame"]
-		}
+		},
+		action_desc: '阻止所有 mediav.com 的请求',
+		effect_desc: '阻止mediav的用户行为追踪请求',
+		default_on: false,
 	},
 	{
 		// 阻止包含 "baidu.com" 的所有请求
@@ -151,7 +182,9 @@ const ljMetricRules = [
 			urlFilter: "||cdnmaster.com",
 			resourceTypes: ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "csp_report", "media", "websocket", "webtransport", "webbundle", "other"],
 			// excludedResourceTypes:["main_frame"]
-		}
+		},
+		action_desc: '阻止所有 cdnmaster.com 的请求',
+		effect_desc: '阻止cdnmaster.com的用户行为追踪请求',
 	},
 	{
 		// 允许包含 "geetest.com" 的图片
@@ -163,10 +196,17 @@ const ljMetricRules = [
 			initiatorDomains: ["clogin.lianjia.com"],
 			// urlFilter: "||geetest.com",
 			// resourceTypes: ["image", "script", "xmlhttprequest"]
-		}
+		},
+		action_desc: '允许所有 geetest.com 的图片',
+		effect_desc: '允许在登陆页加载验证码图片',
+		default_on: true,
+		must_on:true,
 	},
 ]
 
+
+const ljRulesWithoutDesc=ljMetricRules.map(rule=>omit(rule, ["action_desc","effect_desc","default_on","must_on"]))
+console.log(ljRulesWithoutDesc)
 const ljImgRules = [
 	{
 		// 阻止所有 .png, .jpg, .jpeg 文件
@@ -223,6 +263,14 @@ export async function updateRules(key: keyof typeof rules) {
 		addRules: rules[key],
 	});
 	console.log('[block.ts]update new rules done:');
+}
+export async function updateLjRulesById(removeRuleIds:number[], addRuleIds:number[]){
+
+	await browser.declarativeNetRequest.updateDynamicRules({
+		removeRuleIds:ljRulesWithoutDesc.map(r=>r.id),
+		//@ts-ignore
+		addRules: addRuleIds.map(id=>ljRulesWithoutDesc.find(rule=>rule.id==id))
+	});
 }
 
 export function removeRules(key: keyof typeof rules) {

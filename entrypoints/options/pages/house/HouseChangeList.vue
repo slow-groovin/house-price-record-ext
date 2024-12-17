@@ -133,12 +133,6 @@ onMounted(async () => {
 
 <template>
   <h1 class="text-2xl font-bold text-center my-4">价格变动</h1>
-<pre>
-  todo:
-  1. param 接受cid, hid等参数, 便于c页面跳转查看详情
-  2. c查询变为: 名字字符串(模糊)--> 找到cid  --> 索引查询
-</pre>
-
   <div class="mb-5 rounded p-2 border">
     查询条件:
     <HousePriceChangeQueryDock v-model="queryCondition" @update="onApplyQueryCondition"/>
