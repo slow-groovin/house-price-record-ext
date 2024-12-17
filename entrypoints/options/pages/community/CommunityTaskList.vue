@@ -306,8 +306,18 @@ const columnDef: (ColumnDef<CommunityTask>)[] = [
   {accessorKey: 'visitCountIn90Days', header: '过去90天带看数', id: '过去90天带看数'},
   {accessorKey: 'doneCountIn90Days', header: '过去90天成交量', id: '过去90天成交量'},
   {accessorKey: 'runningCount', header: '运行次数', id: '运行次数'},
-  {accessorKey: 'createdAt', header: '创建时间', id: '创建时间',cell:({cell})=><TwoLineAt at={cell.getValue()}/>},
-  {accessorKey: 'lastRunningAt', header: '最后运行时间', id: '最后运行时间',cell:({cell})=><TwoLineAt at={cell.getValue()}/>},
+  {
+    accessorKey: 'createdAt',
+    header: '创建时间',
+    id: '创建时间',
+    cell: ({cell}) => <TwoLineAt at={cell.getValue() as number}/>
+  },
+  {
+    accessorKey: 'lastRunningAt',
+    header: '最后运行时间',
+    id: '最后运行时间',
+    cell: ({cell}) => <TwoLineAt at={cell.getValue() as number}/>
+  },
 ]
 /*
 column END
@@ -513,28 +523,29 @@ onMounted(() => {
 
   <ColumnVisibleOption :columns="table.getAllColumns()"/>
 
-  <Table>
-    <TableHeader>
-      <TableRow v-for="headerGroup in table.getHeaderGroups()">
-        <TableHead v-for="header in headerGroup.headers">
-          <FlexRender
-            v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
-            :props="header.getContext()"
-          />
-        </TableHead>
+  <div class=" overflow-x-auto text-nowrap">
+    <Table>
+      <TableHeader>
+        <TableRow v-for="headerGroup in table.getHeaderGroups()">
+          <TableHead v-for="header in headerGroup.headers">
+            <FlexRender
+              v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+              :props="header.getContext()"
+            />
+          </TableHead>
 
-      </TableRow>
+        </TableRow>
 
-    </TableHeader>
-    <TableBody>
-      <TableRow v-for="row in table.getRowModel().rows">
-        <TableCell v-for="cell in row.getVisibleCells()">
-          <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()"/>
-        </TableCell>
-      </TableRow>
-    </TableBody>
-  </Table>
-
+      </TableHeader>
+      <TableBody>
+        <TableRow v-for="row in table.getRowModel().rows">
+          <TableCell v-for="cell in row.getVisibleCells()">
+            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()"/>
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  </div>
 
   <div class="relative">
     <PaginationComponent

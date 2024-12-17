@@ -2,11 +2,12 @@ import {
 	extractCidFromListUrl,
 	extractCityAndHidFromHouseUrl,
 	extractCityFromUrl,
-	extractPageNumberFromListUrl
+	extractPageNumberFromListUrl, isLoginPage
 } from "@/utils/lj-url";
 import {extractNumber, waitForElement} from "@/utils/document";
 import {CommunityListPageItem, HouseListDetailItem, HousePriceItem} from "@/types/lj";
 import {removeNull} from "@/types/generic";
+import {PauseError} from "@/utils/lib/BatchQueueExecutor";
 
 export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 	/**

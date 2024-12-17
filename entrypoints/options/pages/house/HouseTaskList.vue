@@ -260,8 +260,7 @@ async function goBeginBatchSelectedTasks() {
   const id = await db.tempBatchHouse.add({hidList})
 
   const window = await browser.windows.getCurrent({})
-  const newWindow = await browser.windows.create({state: 'maximized'})
-  await browser.tabs.create({url: "/options.html#/h/running/notice", windowId: newWindow.id as number})
+  const newWindow = await browser.windows.create({url: "/options.html#/h/running/notice",state: 'maximized'})
   await chrome.sidePanel.open({windowId: newWindow.id as number})
   await chrome.sidePanel.setOptions({path: '/sidepanel.html#/h/batch?id=' + id})
 }

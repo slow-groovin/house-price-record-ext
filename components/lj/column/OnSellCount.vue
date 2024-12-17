@@ -11,7 +11,7 @@ const color= ()=>change?(change>0?'text-green-500':'text-red-500'):''
 </script>
 
 <template>
-  <div v-if="value" class="flex flex-nowrap items-center">
+  <div v-if="value" class="flex flex-nowrap text-nowrap items-center">
     <div class="text-lg font-bold ">{{value}}套</div>
     <div v-if="change" class="text-sm " :class="color()">({{change>0?'+':''}}{{change}})</div>
   </div>

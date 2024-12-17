@@ -1,13 +1,20 @@
 import  "webext-bridge/content-script";
 import {housePageEntry} from "@/entrypoints/content/house-page";
 import {communityListPageEntry} from "@/entrypoints/content/community-list-page";
-import {isCommunityHomePage, isCommunityListPage, isHousePage, isHouseSoldPage} from "@/utils/lj-url";
+import {
+	isCaptchaPage,
+	isCommunityHomePage,
+	isCommunityListPage,
+	isHousePage,
+	isHouseSoldPage,
+	isLoginPage
+} from "@/utils/lj-url";
 import '~/assets/tailwind.css'
 import '~/assets/shacn.css'
 import {pageDebugEntry} from "@/entrypoints/content/page-debug";
 import {defineContentScript} from "wxt/sandbox";
 import {houseSoldPageEntry} from "@/entrypoints/content/house-sold-page";
-
+import {loginPageEntry,captchaPageEntry} from './exception-page'
 export default defineContentScript({
 	matches: [
 		'*://*.lianjia.com/ershoufang/*',
@@ -31,6 +38,7 @@ export default defineContentScript({
 
 
 		const url=window.location.href
+		console.log('url:',url)
 		if(isHousePage(url)){
 			housePageEntry(ctx)
 		}else if(isCommunityListPage(url)){
@@ -38,6 +46,10 @@ export default defineContentScript({
 		}else if(isHouseSoldPage(url)){
 			console.log("sold out hit")
 			await houseSoldPageEntry(ctx)
+		}else if(isLoginPage(url)){
+			await loginPageEntry(ctx)
+		}else if(isCaptchaPage(url)){
+			await captchaPageEntry(ctx)
 		}
 
 		if(url.includes('example.com')){

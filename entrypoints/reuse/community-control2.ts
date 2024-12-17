@@ -3,9 +3,10 @@ import {sendMessage} from "webext-bridge/background"
 import {db} from "@/utils/client/Dexie";
 import {stabilizeFields} from "@/utils/variable";
 import {removeRepeat} from "@/utils/array";
-import {list} from "radash";
+import {list, sleep} from "radash";
 import {genCommunityPageUrl} from "@/utils/lj-url";
 import {browser} from "wxt/browser";
+import {undefined} from "zod";
 
 
 const PREFIX='[oneCommunityEntry]'
@@ -16,7 +17,7 @@ const PREFIX='[oneCommunityEntry]'
 export async function startPageEntry(communityList: CommunityTask[]){
 	let item = {communityList};
 	const id=await db.tempBatchCommunity.add(item)
-	const newWindow=await browser.windows.create({state:'maximized'})
+	const newWindow=await browser.windows.create({url: "/options.html#/c/running/notice", state:'maximized'})
 	await chrome.sidePanel.open({windowId: newWindow.id as number})
 	await chrome.sidePanel.setOptions({path:'/sidepanel.html#/c/batch?id='+id})
 }

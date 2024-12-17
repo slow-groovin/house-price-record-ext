@@ -2,6 +2,8 @@
 
 import {Separator} from "@/components/ui/separator";
 import InfoHover from "@/components/InfoHover.vue";
+import {Icon} from "@iconify/vue";
+document.title = '运行前确认 | 批量运行任务'
 </script>
 
 <template>
@@ -9,12 +11,46 @@ import InfoHover from "@/components/InfoHover.vue";
     <div class="flex flex-wrap gap-4">
       <div class="p-2 border rounded w-fit ">
         <h1 class="text-2xl font-bold border-b">运行前确认</h1>
-        <div class="flex gap-1">
+        <div class="inline-flex gap-1 flex-wrap text-wrap break-words">
           请先打开任意平台房源页面进行测试, 确保
-          <div class="bg-gray-100 border flex">访问平台页面不会出现验证码<InfoHover/></div>
+          <InfoHover>
+            <template #trigger>
+              <span class="bg-gray-200 border inline-flex  items-center">
+                不会出现验证码
+                <Icon icon="icon-park-outline:point"/>
+              </span>
+            </template>
+            <template #default>
+              <div class="relative">
+                <div class="absolute top-1/2 text-3xl font-bold bg-white">
+                  可以打开并正常访问这种房源页面
+                </div>
+                <img src="/desc/house-normal.jpg" alt="" class="w-[28rem]">
+              </div>
+            </template>
+          </InfoHover>
           ,以及
-          <div class="bg-gray-100 border flex">房源详情信息可访问<InfoHover/></div>
+          <InfoHover>
+            <template #trigger>
+              <span class="bg-gray-200 border inline-flex items-center">
+                可以查看详细信息(登陆状态有效)
+                <Icon icon="icon-park-outline:point"/>
+              </span>
+            </template>
+            <template #default>
+              <div class="flex gap-2">
+                <div class="relative">
+                  <div class="absolute top-0 text-3xl font-bold bg-white">❌不能查看, 显示"请登录"</div>
+                  <img src="/desc/house-not-login.jpg" alt="" class="w-[28rem]">
+                </div>
 
+                <div class="relative">
+                  <div class="absolute top-0 text-3xl font-bold bg-white">✅能够查看详细信息</div>
+                  <img src="/desc/house-login.jpg" alt="" class="w-[28rem]">
+                </div>
+              </div>
+            </template>
+          </InfoHover>
         </div>
 
       </div>

@@ -1,6 +1,6 @@
 import {deleteBySelector, hiddenAndReplace} from "@/utils/document";
 import overlayText from '~/public/overlay.html.txt';
-import overlayImg from '~/public/overlay.png';
+import overlayImg from '~/public/overlay.jpg';
 
 export function injectCoverModal() {
 

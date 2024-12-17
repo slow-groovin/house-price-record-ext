@@ -209,7 +209,7 @@ const ljRulesWithoutDesc=ljMetricRules.map(rule=>omit(rule, ["action_desc","effe
 console.log(ljRulesWithoutDesc)
 const ljImgRules = [
 	{
-		// 阻止所有 .png, .jpg, .jpeg 文件
+		// 阻止所有 .jpg, .jpg, .jpeg 文件
 		id: 17001,
 		priority: 9,
 		action: {type: "block"},
@@ -260,7 +260,7 @@ export async function clearRules(){
 export async function updateRules(key: keyof typeof rules) {
 	await browser.declarativeNetRequest.updateDynamicRules({
 		// @ts-ignore
-		addRules: rules[key],
+		addRules: rules[key].map(rule=>omit(rule, ["action_desc","effect_desc","default_on","must_on"])),
 	});
 	console.log('[block.ts]update new rules done:');
 }

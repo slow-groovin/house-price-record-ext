@@ -21,12 +21,8 @@
     }
   },
   "include": [
-    "../**/*", "../**/*.vue","../**/*.ts",
+    "../**/*",
     "./wxt.d.ts"
   ],
-  "exclude": [
-    "../.output",
-    "../node_modules",
-    "../.wxt"
-  ]
+  "exclude": ["../.output"]
 }
