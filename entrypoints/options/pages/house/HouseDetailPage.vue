@@ -24,6 +24,7 @@ import AddedTypeBudget from "@/components/lj/house/AddedTypeBudget.vue";
 import NewPriceChangeBudget from "@/components/lj/house/NewPriceChangeBudget.vue";
 import StatusChangeBudget from "@/components/lj/house/StatusChangeBudget.vue";
 import RealAreaDesc from "@/entrypoints/options/components/description/RealAreaDesc.vue";
+import {useExtTitle} from "@/composables/useExtInfo";
 
 const {query} = useRoute()
 const hid = query['id'] as string
@@ -33,6 +34,7 @@ const changes = ref<HouseChange[]>()
 const statusChanges = ref<HouseStatusChange[]>()
 const commonFieldChanges = ref<CommonFieldChange[]>()
 
+useExtTitle(()=>'🏠任务详情')
 
 async function queryData() {
   task.value = await db.houseTasks.where('hid').equals(hid).first()

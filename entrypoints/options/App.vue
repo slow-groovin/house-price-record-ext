@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { Toaster } from '@/components/ui/sonner'
-
+import {useExtTitle} from "@/composables/useExtInfo";
+useExtTitle('后台')
 
 </script>
 

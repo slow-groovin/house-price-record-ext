@@ -17,6 +17,7 @@ import {calendarDateToDate} from "@/utils/date";
 import {ArgCache} from "@/utils/lib/ArgCache";
 import HouseChangesTimeLine from "@/entrypoints/options/components/HouseChangesTimeLine.vue";
 import CommunityRecordGraphs from "@/entrypoints/options/components/CommunityRecordGraphs.vue";
+import {useExtTitle} from "@/composables/useExtInfo";
 
 const {query} = useRoute()
 const cid = query['id'] as string
@@ -47,6 +48,9 @@ const statusChanges = ref<HouseStatusChange[]>([])
 const statusChangesCount = ref(0)
 
 const argCache=new ArgCache()
+
+useExtTitle(()=>'任务详情:'+task.value?.name)
+
 
 async function resetDateRange(){
   queryChanges()

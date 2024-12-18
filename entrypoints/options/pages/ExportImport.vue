@@ -4,7 +4,9 @@ import {onMounted, ref} from "vue"
 import {db} from "@/utils/client/Dexie";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
 import {getIndexedDBUsage} from "@/utils/browser";
+import {useExtTitle} from "@/composables/useExtInfo";
 
+useExtTitle('导入/导出')
 
 
 const usedMb=ref(0)
@@ -67,7 +69,7 @@ onMounted(async () => {
 <template>
   <h1 class="text-3xl font-bold my-4">导入/导出</h1>
   <blockquote>
-    当前数据总量大小约: {{ (usedMb).toFixed(2) }}MB
+    当前数据总量大小约: {{ (usedMb)?.toFixed(2) }}MB
   </blockquote>
 
   <div class="relative">

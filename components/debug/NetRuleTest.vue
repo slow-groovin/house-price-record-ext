@@ -4,7 +4,7 @@ import {Button} from "@/components/ui/button";
 import {onMounted, ref, toRaw} from "vue";
 import {browser} from "wxt/browser";
 import ObjectTable from "@/components/table/ObjectTable.vue";
-import {clearRules, rules, updateRules} from "@/entrypoints/reuse/block"
+import {clearRules,  addRules} from "@/entrypoints/reuse/block"
 
 
 const allRules=ref<any[]>(Object.values(rules).flat())
@@ -52,9 +52,7 @@ function removeById(id:number){
 
 async function addAll(){
   await clearRules()
-  await updateRules('ljMetricRules')
-  await updateRules('ljImgRules')
-  await updateRules('debugRules')
+  await addRules()
   await showRule()
 }
 onMounted(()=>{

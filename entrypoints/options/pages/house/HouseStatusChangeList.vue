@@ -1,19 +1,23 @@
 <script setup lang="ts">
 //
 import {db} from "@/utils/client/Dexie";
-import {HouseChange, HouseStatusChange} from "@/types/lj";
+import {HouseStatusChange} from "@/types/lj";
 import {calcOffset} from "@/utils/table-utils";
 import {onMounted, ref} from "vue";
 import HouseChangesTimeLine from "@/entrypoints/options/components/HouseChangesTimeLine.vue";
-import HousePriceChangeQueryDock from "@/entrypoints/options/components/HousePriceChangeQueryDock.vue";
-import {HouseChangeQueryCondition, HouseStatusChangeQueryCondition, SortState} from "@/types/query-condition";
+import {frequentFieldZhMap, HouseStatusChangeQueryCondition, SortState} from "@/types/query-condition";
 import {ArgCache} from "@/utils/lib/ArgCache";
 import {Collection, InsertType} from "dexie";
 import {isNumber} from "radash";
-import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
-import SelectButton from "@/components/custom/SelectButton.vue";
+import GenericSortDock from "@/entrypoints/options/components/GenericSortDock.vue";
 import SelectSwitchButton from "@/components/custom/SelectSwitchButton.vue";
 import HouseStatusChangeQueryDock from "@/entrypoints/options/components/HouseStatusChangeQueryDock.vue";
+import {useExtTitle} from "@/composables/useExtInfo";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+
+const {isDebug}=useDevSetting()
+
+useExtTitle('状态变更')
 
 
 const queryCondition = ref<HouseStatusChangeQueryCondition>({})
@@ -128,11 +132,11 @@ onMounted(async () => {
 
   <div class="mb-5 rounded p-2 border">
     排序:
-    <HouseTaskSortDock v-model="sortCondition"  :fields="['at']" @update="onApplyQueryCondition"/>
+    <GenericSortDock v-model="sortCondition"  :fields="['at']" :field-text-map="frequentFieldZhMap" @update="onApplyQueryCondition"/>
   </div>
 
 
-  <div>{{ queryCondition }} {{sortCondition}}</div>
+  <div v-if="isDebug">{{ queryCondition }} {{sortCondition}}</div>
 
   <div class="flex items-center p-1 my-2 gap-4">
     <div>      共 {{rowCount}} 条    </div>

@@ -3,35 +3,35 @@ import {sendMessage} from "webext-bridge/background"
 import {db} from "@/utils/client/Dexie";
 import {stabilizeFields} from "@/utils/variable";
 import {removeRepeat} from "@/utils/array";
-import {list, sleep} from "radash";
+import {list} from "radash";
 import {genCommunityPageUrl} from "@/utils/lj-url";
 import {browser} from "wxt/browser";
-import {undefined} from "zod";
 
 
-const PREFIX='[oneCommunityEntry]'
+const PREFIX = '[oneCommunityEntry]'
 
 /**
  * 打开单独窗口和side panel的start page作为开始
  */
-export async function startPageEntry(communityList: CommunityTask[]){
+export async function startPageEntry(communityList: CommunityTask[]) {
 	let item = {communityList};
-	const id=await db.tempBatchCommunity.add(item)
-	const newWindow=await browser.windows.create({url: "/options.html#/c/running/notice", state:'maximized'})
+	const id = await db.tempBatchCommunity.add(item)
+	const newWindow = await browser.windows.create({url: "/options.html#/c/running/notice", state: 'maximized'})
 	await chrome.sidePanel.open({windowId: newWindow.id as number})
-	await chrome.sidePanel.setOptions({path:'/sidepanel.html#/c/batch?id='+id})
+	await chrome.sidePanel.setOptions({path: '/sidepanel.html#/c/batch?id=' + id})
 }
 
-export async function oneCommunityEntry(communityTask:CommunityTask) {
-	const {cid,city}=communityTask
+export async function oneCommunityEntry(communityTask: CommunityTask) {
+	const {cid, city} = communityTask
 
 	/**
 	 * step 1. 获取页面页数
 	 */
 	const url = genCommunityPageUrl(city as string, cid, 1)
-	console.debug(PREFIX,'start url: ', url)
+	console.debug(PREFIX, 'start url: ', url)
 	const tab = await browser.tabs.create({url, active: false})
-	const pageItem = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
+	let pageItem: CommunityListPageItem = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
+
 	await browser.tabs.remove([tab.id as number])
 
 	if (!pageItem.maxPageNo || !pageItem.city) {
@@ -50,15 +50,15 @@ export async function execOneCommunity(input: { city: string, cid: string, maxPa
 	const urlList = list(1, maxPage).map(page => genCommunityPageUrl(city, cid, page))
 
 
-	const recordsOfAllPage: CommunityListPageItem[]=[]
+	const recordsOfAllPage: CommunityListPageItem[] = []
 	//依次打开所有参数中的所有url
 	for (const url of urlList) {
-			const tab = await browser.tabs.create({url, active: false})
-			console.debug('[execOneCommunity] open:', url, tab.id, tab.status)
-			//打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
-			const resp = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
-			console.debug(`[execOneCommunity] one tab[${url}] record resp:`, resp)
-			await browser.tabs.remove([tab.id as number])
+		const tab = await browser.tabs.create({url, active: false})
+		console.debug('[execOneCommunity] open:', url, tab.id, tab.status)
+		//打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
+		const resp = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
+		console.debug(`[execOneCommunity] one tab[${url}] record resp:`, resp)
+		await browser.tabs.remove([tab.id as number])
 
 		recordsOfAllPage.push(resp as CommunityListPageItem)
 	}
@@ -74,7 +74,7 @@ export async function execOneCommunity(input: { city: string, cid: string, maxPa
 /**
  * pageItem[] -> record存储
  */
-function pageItemResults2Record(recordsOfAllPage: CommunityListPageItem[]):CommunityRecord {
+function pageItemResults2Record(recordsOfAllPage: CommunityListPageItem[]): CommunityRecord {
 	//创建record对象
 	const houseList = []
 	for (let item of recordsOfAllPage) {
@@ -89,7 +89,7 @@ function pageItemResults2Record(recordsOfAllPage: CommunityListPageItem[]):Commu
 
 	const record: CommunityRecord = {
 		...mergeResult,
-		at:Date.now(),
+		at: Date.now(),
 		houseList: removeRepeat(houseList, h => h.hid),
 	}
 	//计算数值

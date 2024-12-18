@@ -3,7 +3,9 @@
 import {Separator} from "@/components/ui/separator";
 import InfoHover from "@/components/InfoHover.vue";
 import {Icon} from "@iconify/vue";
-document.title = '运行前确认 | 批量运行任务'
+import {useExtTitle} from "@/composables/useExtInfo";
+useExtTitle('运行前确认 | 批量运行房源任务')
+
 </script>
 
 <template>

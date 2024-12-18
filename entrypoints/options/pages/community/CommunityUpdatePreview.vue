@@ -1,7 +1,7 @@
 <template>
   <div v-if="!isUpdateDone" class="flex flex-col items-center justify-center shadow-inner  my-4 p-3 rounded-lg border">
     <h1 class="inline">
-      批量小区 xx 任务运行完成.
+      批量任务运行(小区)务)完成.
       <Icon icon="icon-park-outline:success" class="inline-block w-16 h-16 text-green-500"/>
     </h1>
   </div>
@@ -10,7 +10,6 @@
   <div v-else class="flex flex-col items-center justify-center shadow-inner  my-4 p-3 rounded-lg border">
     <h1 class="inline">
       本次任务数据库更新完成! 去
-<!--      todo 列表传递参数, 仅查看此次更新的内容-->
       <a :href="'options.html#/c/task/list'" class="underline text-green-500 cursor-pointer">详情页</a>
       看看吧!
       <Icon icon="icon-park-outline:success" class="inline-block w-16 h-16 text-green-500"/>
@@ -74,11 +73,11 @@ import {useRoute} from "vue-router";
 import {db} from "@/utils/client/Dexie";
 import {CommunityUpdatePreview} from "@/types/LjUpdatePreview";
 import {Button} from "@/components/ui/button";
-import {updateBatchHouseWithPreview} from "@/entrypoints/reuse/house-update";
 import {useMutation} from "@tanstack/vue-query";
 import CommunityRecordCard from "@/entrypoints/options/components/CommunityRecordCard.vue";
 import {updateBatchCommunityWithPreview} from "@/entrypoints/reuse/community-update";
 import {browser} from "wxt/browser";
+import {useExtTitle} from "@/composables/useExtInfo";
 
 interface Props {
   class?: HTMLAttributes['class']
@@ -87,6 +86,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const {query: {id}} = useRoute()
+useExtTitle('小区任务运行结果确认预览'+id)
+
 const data = ref<CommunityUpdatePreview>()
 if (id)
   db.tempCommunityUpdatePreview.get(id as string).then(rs => data.value = rs)

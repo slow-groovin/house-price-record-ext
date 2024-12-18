@@ -1,33 +1,23 @@
-import {storage} from "wxt/storage";
 import {browser} from "wxt/browser";
 import {omit} from "radash";
+import {storage} from "wxt/storage";
+import {undefined} from "zod";
 
-
-const debugRules = [
-	{
-		id: 20011,  // Unique rule ID
-		priority: 11,  // Rule priority
-		action: {type: "block"},  // Action to block the request
-		condition: {
-			urlFilter: "|https://www.api2o.com/img/blog/android",  // URL pattern
-			"initiatorDomains": ["www.api2o.com"],
-			resourceTypes: ["image"]  // Resource type to block
-		}
-	},
-	{
-		id: 20012,  // Unique rule ID
-		priority: 11,  // Rule priority
-		action: {type: "block"},  // Action to block the request
-		condition: {
-			urlFilter: "|https://www.api2o.com/img/github",  // URL pattern
-			"initiatorDomains": ["www.not-exist.com"],
-			resourceTypes: ["image"]  // Resource type to block
-		}
-	},
-]
 
 export const ljMetricRules = [
 
+	// {
+	// 	// 阻止所有 .jpg, .jpg, .jpeg 文件
+	// 	id: 17001,
+	// 	priority: 9,
+	// 	action: {type: "block"},
+	//
+	// 	condition: {
+	// 		initiatorDomains: ["lianjia.com"],
+	// 		// urlFilter: "*",
+	// 		resourceTypes: ["image"]
+	// 	}
+	// },
 	{
 		// 阻止 https://dig.lianjia.com, https://ajax.api.lianjia.com, https://ex.lianjia.com 的所有请求
 		id: 17101,
@@ -206,44 +196,13 @@ export const ljMetricRules = [
 
 
 const ljRulesWithoutDesc=ljMetricRules.map(rule=>omit(rule, ["action_desc","effect_desc","default_on","must_on"]))
-console.log(ljRulesWithoutDesc)
-const ljImgRules = [
-	{
-		// 阻止所有 .jpg, .jpg, .jpeg 文件
-		id: 17001,
-		priority: 9,
-		action: {type: "block"},
 
-		condition: {
-			initiatorDomains: ["lianjia.com"],
-			// urlFilter: "*",
-			resourceTypes: ["image"]
-		}
-	},
-
-];
-
-
-export const rules = {
-	debugRules,
-	ljImgRules,
-	ljMetricRules
-}
-
-export const allBlockRuleKeys: (keyof typeof rules)[] = ['debugRules', 'ljImgRules', 'ljMetricRules']
-
-
-export async function toggleRules(key: keyof typeof rules) {
-	const storageKey = `rules-toggle-${key}`
-	const toggle = await storage.getItem<boolean>(`local:${storageKey}`, {fallback: false})
-	if (!toggle) {
-		await storage.setItem(`local:${storageKey}`, true)
-		updateRules(key)
-	} else {
-		await storage.setItem(`local:${storageKey}`, false)
-		removeRules(key)
-	}
-}
+//只记录 开启的
+const getBlockSettings=async ()=>await storage.getItem<Record<number,boolean>>('local:block-setting', {
+	fallback: ljMetricRules.filter(rule=>!rule.default_on).reduce((acc, cur)=>{
+		return {...acc, [cur.id]:true}
+	},{}),
+})
 
 export async function clearRules(){
 	const _rules = await browser.declarativeNetRequest.getDynamicRules()
@@ -257,14 +216,28 @@ export async function clearRules(){
 	})
 	console.log('[block.ts]Clear all rules:', _rules.map(r=>r.id));
 }
-export async function updateRules(key: keyof typeof rules) {
+
+
+export async function addRules() {
+	const setting=await getBlockSettings()
+	let rules = ljRulesWithoutDesc.filter(rule=>setting[rule.id]);
 	await browser.declarativeNetRequest.updateDynamicRules({
 		// @ts-ignore
-		addRules: rules[key].map(rule=>omit(rule, ["action_desc","effect_desc","default_on","must_on"])),
+		addRules: rules,
 	});
-	console.log('[block.ts]update new rules done:');
+	console.log('[block.ts]addRules done:',rules);
 }
+
 export async function updateLjRulesById(removeRuleIds:number[], addRuleIds:number[]){
+	const setting=await getBlockSettings()
+	removeRuleIds.forEach(id=>{
+		delete setting[id]
+	})
+	addRuleIds.forEach(id=>{
+		setting[id]=true
+	})
+	//保存
+	await storage.setItem('local:block-setting', setting)
 
 	await browser.declarativeNetRequest.updateDynamicRules({
 		removeRuleIds:ljRulesWithoutDesc.map(r=>r.id),
@@ -273,9 +246,4 @@ export async function updateLjRulesById(removeRuleIds:number[], addRuleIds:numbe
 	});
 }
 
-export function removeRules(key: keyof typeof rules) {
-	browser.declarativeNetRequest.updateDynamicRules({
-		removeRuleIds: rules[key].map(rule => rule.id)
-	});
-}
 

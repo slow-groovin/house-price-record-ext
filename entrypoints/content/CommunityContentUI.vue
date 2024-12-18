@@ -6,21 +6,19 @@ import {Button} from "@/components/ui/button";
 import {CommunityListPageItem, CommunityModelUtil, CommunityTask} from "@/types/lj";
 import ObjectTable from "@/components/table/ObjectTable.vue";
 
-import {
-  extractCidFromHomePageUrl,
-  extractCidFromListUrl,
-  isCommunityHomePage,
-  isCommunityListPage,
-  isHousePage
-} from "@/utils/lj-url";
+import {extractCidFromListUrl} from "@/utils/lj-url";
 import {injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
 import {sendMessage} from 'webext-bridge/content-script';
-import {onMounted, ref} from "vue";
+import {onMounted, ref,toRaw} from "vue";
 import {Icon} from "@iconify/vue";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+import TwoLineAt from "@/components/lj/column/TwoLineAt.vue";
+import {HTMLDivElement} from "linkedom";
 
-if (import.meta.env.VITE_HIDE === 'true') {
-  import('~/assets/disguise.css');
-}
+const {isDebug}=useDevSetting()
+
+
+const contentDrawer = ref<HTMLDivElement|null>()
 
 
 const item = ref<CommunityListPageItem>()
@@ -30,7 +28,6 @@ onMounted(async () => {
   console.log('content UI mounted.')
 
   await initParseAndQuery()
-
 })
 
 function openOption() {
@@ -39,9 +36,9 @@ function openOption() {
 
 
 async function initParseAndQuery() {
-  const url=window.location.href
+  const url = window.location.href
 
-  let cidFromUrl:string|null=extractCidFromListUrl(url)
+  let cidFromUrl: string | null = extractCidFromListUrl(url)
 
   if (!cidFromUrl) {
     throw new Error('cid not exist: ' + window.location.href)
@@ -88,13 +85,14 @@ async function beginCrawl() {
 </script>
 
 <template>
-  <SimpleDrawer id="ui-container" class="fixed top-0 right-0 max-w-96 max-h-full text-sm " :default-open="true"
+
+  <SimpleDrawer ref="contentDrawer" class="contentDrawer fixed top-0 right-0 max-w-96 max-h-full text-sm " :default-open="true"
                 :position="'right'">
     <h1 class="text-gray-500 font-extrabold">
-      Community List Page
+      小区列表
     </h1>
 
-    <details>
+    <details v-if="isDebug">
       <summary>debug</summary>
       <div>
         <Button @click="initParseAndQuery">parse</Button>
@@ -112,22 +110,42 @@ async function beginCrawl() {
         去手动运行
       </Button>
 
-      <ObjectTable :data="{
-        '上次运行时间': new Date(taskInDb.lastRunningAt).toLocaleString(),
-        '创建时间': new Date(taskInDb.createdAt).toLocaleString(),
-        '共运行次数': taskInDb.runningCount,
-      }"/>
-      <!--      <ObjectTable :data="taskInDb as any"/>-->
+      <table class="border">
+        <tbody>
+        <tr>
+          <th>创建时间:</th>
+          <th>
+            <div class="flex gap-4">
+              <TwoLineAt :at="taskInDb.createdAt"/>
+            </div>
+          </th>
+        </tr>
+        <tr>
+          <th>上次运行时间:</th>
+          <th>
+            <div class="flex gap-4">
+              <TwoLineAt :at="taskInDb.lastRunningAt"/>
+            </div>
+          </th>
+        </tr>
+        <tr>
+          <th>运行次数:</th>
+          <th>
+            {{ taskInDb.runningCount }}
+          </th>
+        </tr>
+        </tbody>
+      </table>
     </div>
 
     <div v-else>
-      <div>尚未创建任务</div>
+      <div class="rounded p-2 bg-gray-200">尚未创建任务</div>
       <Button @click="createTask">创建任务</Button>
       <!--      <ObjectTable :data="item"/>-->
     </div>
 
 
-    <details>
+    <details v-if="isDebug">
       <summary>debug</summary>
       <ObjectTable :data="taskInDb as any"/>
       <ObjectTable :data="item"/>
@@ -141,5 +159,9 @@ async function beginCrawl() {
 </template>
 
 <style scoped>
-
+table, tr, th {
+  border: 1px solid gray;
+  vertical-align: middle;
+  text-align: center;
+}
 </style>

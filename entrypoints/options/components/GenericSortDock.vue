@@ -17,7 +17,7 @@
       class="flex items-center gap-1 px-2 py-1 rounded border  bg-neutral-200 hover:bg-amber-50"
       :class="{'ring-2 ring-amber-500 bg-amber-50':modelValue?.field === field}"
     >
-      <span>{{ field }}</span>
+      <span>{{ fieldTextMap[field]??field }}</span>
       <!-- 显示排序图标 -->
       <Icon  :icon="modelValue?.field === field?getSortIcon(modelValue?.order):'bx:sort'" />
     </button>
@@ -32,7 +32,8 @@ import {SortState} from "@/types/query-condition";
 
 // 定义组件的props
 interface Props<T> {
-  fields: (keyof T)[]
+  fields: (keyof T)[],
+  fieldTextMap?:Record<string,string>,
   class?: HTMLAttributes['class']
 }
 

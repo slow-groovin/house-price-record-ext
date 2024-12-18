@@ -30,6 +30,9 @@ import IFrameDocSite from "@/entrypoints/options/pages/IFrameDocSite.vue";
 import StartupIntro from "@/entrypoints/options/pages/StartupIntro.vue";
 import AboutMe from "@/entrypoints/options/pages/AboutMe.vue";
 import ExportImport from "@/entrypoints/options/pages/ExportImport.vue";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+
+const {isDisguise}=useDevSetting()
 
 const router = createRouter({
 
@@ -74,8 +77,7 @@ const router = createRouter({
 })
 console.log("init options vue")
 
-if (import.meta.env.VITE_HIDE === 'true') {
-	console.log("import '******.css'")
+if (isDisguise) {
 	import('~/assets/disguise.css');
 }
 

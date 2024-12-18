@@ -115,6 +115,7 @@ import {HousesUpdatePreview} from "@/types/LjUpdatePreview";
 import {Button} from "@/components/ui/button";
 import {updateBatchHouseWithPreview} from "@/entrypoints/reuse/house-update";
 import {useMutation, useQuery} from "@tanstack/vue-query";
+import {useExtTitle} from "@/composables/useExtInfo";
 interface Props {
   class?: HTMLAttributes['class']
 }
@@ -122,6 +123,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const {query:{id}}=useRoute()
+useExtTitle('房源任务运行结果确认预览'+id)
+
 const data=ref<HousesUpdatePreview>()
 if(id)
   db.tempHouseUpdatePreview.get(id as string).then(rs=>data.value=rs)

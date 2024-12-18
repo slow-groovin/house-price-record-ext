@@ -134,7 +134,7 @@ async function startBathCommunity() {
 
 
 <template>
-  <h1 class="mt-2">batch start page</h1>
+  <h1 class="mt-2">批量小区任务运行</h1>
   <!--  init hint-->
   <div v-if="isInit && communityList"
        class="min-h-64 flex flex-col items-center gap-4 justify-center border rounded m-1 ">

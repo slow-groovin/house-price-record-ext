@@ -6,8 +6,6 @@ import DexieIndexedDB from "@/components/debug/DexieIndexedDB.vue";
 import UnovisSamples from "@/components/debug/UnovisSamples.vue";
 import WxtStorage from "@/components/debug/WxtStorage.vue";
 import CalendarGraphSample from "@/components/debug/CalendarGraphSample.vue";
-import {Switch} from "@/components/ui/switch";
-import {allBlockRuleKeys, removeRules, updateRules} from "@/entrypoints/reuse/block";
 import CommunityDebug from "@/components/debug/CommunityDebug.vue";
 import FakeDataInsert from "@/components/debug/FakeDataInsert.vue";
 import TanstackTable from "@/components/debug/TanstackTable.vue";
@@ -32,13 +30,7 @@ const handleTabChange = (index: number) => {
 function queryTab(){// 获取当前活动的标签页信息
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {    console.log("当前标签页信息：", tabs[0]);  });
 }
-function toggleRules(payload:boolean){
-  if(payload){
-    allBlockRuleKeys.forEach(k=>updateRules(k))
-  }else{
-    allBlockRuleKeys.forEach(k=>removeRules(k))
-  }
-}
+
 const title=useTitle()
 
 const components = [UncategorizedDebugFunctions,TabsManage,NetRuleTest, DexieIndexedDB, UnovisSamples, WxtStorage,
@@ -52,7 +44,6 @@ const components = [UncategorizedDebugFunctions,TabsManage,NetRuleTest, DexieInd
     <button @click="queryTab">queryTab</button>
     <div class="flex flex-row border">
       <label for="block-rules">block-rules</label>
-      <Switch id="block-rules" @update:checked="toggleRules" />  
     </div>
   </div>
   <SimpleTabsContainer

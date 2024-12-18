@@ -1,6 +1,8 @@
 <template>
   <!-- 主设置容器 -->
-  {{ settings }}
+  <div v-if="isDebug">
+    {{ settings }}
+  </div>
 
 
   <div
@@ -12,10 +14,9 @@
       存储空间使用
     </h1>
     <div class="flex flex-col text-right">
-      <span class="text-base font-medium">已使用存储空间: {{ diskUsage.used.toFixed(2) }}MB </span>
-      <span class="text-sm text-gray-300">总可用空间(取决于电脑剩余空间): {{ diskUsage.quota.toFixed(0) }}GB </span>
+      <span class="text-base font-medium">已使用存储空间: {{ diskUsage?.usage?.toFixed(2) }}MB </span>
+      <span class="text-sm text-gray-300">总可用空间(取决于电脑剩余空间): {{ diskUsage?.quota?.toFixed(0) }}GB </span>
     </div>
-
 
 
     <h1 class="text-2xl  w-fit font-bold col-span-2 border-b border-black">
@@ -71,28 +72,26 @@ import {cn} from '@/utils/shadcn-utils'
 import {Switch} from "@/components/ui/switch";
 import {storage} from "wxt/storage";
 import {getIndexedDBUsage} from "@/utils/browser";
+import {useExtTitle} from "@/composables/useExtInfo";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+
+const {isDebug}=useDevSetting()
 
 /**
  * Prompt: 实现一个设置页面
  *
  * 组件说明：
  */
+useExtTitle('⚙️设置')
 
 // Props 定义
 const props = defineProps<{
   class?: HTMLAttributes['class']
 }>()
 
-// Emits 定义
-const emit = defineEmits<{
-  (e: 'update', settings: typeof defaultSettings): void
-}>()
-
-
-
 
 // 默认设置
-const defaultSettings = {
+const defaultSettings: Record<string, boolean> = {
   autoRunHouseTask: true,
   confirmDeleteChangeItem: true,
   recordHistory: false,
@@ -101,7 +100,7 @@ const defaultSettings = {
 
 // 设置状态
 const settings = ref<Record<string, boolean>>({...defaultSettings})
-const diskUsage = ref({used: 0, quota: 0, percentage: 0})
+const diskUsage = ref({usage: 0, quota: 0, percentage: 0})
 
 function loadSettings() {
   // 从本地存储加载设置
@@ -125,7 +124,6 @@ function loadSettings() {
 // 保存设置
 const saveSettings = async () => {
 
-  emit('update', settings.value)
   await storage.setItems([
     {key: 'local:autoRunHouseTask', value: settings.value.autoRunHouseTask},
     {key: 'local:confirmDeleteChangeItem', value: settings.value.confirmDeleteChangeItem},
@@ -135,13 +133,12 @@ const saveSettings = async () => {
 // 重置设置
 const resetSettings = () => {
   settings.value = {...defaultSettings}
-  emit('update', settings.value)
 }
 
 
-onMounted(() => {
+onMounted(async () => {
   loadSettings()
   // 示例：调用该函数并打印结果
-  diskUsage.value=getIndexedDBUsage()
+  diskUsage.value = await getIndexedDBUsage()
 })
 </script>

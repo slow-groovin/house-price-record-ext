@@ -4,7 +4,7 @@ import {CommonFieldChange, CommunityRecord, CommunityTask, HouseChange, HouseSta
 import {CommunityUpdatePreview, HousesUpdatePreview} from "@/types/LjUpdatePreview";
 import {TaskGroup} from "@/types/group";
 
-const db = new Dexie('Database-Dexie-Sample') as Dexie & {
+const db = new Dexie('ext-Default') as Dexie & {
 	items: EntityTable<
 		DexieSampleItem,
 		'id' // primary key "id" (for the typings only)

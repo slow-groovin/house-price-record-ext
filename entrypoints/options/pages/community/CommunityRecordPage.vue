@@ -13,9 +13,10 @@ import NewPriceChangeBudget from "@/components/lj/house/NewPriceChangeBudget.vue
 import {Button} from '@/components/ui/button'
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
 import {toast} from "vue-sonner";
-
+import {useExtTitle} from '@/composables/useExtInfo'
 const {query} = useRoute()
 const id = Number.parseInt(query['id'] as string)
+useExtTitle('记录详情'+id)
 
 const detailData = ref<CommunityRecord>()
 

@@ -19,6 +19,8 @@ import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
 import {toast} from "vue-sonner";
 import {browser} from "wxt/browser";
+import {useExtTitle} from "@/composables/useExtInfo";
+useExtTitle('小区任务分组')
 
 const data = ref<TaskGroup[]>([])
 

@@ -31,7 +31,7 @@ const extname=import.meta.env.VITE_EXT_NAME
 <template>
 
   <div class="p-2 text-nowrap">
-    <h1> <span class="text-base">欢迎使用</span> <span class="text-primary">{{extname}}</span></h1>
+    <h1 class="flex items-center justify-center w-fit"> <span class="text-base">欢迎使用</span> <span class="text-primary">{{extname}}</span></h1>
     <div class="flex flex-col gap-2">
       <Button @click="openOptionHomePage">打开后台页面</Button>
       <Button @click="openStartUpPage" class="" variant="outline">查看使用说明</Button>

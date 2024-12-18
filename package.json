@@ -1,8 +1,8 @@
 {
-  "name": "wxt-vue-starter",
+  "name": "hp-ext",
   "description": "manifest.json description",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "wxt",
@@ -46,6 +46,6 @@
     "tailwindcss": "^3.4.15",
     "typescript": "^5.6.2",
     "vue-tsc": "^2.1.6",
-    "wxt": "^0.19.19"
+    "wxt": "^0.19.22"
   }
 }

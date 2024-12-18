@@ -27,4 +27,4 @@ web-ext.config.ts
 /public/overlay.jpg
 /temp.json
 /components/debug/data/
-**/**.png
+public_/**/**.png

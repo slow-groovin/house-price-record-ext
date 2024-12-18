@@ -55,12 +55,14 @@ import {cn} from '@/utils/shadcn-utils'
 import {ljMetricRules, updateLjRulesById} from "@/entrypoints/reuse/block";
 import {Switch} from "@/components/ui/switch";
 import {browser} from "wxt/browser";
+import {useExtTitle} from "@/composables/useExtInfo";
 
 /**
  * Prompt: 实现一个设置页面
  *
  * 组件说明：
  */
+useExtTitle('拦截规则')
 
 // Props 定义
 const props = defineProps<{

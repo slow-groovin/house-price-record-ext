@@ -7,8 +7,9 @@ import {db} from "@/utils/client/Dexie";
 import {CommunityTask} from "@/types/lj";
 import {genCommunityPageUrl} from "@/utils/lj-url";
 import {ref} from 'vue'
+import {useExtTitle} from "@/composables/useExtInfo";
+useExtTitle('运行前确认 | 批量运行小区任务')
 
-document.title = '运行前确认 | 批量运行小区任务'
 const lastRunningTask=ref<CommunityTask>()
 async function queryOne(){
   const lastOne=await db.communityTasks.orderBy('lastRunningAt').last()

@@ -93,3 +93,11 @@ export const communityQueryConditionTemplate:CommunityQueryCondition={
 	onSellCountMax: 0,
 	onSellCountMin: 0
 }
+
+export const frequentFieldZhMap:Record<string, string>={
+	lastRunningAt:'最后运行时间',
+	createdAt:'创建时间',
+	at: '时间',
+	newValue:'新的数值',
+	totalPrice:'总价'
+}

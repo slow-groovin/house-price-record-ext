@@ -3,9 +3,11 @@
 import HeaderNav from "@/entrypoints/options/pages/nav/HeaderNav.vue";
 import SidebarNav from "@/entrypoints/options/pages/nav/SidebarNav.vue";
 import BackToTopBtn from "@/components/float/BackToTopBtn.vue";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
 import {Icon} from "@iconify/vue";
 import {useExtInfo} from "@/composables/useExtInfo";
-const isDisguise=import.meta.env.VITE_HIDE==='true'
+
+const {isDisguise}=useDevSetting()
 const {name,version}=useExtInfo()
 const _name=isDisguise?'Open Search':name
 
@@ -16,6 +18,9 @@ const _name=isDisguise?'Open Search':name
   <div class="">
 <!--    header 位置-->
     <HeaderNav :title="_name" :version="version"  :links="[{text: 'about',href:'/options.html#/doc?q=about'}]">
+      <template #logo>
+        <img alt="logo" src="/icon/24.png"/>
+      </template>
       <template #navigation>
         <div class="flex flex-nowrap gap-4 text-white">
           <a class="flex items-center hover-link" href="/options.html#/startup"><Icon icon="carbon:course"/> 使用入门</a>

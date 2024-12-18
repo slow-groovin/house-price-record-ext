@@ -28,12 +28,17 @@ import {Button} from "@/components/ui/button";
 import {toInt} from "radash";
 import {startPageEntry} from "@/entrypoints/reuse/community-control2";
 import CommunityQueryDock from "@/entrypoints/options/components/CommunityQueryDock.vue";
-import {CommunityQueryCondition, communityQueryConditionTemplate, SortState} from "@/types/query-condition";
+import {
+  CommunityQueryCondition,
+  communityQueryConditionTemplate,
+  frequentFieldZhMap,
+  SortState
+} from "@/types/query-condition";
 import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
 import {ArgCache} from "@/utils/lib/ArgCache";
 import {Collection, InsertType} from "dexie";
 import {tryGreaterThanOrFalse, tryLessThanOrFalse, tryMinusOrUndefined} from "@/utils/operator";
-import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
+import GenericSortDock from "@/entrypoints/options/components/GenericSortDock.vue";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
 import {
@@ -54,7 +59,11 @@ import CidAndName from "@/components/lj/column/CidAndName.vue";
 import AvgTotalPrice from "@/components/lj/column/AvgTotalPrice.vue";
 import OnSellCount from "@/components/lj/column/OnSellCount.vue";
 import TwoLineAt from "@/components/lj/column/TwoLineAt.vue";
+import {useExtTitle} from "@/composables/useExtInfo";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
 
+const {isDebug}=useDevSetting()
+useExtTitle('小区任务列表')
 const {query} = useRoute()
 const {_pageIndex, _pageSize} = query
 const {pushQuery, removeQueries, pushQueries, removeQuery} = useRouterQuery()
@@ -455,7 +464,7 @@ onMounted(() => {
 
   <div class="relative mb-5 rounded p-2 border">
     排序:
-    <HouseTaskSortDock v-model="sortCondition" :fields="['lastRunningAt','createdAt']"
+    <GenericSortDock v-model="sortCondition" :fields="['lastRunningAt','createdAt']" :field-text-map="frequentFieldZhMap"
                        @update="onQueryConditionUpdate"/>
     <LoadingOverlay v-if="isPending" disable-anim/>
   </div>
@@ -514,11 +523,10 @@ onMounted(() => {
   </div>
 
 
-  <div class="flex">
+  <div class="flex" v-if="isDebug">
     <h1 class="p-1 m-1 border rounded">DEBUG:</h1>
     <div> {{ queryCondition }}</div>
     <div> {{ sortCondition }}</div>
-
   </div>
 
   <ColumnVisibleOption :columns="table.getAllColumns()"/>

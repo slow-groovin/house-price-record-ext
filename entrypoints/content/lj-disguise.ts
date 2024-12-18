@@ -1,16 +1,9 @@
 import {deleteBySelector, hiddenAndReplace} from "@/utils/document";
-import overlayText from '~/public/overlay.html.txt';
-import overlayImg from '~/public/overlay.jpg';
 
 export function injectCoverModal() {
 
-	const overlayHtml = atob(overlayText.split(',')[1])
-	// console.log(overlayHtml)
 	// 创建覆盖层 div
-	// const overlayDiv = document.createElement('div');
-	// overlayDiv.innerHTML=overlayHtml
 	const overlayDiv = document.createElement('img');
-	overlayDiv.src = overlayImg
 	overlayDiv.style.objectFit = 'none'; // 或 'cover' 取决于需求
 
 	overlayDiv.id = 'customOverlay';

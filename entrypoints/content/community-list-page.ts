@@ -1,27 +1,30 @@
 import {ContentScriptContext, createShadowRootUi} from "wxt/client";
 import {communityElementDisguise, injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
-import {onMessage,sendMessage} from "webext-bridge/content-script";
+import {onMessage} from "webext-bridge/content-script";
 import CommunityListUI from "@/entrypoints/content/CommunityContentUI.vue";
 import {parseAllOfCommunity} from "@/entrypoints/content/community-dom-parse";
 import {createApp} from "vue";
-export async function communityListPageEntry(ctx:ContentScriptContext) {
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+
+export async function communityListPageEntry(ctx: ContentScriptContext) {
 	console.log("[content.js][community list page]")
+	const {isDisguise} = useDevSetting()
 
 	registerMessage()
 
-	if(import.meta.env.VITE_HIDE==='true'){
+	if (isDisguise) {
 		injectFuzzyStyle()
 		communityElementDisguise()
 	}
 
 
-	const ui=await createShadowRootUi(ctx, {
+	const ui = await createShadowRootUi(ctx, {
 		name: 'community-ui',
 		position: 'modal',
-		zIndex:9999,
+		zIndex: 9999,
 		anchor: 'html',
-		append:"first",
-		mode:'closed',
+		append: "first",
+		mode: 'closed',
 		onMount: (container, _shadow, shadowHost) => {
 
 			const app = createApp(CommunityListUI);
@@ -39,10 +42,10 @@ export async function communityListPageEntry(ctx:ContentScriptContext) {
 	ui.mount();
 }
 
-function registerMessage(){
-	onMessage('simple', async (data)=>{
-		console.log('RECEIVE simple msg',data)
-		if(data.data=='createRecord'){
+function registerMessage() {
+	onMessage('simple', async (data) => {
+		console.log('RECEIVE simple msg', data)
+		if (data.data == 'createRecord') {
 			console.log('begin crawl for record.')
 			return await parseAllOfCommunity()
 		}
@@ -55,7 +58,7 @@ function registerMessage(){
 	/**
 	 * 解析当前列表页面, 并返回解析结果
 	 */
-	onMessage('parseOneCommunityListOnePage',async (data)=>{
+	onMessage('parseOneCommunityListOnePage', async (data) => {
 		console.log('RECEIVE parseOneCommunityListOnePage msg')
 		return await parseAllOfCommunity()
 	})

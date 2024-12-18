@@ -2,13 +2,14 @@ import {ContentScriptContext, createShadowRootUi} from "wxt/client";
 import {onMessage} from "webext-bridge/content-script";
 import {createApp} from "vue";
 import DebugUI from "@/entrypoints/content/DebugUI.vue";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
 
 export function pageDebugEntry(ctx: ContentScriptContext) {
 
-	if(import.meta.env.VITE_HIDE==='true'){
+	const {isDebug}=useDevSetting()
 
-	}
-	if(process.env.NODE_ENV==='development'){
+
+	if(isDebug){
 		onParseMessage()
 	}
 

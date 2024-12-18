@@ -27,49 +27,34 @@ export type ExecutorConfig = {
 interface MyEvents {
 	onStart: void;
 	onFinished: void;
-	onPause: (context?: JobContext, error?: Error)=>void;
+	onPause: (context?: JobContext, error?: Error) => void;
 	onResume: void;
-	onJobStart: (context:JobContext)=>void;
-	onJobEnd: (context:JobContext)=>void;
-	onJobRetry: (context:JobContext, error:Error)=>void;
-	onJobFail: (context:JobContext, error:Error)=>void;
+	onJobStart: (context: JobContext) => void;
+	onJobEnd: (context: JobContext) => void;
+	onJobRetry: (context: JobContext, error: Error) => void;
+	onJobFail: (context: JobContext, error: Error) => void;
 }
+
 type Args<T> = T extends (...args: infer P) => any ? P : [];
 type ParametersWrapper<T> = T extends (...args: any[]) => any ? Args<T> : [];
 
 
-export class BatchQueueExecutor{
-	private emitter: EventEmitter=new EventEmitter();
-	// 重写 emit 方法以支持事件类型检查
-	emit<K extends keyof MyEvents>(event: K, ...args: Args<MyEvents[K]> ): boolean {
-		return this.emitter.emit(event, ...args);
-	}
-
-	// 重写 on 方法以支持事件类型检查
-	on<K extends keyof MyEvents>(event: K, listener: (...args: Args<MyEvents[K]>) => void): EventEmitter {
-		return this.emitter.on(event, listener);
-	}
-
+export class BatchQueueExecutor {
 	public doneCost: number = 0;
 	public isInit: boolean = true;
 	public isRunning: boolean = false;
-
-
-
-	public isFinished: boolean =false;
+	public isFinished: boolean = false;
 	public isPaused: boolean = false;
 	public retryCount: number = 0;
 	public failedCount: number = 0;
 	public pauseCount: number = 0;
+	public runningPromise: Promise<any>[] = [];
+	public runningIds: string[] = [];
+	private emitter: EventEmitter = new EventEmitter();
 	private pauseQueue: ((v: unknown) => void)[] = [];
 	private semaphore: Semaphore;
 	private canLog: boolean = false;
-
-	public runningPromise: Promise<any>[]=[];
-	public runningIds:string[]=[];
-
 	private LOG_PREFIX = '[BatchQueueExecutor]'
-
 
 	constructor(private jobIter: IterableIterator<Job>, private config: ExecutorConfig) {
 
@@ -97,10 +82,20 @@ export class BatchQueueExecutor{
 		this._runCount = _runCount
 	}
 
+	// 重写 emit 方法以支持事件类型检查
+	emit<K extends keyof MyEvents>(event: K, ...args: Args<MyEvents[K]>): boolean {
+		return this.emitter.emit(event, ...args);
+	}
+
+	// 重写 on 方法以支持事件类型检查
+	on<K extends keyof MyEvents>(event: K, listener: (...args: Args<MyEvents[K]>) => void): EventEmitter {
+		return this.emitter.on(event, listener);
+	}
+
 	public manualPause() {
 		this.isPaused = true
 		this.isRunning = false
-		this.emit('onPause',{id:'-1'},new Error('manual pause'))
+		this.emit('onPause', {id: '-1'}, new Error('manual pause'))
 	}
 
 	/**
@@ -128,7 +123,7 @@ export class BatchQueueExecutor{
 
 	public async run() {
 		this.isRunning = true
-		this.isInit=false
+		this.isInit = false
 		this.emit('onStart')
 
 
@@ -147,7 +142,7 @@ export class BatchQueueExecutor{
 			}
 
 			//async start job of 'next'
-			const asyncJobExec=(async () => {
+			const asyncJobExec = (async () => {
 				const startAt = Date.now()
 				this.runCount++
 
@@ -156,7 +151,7 @@ export class BatchQueueExecutor{
 				let isJobSuc = false
 				let lastError: Error = new Error("empty error")
 				const {context, promiseGetter} = curJob
-				this.emit('onJobStart',context)
+				this.emit('onJobStart', context)
 
 				while (retryTime < this.config.retryTimes + 1) {
 
@@ -165,14 +160,15 @@ export class BatchQueueExecutor{
 						await promise // job exec
 						isJobSuc = true
 						break
-					} catch (e) {
+					} catch (_e: any) {
+						const e = _e as Error
 						lastError = e as Error
 						//match stop error
-						if (e instanceof NoRetryError) {
+						if (e instanceof NoRetryError || e.name === 'NoRetryError') {
 							this.canLog && console.error(this.LOG_PREFIX, '[no retry]', e)
 							break
 						}
-						if (e instanceof PauseError) { //pause exception
+						if (e instanceof PauseError || e.name === 'PauseError') { //pause exception
 							this.canLog && console.log(this.LOG_PREFIX, '[pause]', context.id, e)
 
 							await this.pause(context, e) //pause ,wait resume
@@ -184,15 +180,15 @@ export class BatchQueueExecutor{
 						retryTime++
 						this.retryCount++ //global retry count
 
-						this.emit('onJobRetry',context,lastError)
+						this.emit('onJobRetry', context, lastError)
 					}
 				}
 
 				if (isJobSuc) {
-					this.emit('onJobEnd',context)
+					this.emit('onJobEnd', context)
 				} else {
 					this.failedCount++
-					this.emit('onJobFail',context,lastError)
+					this.emit('onJobFail', context, lastError)
 				}
 
 				this.doneCount++
@@ -206,7 +202,7 @@ export class BatchQueueExecutor{
 
 			this.runningPromise.push(asyncJobExec)
 			this.runningIds.push(curJob.context.id)
-			asyncJobExec.finally(()=>{
+			asyncJobExec.finally(() => {
 				this.runningPromise.splice(this.runningPromise.indexOf(asyncJobExec), 1)
 				this.runningIds.splice(this.runningIds.indexOf(curJob.context.id), 1)
 			})
@@ -216,6 +212,13 @@ export class BatchQueueExecutor{
 			// })
 
 		}
+	}
+
+	public manualForceFinish() {
+		this.isRunning = false
+		this.isPaused = false
+		this.isFinished = true
+		this.emit('onFinished')
 	}
 
 	/**
@@ -232,7 +235,7 @@ export class BatchQueueExecutor{
 		this.isRunning = false
 
 		//等待剩余的都结束
-		Promise.all(this.runningPromise).then(()=>{
+		Promise.all(this.runningPromise).then(() => {
 			this.canLog && console.log(this.LOG_PREFIX, 'finish')
 			this.emit('onFinished')
 			this.isFinished = true
@@ -240,16 +243,6 @@ export class BatchQueueExecutor{
 		})
 
 
-
-
-	}
-
-
-	public manualForceFinish(){
-		this.isRunning = false
-		this.isPaused=false
-		this.isFinished = true
-		this.emit('onFinished')
 	}
 }
 

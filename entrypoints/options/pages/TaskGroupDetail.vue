@@ -24,6 +24,7 @@ const dbCollection=()=>groupType==='community'?db.communityTaskGroups:db.houseTa
 const relatedData = ref<Record<string, any>>({})
 
 
+
 async function queryGroupData() {
   if (groupId) {
     data.value = await dbCollection().get(groupId)

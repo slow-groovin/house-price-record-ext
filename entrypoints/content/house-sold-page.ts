@@ -1,11 +1,13 @@
 import {ContentScriptContext} from "wxt/client";
 import {onMessage} from "webext-bridge/content-script";
 import {injectCoverModal, injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
 
+const {isDisguise}=useDevSetting()
 export async function houseSoldPageEntry(ctx: ContentScriptContext) {
 	console.log("[content.js][house sold page]")
 
-	if(import.meta.env.VITE_HIDE==='true'){
+	if(isDisguise){
 		injectFuzzyStyle()
 		injectCoverModal()
 		disguise()

@@ -1,13 +1,16 @@
 import {ContentScriptContext} from "wxt/client";
 import {random} from "radash";
-import {onMessage, sendMessage} from "webext-bridge/content-script";
+import {onMessage} from "webext-bridge/content-script";
 import {housePageElementsDisguise, injectCoverModal, injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
 import {houseContentUIMount} from "@/entrypoints/content/house-content-ui";
 import {parseHousePage} from "@/entrypoints/content/house-dom-parse";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+
+const {isDisguise}=useDevSetting()
 
 export function housePageEntry(ctx: ContentScriptContext) {
 	console.log("[content.js][house page]")
-	if (import.meta.env.VITE_HIDE === 'true') {
+	if (isDisguise) {
 		injectFuzzyStyle()
 		injectCoverModal()
 		housePageElementsDisguise()

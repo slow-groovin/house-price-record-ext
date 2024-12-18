@@ -6,6 +6,9 @@ import {Button} from '@/components/ui/button'
 import {cn} from '@/utils/shadcn-utils'
 import {random} from "radash";
 import SimpleDrawer from "@/components/layout/SimpleDrawer.vue";
+import { useDevSetting} from "@/entrypoints/reuse/global-variables";
+
+const {isDisguise,isDebug}=useDevSetting()
 
 interface MenuItem {
   name: string
@@ -23,6 +26,12 @@ interface MenuGroup {
 
 
 const menuGroups = ref<MenuGroup[]>([
+  {
+    name:'',
+    menus:[
+      {name: '首页',link:'/'}
+    ]
+  },
   {
     emoji: '🏠',
     name: '房源',
@@ -52,7 +61,7 @@ const menuGroups = ref<MenuGroup[]>([
   }
 ])
 
-if (process.env.NODE_ENV == 'development') {
+if (isDebug) {
   menuGroups.value.unshift({
     name: 'DEBUG',
     menus: [
@@ -60,7 +69,7 @@ if (process.env.NODE_ENV == 'development') {
     ]
   })
 }
-if (import.meta.env.VITE_HIDE === 'true') {
+if (isDisguise) {
   menuGroups.value.forEach(v => v.name = random(1, 100) + '')
 }
 

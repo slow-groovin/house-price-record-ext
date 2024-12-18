@@ -8,9 +8,14 @@ import {RowSelectionState} from "@tanstack/vue-table";
 import {Button} from "@/components/ui/button";
 import {browser} from "wxt/browser";
 import HouseTaskTableQueryDock from "@/entrypoints/options/components/HouseTaskTableQueryDock.vue";
-import {houseQueryConditionTemplate, HouseTaskQueryCondition, SortState} from "@/types/query-condition";
+import {
+  frequentFieldZhMap,
+  houseQueryConditionTemplate,
+  HouseTaskQueryCondition,
+  SortState
+} from "@/types/query-condition";
 import {ArgCache} from "@/utils/lib/ArgCache";
-import HouseTaskSortDock from "@/entrypoints/options/components/HouseTaskSortDock.vue";
+import GenericSortDock from "@/entrypoints/options/components/GenericSortDock.vue";
 import {Collection, InsertType} from "dexie";
 import {isNumber} from "radash";
 import {useRoute} from "vue-router";
@@ -30,6 +35,11 @@ import {toast} from "vue-sonner";
 import {sendMessage} from "webext-bridge/options";
 import {useRouterQuery} from "@/composables/useRouterQuery";
 import {newQueryConditionFromQueryParam} from "@/entrypoints/reuse/query-condition";
+import {useExtTitle} from "@/composables/useExtInfo";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+const {isDebug}=useDevSetting()
+
+useExtTitle('房源任务列表')
 
 /*
 route handle BEGIN
@@ -324,11 +334,11 @@ onMounted(() => {
   </div>
   <div class="flex items-center p-2 gap-4 border rounded">
     <span>排序:</span>
-    <HouseTaskSortDock :fields="sortFields" v-model="sortCondition" @update="onUpdateQueryCondition"/>
+    <GenericSortDock :fields="sortFields" v-model="sortCondition" :field-text-map="frequentFieldZhMap" @update="onUpdateQueryCondition"/>
   </div>
 
 
-  <div class="flex border rounded">
+  <div class="flex border rounded" v-if="isDebug">
     <span class="border rounded mr-2">Debug</span>
     {{ queryCondition }} {{ sortCondition }}
   </div>

@@ -2,10 +2,14 @@
 import {db} from "@/utils/client/Dexie";
 import {onMounted, ref} from "vue";
 import {Separator} from "@/components/ui/separator";
-import {formatDistanceStrict, formatDistanceToNow} from 'date-fns'
+import {formatDistanceToNow} from 'date-fns'
 import {getIndexedDBUsage} from "@/utils/browser";
 import {zhCN} from "date-fns/locale/zh-CN";
-const extName = import.meta.env.VITE_EXT_NAME
+import {useExtInfo, useExtTitle} from "@/composables/useExtInfo";
+
+useExtTitle('首页')
+const {name,version}=useExtInfo()
+
 
 const cTaskCount = ref(0)
 const hTaskCount = ref(0)
@@ -38,8 +42,8 @@ onMounted(() => {
 <template>
 
 
-  <div class="w-full my-8 font-bold text-2xl text-center">
-    欢迎使用 {{ extName }}
+  <div class="w-full flex items-center justify-center my-8 font-bold text-2xl text-center">
+    欢迎使用  {{ name }}<img src="/icon/24.png" alt="icon" class="inline">
   </div>
 
 
