@@ -2,7 +2,7 @@
 //
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {toast} from "vue-sonner";
-import {sendMessage} from "webext-bridge/options";
+import {sendMessage} from "@/messaging";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -441,7 +441,7 @@ async function addToGroup() {
   toast.success('添加成功', {
     action: {
       label: '去查看', onClick: () => {
-        sendMessage('openOptionPage', '/options.html#/c/group/list', 'background')
+        sendMessage('openOptionPage', '/options.html#/c/group/list')
       }
     }
   })
@@ -498,7 +498,7 @@ onMounted(() => {
         <DialogHeader>
           <DialogTitle>加入分组</DialogTitle>
           <DialogDescription>
-            <a href="/options.html#/h/group/" class="link">去创建分组</a>
+            <a href="/options.html#/c/group/list" class="link">去创建分组</a>
           </DialogDescription>
         </DialogHeader>
 

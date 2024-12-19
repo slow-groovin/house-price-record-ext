@@ -1,11 +1,9 @@
 <script setup lang="ts">
 
 
-import {Switch} from "@/components/ui/switch";
-import TabsCreate from "@/components/debug/TabsManage.vue";
 import {browser} from "wxt/browser";
 import {Button} from "@/components/ui/button";
-import {sendMessage} from "webext-bridge/popup";
+import {sendMessage} from "@/messaging";
 
 
 async function toggleSidePanel(payload: boolean) {
@@ -17,12 +15,12 @@ async function toggleSidePanel(payload: boolean) {
   }
 }
 async function openOptionHomePage() {
-  sendMessage('openOptionPage','/options.html#/','background')
+  return sendMessage('openOptionPage','/options.html#/')
 
 }
 
 async function openStartUpPage(){
-  sendMessage('openOptionPage','/options.html#/doc/startup','background')
+  return sendMessage('openOptionPage','/options.html#/doc/startup')
 }
 const extname=import.meta.env.VITE_EXT_NAME
 

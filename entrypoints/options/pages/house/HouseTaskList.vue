@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
 import {toast} from "vue-sonner";
-import {sendMessage} from "webext-bridge/options";
+import {sendMessage} from "@/messaging";
 import {useRouterQuery} from "@/composables/useRouterQuery";
 import {newQueryConditionFromQueryParam} from "@/entrypoints/reuse/query-condition";
 import {useExtTitle} from "@/composables/useExtInfo";
@@ -314,7 +314,7 @@ async function addToGroup() {
   toast.success('添加成功', {
       action: {
         label: '去查看', onClick: () => {
-          sendMessage('openOptionPage', '/options.html#/h/group/list', 'background')
+          sendMessage('openOptionPage', '/options.html#/h/group/list')
         }
       }
     }

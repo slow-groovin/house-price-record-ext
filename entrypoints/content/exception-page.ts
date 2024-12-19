@@ -1,4 +1,4 @@
-import {onMessage} from "webext-bridge/content-script";
+import {onMessage} from "@/messaging";
 import {PauseError} from "@/utils/lib/BatchQueueExecutor";
 
 export function loginPageEntry(){

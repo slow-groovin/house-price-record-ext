@@ -5,7 +5,7 @@ import Bubble from "@/components/lj/Bubble.vue";
 import {onMounted, ref} from "vue";
 import {HouseItem, HouseTask} from '@/types/lj'
 import {parseHousePage} from "@/entrypoints/content/house-dom-parse";
-import {sendMessage} from "webext-bridge/content-script";
+import {sendMessage} from '@/messaging'
 import {Icon} from "@iconify/vue";
 import {generateNormalPageUpdatePreview} from "@/entrypoints/reuse/house-control2";
 import ToastComponent from "@/components/float/Toast.vue"
@@ -22,7 +22,7 @@ async function refresh() {
   houseItem.value = await parseHousePage()
   console.log('parsed document, hid:', houseItem.value.hid)
   if (houseItem.value.hid) {
-    const queryResult = await sendMessage('queryHouseTask', {hid: houseItem.value.hid}, 'background')
+    const queryResult = await sendMessage('queryHouseTask', {hid:houseItem.value.hid})
     if (queryResult.length > 1) {
       console.warn('has more than one tasks: ', queryResult.map(t => t.id))
     }
@@ -44,7 +44,7 @@ async function updateTaskInPage() {
     }
 
     const houseNormalUpdatePreview = generateNormalPageUpdatePreview(houseItem.value, houseTask.value)
-    await sendMessage('updateHouse', {houseNormal: houseNormalUpdatePreview, taskInDb: houseTask.value}, 'background')
+    await sendMessage('updateHouse', {houseNormal: houseNormalUpdatePreview, taskInDb: houseTask.value})
     await refresh()
   } catch (e) {
     toast.error('更新失败, 发生错误:' + (e as Error)?.message)
@@ -59,7 +59,7 @@ async function createTsk() {
     return
   }
   try {
-    const {reason} = await sendMessage('createHouseTask', houseItem.value, 'background')
+    const {reason} = await sendMessage('createHouseTask', houseItem.value)
     if (reason) {
       toast.error('创建失败:' + reason)
     } else {
@@ -73,15 +73,17 @@ async function createTsk() {
 }
 
 function openOption() {
-  sendMessage('openOptionPage', '/options.html#/h/task/detail?id=' + houseItem.value?.hid, 'background')
+  sendMessage('openOptionPage', '/options.html#/h/task/detail?id=' + houseItem.value?.hid)
 }
 
 function openAutoSetting() {
-  sendMessage('openOptionPage', '/options.html#/settings', 'background')
+  sendMessage('openOptionPage', '/options.html#/settings')
 }
 
 async function getIsTaskAutoRun(){
-  isTaskAutoRun.value=!!(await sendMessage('getStorageLocal','autoRunHouseTask','background'))
+  isTaskAutoRun.value=!!(await sendMessage('getStorageLocal','autoRunHouseTask'))
+
+  isTaskAutoRun.value=false
 
   if(isTaskAutoRun.value){
     setTimeout(()=>{

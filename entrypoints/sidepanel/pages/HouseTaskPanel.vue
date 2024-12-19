@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import {Button} from "@/components/ui/button";
-import {sendMessage} from "webext-bridge/popup";
+import {sendMessage} from "@/messaging";
 import {db} from "@/utils/client/Dexie";
 import {HouseChange, HouseItem, HouseTask} from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
@@ -90,7 +90,7 @@ async function fetchLast10Changes(hid:string){
  * 以及向db查询task信息,changes信息
  */
 async function refreshPageCrawlAndTaskInDb(){
-  const resp = await sendMessage('parseHouse', {}, 'content-script@'+props.tabId)
+  const resp = await sendMessage('parseHouse', undefined,props.tabId)
   const task=await db.houseTasks.where('hid').equals(resp.hid).first()
   // console.log('task',task)
   if(task)
@@ -104,7 +104,7 @@ async function refreshPageCrawlAndTaskInDb(){
 }
 
 async function createTask(){
-  const resp = await sendMessage('parseHouse', {}, 'content-script@'+props.tabId)
+  const resp = await sendMessage('parseHouse', undefined,props.tabId)
   const count=await db.houseTasks.where('hid').equals(resp.hid).count()
 
   if(count>0){
@@ -129,7 +129,7 @@ async function manualCrawl(){
 }
 
 async function forTestRandomChangePrice(){
-  await sendMessage('simple', "changePriceForTest", 'content-script@'+props.tabId)
+  await sendMessage('simple', "changePriceForTest",props.tabId)
 }
 
 async function deleteRecordItem(id:number){

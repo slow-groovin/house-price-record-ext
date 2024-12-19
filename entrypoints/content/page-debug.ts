@@ -1,5 +1,5 @@
 import {ContentScriptContext, createShadowRootUi} from "wxt/client";
-import {onMessage} from "webext-bridge/content-script";
+import {onMessage} from "@/messaging";
 import {createApp} from "vue";
 import DebugUI from "@/entrypoints/content/DebugUI.vue";
 import {useDevSetting} from "@/entrypoints/reuse/global-variables";
@@ -40,7 +40,7 @@ export function pageDebugEntry(ctx: ContentScriptContext) {
 
 function onParseMessage() {
 	console.log('[message listen] listen simple message')
-	onMessage('simple', ({data})=>{
+	onMessage('simple', async ({data})=>{
 		console.log('[message][simple]'+data)
 		if(data==='parse'){
 			return  {text:document.title,url: window.location.href}

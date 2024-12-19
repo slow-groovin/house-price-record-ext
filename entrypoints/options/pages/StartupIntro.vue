@@ -12,6 +12,7 @@ const extName = import.meta.env.VITE_EXT_NAME
     <div>
       <h2>这个插件是干什么的?</h2>
       帮助用户(您)方便地收集关注范围内的小区/房源状态, 记录价格/状态变动数据, 并分析和展示历史数据
+      通过上下架动态, 价格变动历史等数据帮助用户获取更真实的二手房交易市场趋势
     </div>
 
 
@@ -165,6 +166,12 @@ const extName = import.meta.env.VITE_EXT_NAME
 
     </div>
 
+    <div>
+      <h2>这个插件不能干什么?</h2>
+      <ul>
+        <li>获取超量所有的数据</li>
+      </ul>
+    </div>
     <div>
       <h2>除了主要功能以外, 还有什么额外的功能? </h2>
       <ol>

@@ -1,4 +1,3 @@
-import "webext-bridge/content-script";
 import {housePageEntry} from "@/entrypoints/content/house-page";
 import {communityListPageEntry} from "@/entrypoints/content/community-list-page";
 import {isCaptchaPage, isCommunityListPage, isHousePage, isHouseSoldPage, isLoginPage} from "@/utils/lj-url";
@@ -52,12 +51,8 @@ export default defineContentScript({
 			loginPageEntry()
 		} else if (isCaptchaPage(url)) {
 			captchaPageEntry()
-		}
-
-		if (url.includes('example.com')) {
+		}else if (url.includes('example.com')) {
 			pageDebugEntry(ctx)
 		}
-
-
 	},
 });

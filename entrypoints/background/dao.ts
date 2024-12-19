@@ -1,15 +1,13 @@
-import {onMessage} from "webext-bridge/background"
 import {db} from "@/utils/client/Dexie";
 import {HouseNormal} from "@/types/LjUpdatePreview";
 import {HouseTask, HouseTaskStatus} from "@/types/lj";
 import {updateOneNormal} from "@/entrypoints/reuse/house-update";
 import {storage} from "wxt/storage";
-
+import {onMessage} from '@/messaging'
 export function registerDaoMessage(){
 	onMessage('queryCommunityTask', async (msg)=>{
 		const cid=msg.data.cid
 		const queryResult=await db.communityTasks.where('cid').equals(cid).toArray()
-
 		return queryResult
 	})
 	console.log('[registerDaoMessage]','queryCommunityTask')
@@ -23,6 +21,7 @@ export function registerDaoMessage(){
 			resp:queryResult+''
 		}
 	})
+
 	console.log('[registerDaoMessage]','addCommunityTask')
 
 	onMessage('queryHouseTask', async (msg)=>{

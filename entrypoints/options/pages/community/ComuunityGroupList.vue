@@ -40,8 +40,10 @@ async function createGroup() {
 }
 
 async function goBeginGroupTasks(index:number) {
-  const communityList =toRaw(data.value[index].idList)
-  const id = await db.tempBatchCommunity.add({communityList})
+  const cidList =toRaw(data.value[index].idList)
+  //todo string[] -> CommunityTask[]
+  //todo if zero, hint
+  const id = await db.tempBatchCommunity.add({communityList: cidList})
 
   const newWindow = await browser.windows.create({state: 'maximized'})
   await chrome.sidePanel.open({windowId: newWindow.id as number})

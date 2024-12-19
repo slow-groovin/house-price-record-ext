@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog'
-import {onMessage, sendMessage} from "webext-bridge/popup";
+import {sendMessage} from '@/messaging'
 import ObjectTable from "@/components/table/ObjectTable.vue";
 import NewPriceChangeBudget from "@/components/lj/house/NewPriceChangeBudget.vue";
 import {Checkbox} from "@/components/ui/checkbox";
@@ -105,7 +105,7 @@ dialog end
 message
  */
 async function sendMsg(){
-  const a=await sendMessage('simple',{},'background')
+  const a=await sendMessage('simple','')
   console.log(a,typeof a)
   a.echo()
 }

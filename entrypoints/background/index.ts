@@ -1,5 +1,5 @@
-import "webext-bridge/background";
-import {onMessage} from "webext-bridge/background"
+
+import {onMessage} from "@/messaging"
 import {clearRules, addRules} from "@/entrypoints/reuse/block";
 import {db} from "@/utils/client/Dexie";
 import {registerSimpleMessage} from "@/entrypoints/background/message";
@@ -32,15 +32,7 @@ export default defineBackground(() => {
 	})
 
 
-	onMessage('block', (enable) => {
-		if (enable) {
-			return {resp: 'ok'}
-		}
-		return {resp: 'nothing'}
-
-	})
-
-	onMessage('openOptionPage',(msg)=>{
+	onMessage('openOptionPage',async (msg)=>{
 		console.debug('[openOptionPage]',msg.data)
 		return browser.tabs.create({url:msg.data})
 	})

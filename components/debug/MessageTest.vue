@@ -1,7 +1,7 @@
 <script setup lang="ts">
-
-import {sendMessage as optionsSend} from "webext-bridge/options";
-import {sendMessage as contentSend} from "webext-bridge/content-script";
+import {sendMessage} from "@/messaging";
+const optionsSend=sendMessage;
+const contentSend=sendMessage;
 
 import {ref, Ref} from "vue";
 import SelectButton from "@/components/custom/SelectButton.vue";
@@ -9,7 +9,8 @@ import SelectButton from "@/components/custom/SelectButton.vue";
 async function sendSimple() {
   const sendMessage= source.value==='options'?optionsSend:contentSend
   console.log('sendMessage to ' + target.value,msgKey.value)
-  const rs = await sendMessage(msgKey.value, 'ok', target.value)
+  //@ts-ignore
+  const rs = await sendMessage(msgKey.value, 'ok')
   console.log('simple response:')
   console.log(rs)
 }

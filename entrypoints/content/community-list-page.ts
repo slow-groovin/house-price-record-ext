@@ -1,6 +1,6 @@
 import {ContentScriptContext, createShadowRootUi} from "wxt/client";
 import {communityElementDisguise, injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
-import {onMessage} from "webext-bridge/content-script";
+import {onMessage} from "@/messaging";
 import CommunityListUI from "@/entrypoints/content/CommunityContentUI.vue";
 import {parseAllOfCommunity} from "@/entrypoints/content/community-dom-parse";
 import {createApp} from "vue";

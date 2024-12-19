@@ -8,7 +8,7 @@ import ObjectTable from "@/components/table/ObjectTable.vue";
 
 import {extractCidFromListUrl} from "@/utils/lj-url";
 import {injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
-import {sendMessage} from 'webext-bridge/content-script';
+import {sendMessage} from '@/messaging';
 import {onMounted, ref,toRaw} from "vue";
 import {Icon} from "@iconify/vue";
 import {useDevSetting} from "@/entrypoints/reuse/global-variables";
@@ -31,7 +31,7 @@ onMounted(async () => {
 })
 
 function openOption() {
-  sendMessage('openOptionPage', '/options.html#/c/task/detail?id=' + cid.value, 'background')
+  sendMessage('openOptionPage', '/options.html#/c/task/detail?id=' + cid.value)
 }
 
 
@@ -55,7 +55,7 @@ async function createTask() {
     throw new Error('item not exist')
   }
   const newTask = CommunityModelUtil.newCommunityTaskFromItem(item.value)
-  const resp = await sendMessage('addCommunityTask', newTask, 'background')
+  const resp = await sendMessage('addCommunityTask', newTask)
   console.log('addTask throw message suc.', resp)
   // await db.communityTasks.add(newTask)
   await queryTask(newTask.cid)
@@ -63,7 +63,7 @@ async function createTask() {
 
 async function queryTask(cid: string) {
   const start = Date.now()
-  const queryTask = await sendMessage('queryCommunityTask', {cid}, 'background')
+  const queryTask = await sendMessage('queryCommunityTask', {cid})
 
   console.debug('query Task throw message suc. cost:', Date.now() - start, 'ms')
   if (queryTask.length > 1) {

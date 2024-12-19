@@ -1,13 +1,4 @@
-import {onMessage} from "webext-bridge/background";
-
-
-// export function registerCrawlHouseTask() {
-// 	onMessage('crawlHouseTask', async ({data}) => {
-// 		const {hid} = data as { hid: string }
-// 		await oneHouseEntry(hid)
-// 		return {resp: 'ok'}
-// 	})
-// }
+import {onMessage} from "@/messaging";
 
 export function registerSimpleMessage(){
 	class A{

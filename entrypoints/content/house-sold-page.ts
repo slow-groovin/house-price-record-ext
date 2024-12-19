@@ -1,5 +1,5 @@
 import {ContentScriptContext} from "wxt/client";
-import {onMessage} from "webext-bridge/content-script";
+import {onMessage} from "@/messaging";
 import {injectCoverModal, injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
 import {useDevSetting} from "@/entrypoints/reuse/global-variables";
 

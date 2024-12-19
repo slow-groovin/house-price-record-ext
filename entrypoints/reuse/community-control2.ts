@@ -1,5 +1,5 @@
 import {CommunityListPageItem, CommunityRecord, CommunityTask} from "@/types/lj";
-import {sendMessage} from "webext-bridge/background"
+import {sendMessage} from "@/messaging"
 import {db} from "@/utils/client/Dexie";
 import {stabilizeFields} from "@/utils/variable";
 import {removeRepeat} from "@/utils/array";
@@ -30,7 +30,7 @@ export async function oneCommunityEntry(communityTask: CommunityTask) {
 	const url = genCommunityPageUrl(city as string, cid, 1)
 	console.debug(PREFIX, 'start url: ', url)
 	const tab = await browser.tabs.create({url, active: false})
-	let pageItem: CommunityListPageItem = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
+	let pageItem: CommunityListPageItem = await sendMessage('parseOneCommunityListOnePage', undefined,  tab.id)
 
 	await browser.tabs.remove([tab.id as number])
 
@@ -56,7 +56,7 @@ export async function execOneCommunity(input: { city: string, cid: string, maxPa
 		const tab = await browser.tabs.create({url, active: false})
 		console.debug('[execOneCommunity] open:', url, tab.id, tab.status)
 		//打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
-		const resp = await sendMessage('parseOneCommunityListOnePage', {}, 'content-script@' + tab.id)
+		const resp = await sendMessage('parseOneCommunityListOnePage', undefined, tab.id)
 		console.debug(`[execOneCommunity] one tab[${url}] record resp:`, resp)
 		await browser.tabs.remove([tab.id as number])
 

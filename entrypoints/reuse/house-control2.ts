@@ -1,5 +1,5 @@
 import {HouseItem, HouseTask, HouseTaskStatus} from "@/types/lj";
-import {sendMessage} from "webext-bridge/background";
+import {sendMessage} from "@/messaging";
 import {genHousePageUrl, isCaptchaPage, isLoginPage, isHouseSoldPage} from "@/utils/lj-url";
 import {db} from "@/utils/client/Dexie";
 
@@ -66,7 +66,7 @@ export async function oneHouseEntry(hid: string):Promise<HouseNormal | HouseUpda
 
 async function handleSoldPage(pageId: number,taskInDb:HouseTask):Promise<HouseSold> {
 	//发送message ,让页面进行parse item
-	const respParsedItem = await sendMessage('parseHouseSold', {}, 'content-script@' + pageId)
+	const respParsedItem = await sendMessage('parseHouseSold', undefined,pageId)
 	console.log('[house-control]receive parseHouseSold result:', respParsedItem)
 
 	const houseSoldPreview:HouseSold={
@@ -88,7 +88,7 @@ async function handleSoldPage(pageId: number,taskInDb:HouseTask):Promise<HouseSo
  */
 export async function handleNormalPage(pageTabId: number, taskInDb: HouseTask):Promise<HouseNormal> {
 	//发送message ,让页面进行parse item
-	const respParsedItem = await sendMessage('parseHouse', {}, 'content-script@' + pageTabId)
+	const respParsedItem = await sendMessage('parseHouse', undefined, pageTabId)
 	console.log('receive parseHouse result:', respParsedItem)
 	return generateNormalPageUpdatePreview(respParsedItem,taskInDb)
 }
