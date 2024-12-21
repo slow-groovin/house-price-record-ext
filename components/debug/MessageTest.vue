@@ -1,44 +1,47 @@
 <script setup lang="ts">
 import {sendMessage} from "@/messaging";
-const optionsSend=sendMessage;
-const contentSend=sendMessage;
 
-import {ref, Ref} from "vue";
-import SelectButton from "@/components/custom/SelectButton.vue";
+import {ref} from "vue";
+import {Separator} from "@/components/ui/separator";
+import {Button} from "@/components/ui/button";
 
 async function sendSimple() {
-  const sendMessage= source.value==='options'?optionsSend:contentSend
-  console.log('sendMessage to ' + target.value,msgKey.value)
+  console.log('sendMessage to ', msgKey.value, tabId.value,)
+  let rs: any
   //@ts-ignore
-  const rs = await sendMessage(msgKey.value, 'ok')
+  if (tabId.value) {
+    rs = await sendMessage(msgKey.value, 'ok', tabId.value)
+  } else {
+    rs = await sendMessage(msgKey.value, 'ok')
+  }
   console.log('simple response:')
   console.log(rs)
 }
 
-const source: Ref<'background' | 'content-script' | 'options'> = ref('background')
-const target: Ref<'background' | 'content-script' | 'options'> = ref('background')
+async function sendCommunityPageMsg() {
+  let rs: any
+  if (tabId.value) {
+    rs = await sendMessage('parseOneCommunityListOnePage', undefined, tabId.value)
+  } else {
+    rs = await sendMessage('parseOneCommunityListOnePage', undefined)
+  }
+  console.log('rs:', rs)
+}
+
 const msgKey = ref('simple')
+const tabId = ref<number>(0)
 </script>
 
 <template>
   <h1> sendMessage accessible test</h1>
   <div>
-    <div>
-      source
-      <SelectButton v-model="source" :value="'background'">background</SelectButton>
-      <SelectButton v-model="source" :value="'content-script'">content-script</SelectButton>
-      <SelectButton v-model="source" :value="'options'">options</SelectButton>
-    </div>
-    <div>
-      target:
-      <SelectButton v-model="target" :value="'background'">background</SelectButton>
-      <SelectButton v-model="target" :value="'content-script'">content-script</SelectButton>
-      <SelectButton v-model="target" :value="'options'">options</SelectButton>
-    </div>
-
     <input v-model="msgKey" type="text" placeholder="message key">
+    <input v-model="tabId" type="number" placeholder="tabId">
 
     <button @click="sendSimple()" class="border">sendMessage:simple</button>
+
+    <Separator/>
+    <button @click="sendCommunityPageMsg"> send community page msg</button>
 
   </div>
 </template>

@@ -6,8 +6,11 @@ import {onMounted, onUnmounted, ref} from "vue";
 import {browser, Tabs} from "wxt/browser";
 import TabChangeInfo = chrome.tabs.TabChangeInfo;
 import {useLocalStorage} from "@vueuse/core";
+import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+import {useExtInfo} from "@/composables/useExtInfo";
 
-
+const {isDebug,isDisguise}=useDevSetting()
+const {name,version}=useExtInfo()
 async function queryTab() {
   // 获取当前活动的标签页信息
   const tabs = await browser.tabs.query({ active: true, currentWindow: true})
@@ -75,21 +78,22 @@ const tabId = ref<number | undefined>(0)
 onMounted(() => {
   queryTab()
 })
+
 </script>
 
 <template>
 
   <div class="c-block">
-    <h1>SidePanel {{ tabId }}</h1>
+    <h1>欢迎使用 {{name}} {{version}}</h1>
 
     <div v-if="isHousePageFlag">
       <HouseTaskPanel v-if="tabId" :tab-id="tabId"/>
       isHousePage: {{ isHousePageFlag }}
     </div>
   </div>
-  <details  :open="initialOpenDebugPanel"  @toggle="(v)=>{defaultOpenDebugPanel=v.newState==='open'}">
+  <details  v-if="isDebug" :open="initialOpenDebugPanel"  @toggle="(v)=>{defaultOpenDebugPanel=v.newState==='open'}">
     <summary>debug panel</summary>
-    <a href="/sidepanel.html#/debug"/>
+    <a href="/sidepanel.html#/debug">go</a>
 
   </details>
 

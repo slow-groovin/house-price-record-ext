@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import {useRoute} from "vue-router";
 import {db} from "@/utils/client/Dexie";
-import ObjectTable from "@/components/table/ObjectTable.vue";
-import {CommonFieldChange, HouseChange, HouseStatusChange, HouseTask, HouseTaskStatus} from "@/types/lj";
+import {CommonFieldChange, CommunityTask, HouseChange, HouseStatusChange, HouseTask, HouseTaskStatus} from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
 import {AccessRecord} from "@/utils/lib/AcessRecord";
 import {Button} from "@/components/ui/button";
 import {oneHouseEntry} from "@/entrypoints/reuse/house-control2";
 import {onMounted, ref} from "vue";
-import {genHousePageUrl} from "@/utils/lj-url";
+import {genCommunityPageUrl, genHousePageUrl} from "@/utils/lj-url";
 import {toast} from "vue-sonner";
 import {updateOneMiss, updateOneNormal, updateOneSold} from "@/entrypoints/reuse/house-update";
 import {PauseError} from "@/utils/lib/BatchQueueExecutor";
@@ -33,6 +32,7 @@ const task = ref<HouseTask>()
 const changes = ref<HouseChange[]>()
 const statusChanges = ref<HouseStatusChange[]>()
 const commonFieldChanges = ref<CommonFieldChange[]>()
+const communityTask=ref<CommunityTask>()
 
 useExtTitle(()=>'🏠任务详情')
 
@@ -41,6 +41,7 @@ async function queryData() {
   changes.value = await db.houseChanges.where('hid').equals(hid).toArray()
   statusChanges.value = await db.houseStatusChanges.where('hid').equals(hid).toArray()
   commonFieldChanges.value = await db.houseCommonFieldChanges.where('hid').equals(hid).toArray()
+  communityTask.value=await db.communityTasks.where('cid').equals(task.value.cid).last()
 }
 
 async function beginCrawlOne() {
@@ -140,10 +141,18 @@ onMounted(() => {
 
 
     <div class="flex flex-row flex-wrap gap-4 ">
-      <InfoItemCard name="id" :value="task?.hid"/>
 
       <InfoItemCard name="城市" :value="task?.city" icon="noto:cityscape"/>
-      <InfoItemCard name="创建时间" :value="new Date(task?.createdAt).toLocaleString()" type="date"/>
+      <InfoItemCard name="小区">
+        <div v-if="!communityTask" class="">
+          <span class="text-sm italic">(任务尚未创建)</span>
+          <a class="link flex-nowrap flex items-center" target="_blank" rel="noreferrer" :href="genCommunityPageUrl(task.city,task.cid,1)">{{task.cid}}  <Icon icon="tdesign:jump"/></a>
+        </div>
+        <div v-else>
+          <a class="hover-link text-xl" target="_blank"  :href="`/options.html#/c/task/detail?id=${task.cid}`">{{communityTask.name}}</a>
+        </div>
+      </InfoItemCard>
+      <InfoItemCard name="任务创建时间" :value="new Date(task?.createdAt).toLocaleString()" type="date"/>
       <div class="grow basis-full"/>
       <InfoItemCard name="总价" :value="task?.totalPrice" type="money" postfix="万元"/>
       <InfoItemCard name="单价" :value="task?.unitPrice" type="money" postfix="元/㎡"/>

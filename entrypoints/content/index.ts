@@ -26,8 +26,6 @@ export default defineContentScript({
 	async main(ctx) {
 		const {isDebug, isDisguise} = useDevSetting()
 
-		console.log('[content/index.js]process.env.NODE_ENV', process.env.NODE_ENV, 'import.meta.env.MODE', import.meta.env.MODE)
-		console.log('[content/index.js]import.meta.env.VITE_HIDE', import.meta.env.VITE_HIDE)
 
 		// ctx.block
 		console.log('hit lj page.', window.location.href);
@@ -39,7 +37,6 @@ export default defineContentScript({
 
 
 		const url = window.location.href
-		console.log('url:', url)
 		if (isHousePage(url)) {
 			housePageEntry(ctx)
 		} else if (isCommunityListPage(url)) {

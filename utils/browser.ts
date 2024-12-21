@@ -1,3 +1,7 @@
+import {browser,Tabs,} from "wxt/browser";
+
+type Tab = Tabs.Tab;
+
 /**
  * 查询当前浏览器 IndexedDB 数据库已占用的空间大小
  * @returns 已占用空间大小（字节数）和配额信息
@@ -16,3 +20,28 @@ export async function getIndexedDBUsage() {
 		percentage: (estimate.usage??0) / (estimate.quota??1) * 100
 	};
 }
+
+
+/**
+ * 创建标签页并等待加载完成
+ * @returns {Promise<browser.tabs.Tab>} - 加载完成后的标签页对象
+ * @param tab
+ */
+export async function waitForTabLoad(tab:Tab): Promise<any> {
+
+	let listener:any
+	return new Promise((resolve) => {
+		listener = (tabId: number, changeInfo: any) => {
+			if (tabId === tab.id && changeInfo.status === "complete") {
+				browser.tabs.onUpdated.removeListener(listener); // 取消监听
+				resolve(tab); // 返回标签页对象
+			}
+		};
+		// 监听标签页更新事件
+		browser.tabs.onUpdated.addListener(listener);
+	}).finally(()=>{
+		console.log('finally remove listener')
+		browser.tabs.onUpdated.removeListener(listener);
+	});
+}
+

@@ -7,6 +7,7 @@ import {browser} from "wxt/browser";
 import {NoRetryError, PauseError} from "@/utils/lib/BatchQueueExecutor";
 import {openTabAndRun} from "@/utils/tab-utils";
 import type {HouseNormal,HouseSold,HouseUpdateBase} from "@/types/LjUpdatePreview";
+import {waitForTabLoad} from "@/utils/browser";
 
 
 const LOG_PREFIX = '[house-control]'
@@ -47,6 +48,7 @@ export async function oneHouseEntry(hid: string):Promise<HouseNormal | HouseUpda
 		if (isHouseSoldPage(fetchRs.url)) {  //sold
 			console.log(LOG_PREFIX, 'house sold')
 			return await openTabAndRun({url},async (tab)=>{
+				await waitForTabLoad(tab)
 				return handleSoldPage(tab.id as number, task);
 			})
 		}
@@ -58,6 +60,7 @@ export async function oneHouseEntry(hid: string):Promise<HouseNormal | HouseUpda
 		console.log(LOG_PREFIX, 'house status is normal ')
 
 		return await openTabAndRun({url},async (tab)=>{
+			await waitForTabLoad(tab)
 			return handleNormalPage(tab.id as number, task)
 		})
 	}
@@ -87,6 +90,10 @@ async function handleSoldPage(pageId: number,taskInDb:HouseTask):Promise<HouseSo
  * @param taskInDb
  */
 export async function handleNormalPage(pageTabId: number, taskInDb: HouseTask):Promise<HouseNormal> {
+	// 发送消息控制 content.js
+	// chrome.tabs.sendMessage(pageTabId, { action: "changeBackgroundColor", color: "#FF0000" }, (response) => {
+	// 	console.log("Response from content.js:", response);
+	// });
 	//发送message ,让页面进行parse item
 	const respParsedItem = await sendMessage('parseHouse', undefined, pageTabId)
 	console.log('receive parseHouse result:', respParsedItem)

@@ -95,7 +95,7 @@ export class BatchQueueExecutor {
 	public manualPause() {
 		this.isPaused = true
 		this.isRunning = false
-		this.emit('onPause', {id: '-1'}, new Error('manual pause'))
+		this.emit('onPause', {id: '-1'}, new Error('手动暂停'))
 	}
 
 	/**
@@ -154,6 +154,7 @@ export class BatchQueueExecutor {
 				this.emit('onJobStart', context)
 
 				while (retryTime < this.config.retryTimes + 1) {
+					await this.waitResume()
 
 					try {
 						const promise = promiseGetter()
@@ -169,17 +170,18 @@ export class BatchQueueExecutor {
 							break
 						}
 						if (e instanceof PauseError || e.name === 'PauseError') { //pause exception
-							this.canLog && console.log(this.LOG_PREFIX, '[pause]', context.id, e)
+							this.canLog && console.error(this.LOG_PREFIX, '[pause]', context.id, e)
 
 							await this.pause(context, e) //pause ,wait resume
-							this.canLog && console.log(this.LOG_PREFIX, '[resume]', context.id)
+							this.canLog && console.error(this.LOG_PREFIX, '[resume]', context.id)
 							retryTime--
 						}
 						//no match stop error, mark retry and go next loop
-						this.canLog && console.log(this.LOG_PREFIX, '[retry]', retryTime, e)
+						this.canLog && console.error(this.LOG_PREFIX, '[retry]', retryTime, e)
 						retryTime++
 						this.retryCount++ //global retry count
 
+						await sleep(this.config.interval)//执行等待interval
 						this.emit('onJobRetry', context, lastError)
 					}
 				}

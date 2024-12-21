@@ -1,6 +1,6 @@
 import {ContentScriptContext, createShadowRootUi} from "wxt/client";
 import {communityElementDisguise, injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
-import {onMessage} from "@/messaging";
+import {onMessage, sendMessage} from "@/messaging";
 import CommunityListUI from "@/entrypoints/content/CommunityContentUI.vue";
 import {parseAllOfCommunity} from "@/entrypoints/content/community-dom-parse";
 import {createApp} from "vue";
@@ -40,6 +40,9 @@ export async function communityListPageEntry(ctx: ContentScriptContext) {
 	});
 	// 4. Mount the UI
 	ui.mount();
+
+	const tabId=await sendMessage('echoTabId','')
+	console.log('tabId:',tabId)
 }
 
 function registerMessage() {
@@ -49,11 +52,7 @@ function registerMessage() {
 			console.log('begin crawl for record.')
 			return await parseAllOfCommunity()
 		}
-		// else if(data.data=='c record'){
-		// 	return 'crawl ok'
-		// }
-
-
+		return 'simple from community-list page'
 	})
 	/**
 	 * 解析当前列表页面, 并返回解析结果
@@ -62,6 +61,7 @@ function registerMessage() {
 		console.log('RECEIVE parseOneCommunityListOnePage msg')
 		return await parseAllOfCommunity()
 	})
+	console.log('[onMsg]parseOneCommunityListOnePage')
 
 
 }

@@ -38,7 +38,7 @@ export default defineBackground(() => {
 	})
 	registerDaoMessage()
 	registerBrowserStorageLocalMessage()
-	registerSimpleMessage()
+	// registerSimpleMessage()
 
 	browser.runtime.onInstalled.addListener(()=>{
 		if(!isDebug){

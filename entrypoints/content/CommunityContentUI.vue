@@ -9,16 +9,16 @@ import ObjectTable from "@/components/table/ObjectTable.vue";
 import {extractCidFromListUrl} from "@/utils/lj-url";
 import {injectFuzzyStyle} from "@/entrypoints/content/lj-disguise";
 import {sendMessage} from '@/messaging';
-import {onMounted, ref,toRaw} from "vue";
+import {onMounted, ref} from "vue";
 import {Icon} from "@iconify/vue";
 import {useDevSetting} from "@/entrypoints/reuse/global-variables";
 import TwoLineAt from "@/components/lj/column/TwoLineAt.vue";
 import {HTMLDivElement} from "linkedom";
 
-const {isDebug}=useDevSetting()
+const {isDebug} = useDevSetting()
 
 
-const contentDrawer = ref<HTMLDivElement|null>()
+const contentDrawer = ref<HTMLDivElement | null>()
 
 
 const item = ref<CommunityListPageItem>()
@@ -75,84 +75,81 @@ async function queryTask(cid: string) {
   taskInDb.value = queryTask[0]
 }
 
-async function beginCrawl() {
-  //通过background启动
-  // await sendMessage('crawlCommunityTask',{cid:String(cid.value)},'background')
-  //跳转到option中间页, 然后点击开始后 再启动sidebar开始
-}
-
-
 </script>
 
 <template>
 
-  <SimpleDrawer ref="contentDrawer" class="contentDrawer fixed top-0 right-0 max-w-96 max-h-full text-sm " :default-open="true"
+  <SimpleDrawer ref="contentDrawer"
+                class="contentDrawer  fixed top-0 right-0 max-w-96 max-h-full text-sm "
+                :default-open="true"
                 :position="'right'">
-    <h1 class="text-gray-500 font-extrabold">
-      小区列表
-    </h1>
+    <div class="bg-neutral-100 rounded p-2">
+      <h1 class="text-gray-500 font-extrabold">
+        小区列表页面
+      </h1>
 
-    <details v-if="isDebug">
-      <summary>debug</summary>
-      <div>
-        <Button @click="initParseAndQuery">parse</Button>
-        <Button @click="injectFuzzyStyle">injectStyle</Button>
+      <details v-if="isDebug">
+        <summary>debug</summary>
+        <div>
+          <Button @click="initParseAndQuery">parse</Button>
+          <Button @click="injectFuzzyStyle">injectStyle</Button>
+        </div>
+      </details>
+
+      <div v-if="taskInDb">
+        <div>任务已创建
+          <a @click="openOption" class="text-green-500 underline cursor-pointer">去查看</a>
+        </div>
+
+        <Button v-if="cid && item && item.city" @click="openOption()">
+          <Icon icon="solar:refresh-circle-broken" class="w-6 h-6"/>
+          去手动运行
+        </Button>
+
+        <table class="border">
+          <tbody>
+          <tr>
+            <th>创建时间:</th>
+            <th>
+              <div class="flex gap-4">
+                <TwoLineAt :at="taskInDb.createdAt"/>
+              </div>
+            </th>
+          </tr>
+          <tr>
+            <th>上次运行时间:</th>
+            <th>
+              <div class="flex gap-4">
+                <TwoLineAt :at="taskInDb.lastRunningAt"/>
+              </div>
+            </th>
+          </tr>
+          <tr>
+            <th>运行次数:</th>
+            <th>
+              {{ taskInDb.runningCount }}
+            </th>
+          </tr>
+          </tbody>
+        </table>
       </div>
-    </details>
 
-    <div v-if="taskInDb">
-      <div>任务已创建
-        <a @click="openOption" class="text-green-500 underline cursor-pointer">去查看</a>
+      <div v-else>
+        <div class="rounded p-2 bg-gray-200">尚未创建任务</div>
+        <Button @click="createTask">创建任务</Button>
+        <!--      <ObjectTable :data="item"/>-->
       </div>
 
-      <Button v-if="cid && item && item.city" @click="openOption()">
-        <Icon icon="solar:refresh-circle-broken" class="w-6 h-6"/>
-        去手动运行
-      </Button>
 
-      <table class="border">
-        <tbody>
-        <tr>
-          <th>创建时间:</th>
-          <th>
-            <div class="flex gap-4">
-              <TwoLineAt :at="taskInDb.createdAt"/>
-            </div>
-          </th>
-        </tr>
-        <tr>
-          <th>上次运行时间:</th>
-          <th>
-            <div class="flex gap-4">
-              <TwoLineAt :at="taskInDb.lastRunningAt"/>
-            </div>
-          </th>
-        </tr>
-        <tr>
-          <th>运行次数:</th>
-          <th>
-            {{ taskInDb.runningCount }}
-          </th>
-        </tr>
-        </tbody>
-      </table>
+      <details v-if="isDebug">
+        <summary>debug</summary>
+        <ObjectTable :data="taskInDb as any"/>
+        <ObjectTable :data="item"/>
+        <div>
+          <pre>{{ JSON.stringify(item, null, 2) }}</pre>
+        </div>
+      </details>
     </div>
-
-    <div v-else>
-      <div class="rounded p-2 bg-gray-200">尚未创建任务</div>
-      <Button @click="createTask">创建任务</Button>
-      <!--      <ObjectTable :data="item"/>-->
-    </div>
-
-
-    <details v-if="isDebug">
-      <summary>debug</summary>
-      <ObjectTable :data="taskInDb as any"/>
-      <ObjectTable :data="item"/>
-      <div>
-        <pre>{{ JSON.stringify(item, null, 2) }}</pre>
-      </div>
-    </details>
 
   </SimpleDrawer>
 

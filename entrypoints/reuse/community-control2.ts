@@ -3,9 +3,11 @@ import {sendMessage} from "@/messaging"
 import {db} from "@/utils/client/Dexie";
 import {stabilizeFields} from "@/utils/variable";
 import {removeRepeat} from "@/utils/array";
-import {list} from "radash";
+import {list, sleep} from "radash";
 import {genCommunityPageUrl} from "@/utils/lj-url";
 import {browser} from "wxt/browser";
+import {waitForTabLoad} from "@/utils/browser";
+import {waitForElement} from "@/utils/document";
 
 
 const PREFIX = '[oneCommunityEntry]'
@@ -28,10 +30,18 @@ export async function oneCommunityEntry(communityTask: CommunityTask) {
 	 * step 1. 获取页面页数
 	 */
 	const url = genCommunityPageUrl(city as string, cid, 1)
-	console.debug(PREFIX, 'start url: ', url)
 	const tab = await browser.tabs.create({url, active: false})
-	let pageItem: CommunityListPageItem = await sendMessage('parseOneCommunityListOnePage', undefined,  tab.id)
+	console.debug(PREFIX, 'start url: ', url,tab.id)
+	/*
+	等待网页可以进行爬取, 等待多种状态: 1.网页完全加载完毕document.readyState==='complete' 2.关键元素.agentCardDetailItem出现(最多等到30s结束)
+	 */
+	await Promise.any([
+		waitForTabLoad(tab),
+		waitForElement('.agentCardDetailItem',30_000)
+	])
 
+	console.debug(PREFIX, 'after loaded url: ', url,tab.id)
+	let pageItem: CommunityListPageItem = await sendMessage('parseOneCommunityListOnePage', undefined,  tab.id)
 	await browser.tabs.remove([tab.id as number])
 
 	if (!pageItem.maxPageNo || !pageItem.city) {
@@ -55,6 +65,10 @@ export async function execOneCommunity(input: { city: string, cid: string, maxPa
 	for (const url of urlList) {
 		const tab = await browser.tabs.create({url, active: false})
 		console.debug('[execOneCommunity] open:', url, tab.id, tab.status)
+		await Promise.any([
+			waitForTabLoad(tab),
+			waitForElement('.agentCardDetailItem',30_000)
+		])
 		//打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
 		const resp = await sendMessage('parseOneCommunityListOnePage', undefined, tab.id)
 		console.debug(`[execOneCommunity] one tab[${url}] record resp:`, resp)

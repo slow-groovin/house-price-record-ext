@@ -349,7 +349,7 @@ onMounted(() => {
 
     <ConfirmDialog @confirm="goBeginBatchSelectedTasks">
       <template #trigger>
-        <Button class="p-1 h-fit">开始运行(选中)</Button>
+        <Button class="p-1 h-fit" :disabled="!selectionCount">开始运行(选中)</Button>
       </template>
       开始运行 {{ selectionCount }} 个任务?
     </ConfirmDialog>
@@ -357,7 +357,7 @@ onMounted(() => {
 
     <ConfirmDialog @confirm="deleteSelectedTasks">
       <template #trigger>
-        <Button variant="destructive" class="p-1 h-fit">删除(选中)</Button>
+        <Button variant="destructive" class="p-1 h-fit" :disabled="!selectionCount">删除(选中)</Button>
       </template>
       <span class="text-red-700 font-bold">
         确认要删除选中的 {{ selectionCount }} 个任务吗?
@@ -366,7 +366,7 @@ onMounted(() => {
 
     <Dialog>
       <DialogTrigger as-child>
-        <Button class="p-1 h-fit">添加到分组(选中)</Button>
+        <Button class="p-1 h-fit" :disabled="!selectionCount">添加到分组(选中)</Button>
       </DialogTrigger>
       <DialogContent class="sm:max-w-md">
         <DialogHeader>

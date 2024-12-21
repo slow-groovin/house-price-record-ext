@@ -8,6 +8,7 @@ interface ProtocolMap {
 	parseHouseSold(): Promise<{price:number,soldDate?:string}>;
 
 	simple(msg:string): Promise<any>;
+	echoTabId(msg:string):number;
 	debug(msg:string): Promise<any>;
 
 	bar(): Promise<{}>;

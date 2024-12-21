@@ -80,6 +80,10 @@ export function registerBrowserStorageLocalMessage(){
 		const key=msg.data
 		return await storage.getItem(`local:${key}`)
 	})
+	onMessage('echoTabId',(msg)=>{
+		// console.log('echoTabId',msg.sender.tab)
+		return msg.sender.tab.id
+	})
 	console.log('[registerBrowserStorageLocalMessage]','getStorageLocal')
 }
 
