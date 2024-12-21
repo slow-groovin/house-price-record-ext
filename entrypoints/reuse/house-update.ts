@@ -41,6 +41,7 @@ export async function updateBatchHouseWithPreview(preview?:HousesUpdatePreview){
 	}
 
 	await db.tempHouseUpdatePreview.delete(batchId)
+	await db.tempBatchHouse.delete(preview.tempListId)
 }
 
 

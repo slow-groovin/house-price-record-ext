@@ -132,10 +132,10 @@ const columnDef: (ColumnDef<TaskGroup>)[] = [
     id: '操作',
     cell: ({cell, row}) => <div class="flex gap-2 items-center">
       <a href={detailUrl(row.getValue('id'))} class="link" target="_blank">查看</a>
-      <div
+      <button onClick={()=>emit('onRunGroup',row.index)}
         class="flex items-center border rounded gap-0 p-0.5 text-sm bg-green-500 text-white hover:outline  outline-neutral-300 cursor-pointer">
-        <Icon icon="solar:play-bold" class="w-4 h-4" onClick={()=>emit('onRunGroup',row.index)}/>运行
-      </div>
+        <Icon icon="solar:play-bold" class="w-4 h-4" />运行
+      </button>
 
     </div>,
     enableSorting: false,

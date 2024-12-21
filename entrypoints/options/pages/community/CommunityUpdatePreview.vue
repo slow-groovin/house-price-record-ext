@@ -31,15 +31,34 @@
         </div>
         <h3 class="text-sm font-light italic">确认无误后, 点击下方按钮开始存入浏览器数据库</h3>
         <h3 class="text-sm font-light italic">可以点击按钮, 手动标记删除有误记录</h3>
-        <h3 class="text-sm font-light italic">记录会以周为单位进行存储</h3>
-        <!--      todo: hoverInfo介绍周为单位存储的原理-->
+        <h3 class="text-sm font-light italic">记录会以周为周期进行存储
+          <InfoHover>
+            如果某个小区任务已经存在一条本周一0:00之后的记录, 新的记录会和这条记录进行合并
+          </InfoHover>
+        </h3>
+
 
         <h3 class="text-sm font-light italic"></h3>
       </div>
       <h2 v-else class="text-xl font-semibold">已更新</h2>
 
 
-      <div v-if="data.records.length > 0" class="flex flex-col space-y-2">
+      <template v-if="failedList.length>0">
+        <ul>
+          <li v-for="(item,index) in failedList" :key="item.cid"
+              class="text-sm  flex flex-row items-center gap-3  w-fit  border"
+              :class="{'line-through': listDelete[index]}"
+          >
+            <div class="text-center flex items-center text-red-600 ">
+              <InfoHover>该项任务在本次批量运行中,运行失败,没有结果数据, 确认数据时不会处理此项</InfoHover>
+              运行失败
+            </div>
+            <a class="link" :href="`options.html#/c/task/detail?id=${item.cid}`">{{item.cid}}</a>
+            <a class="link flex items-center" :href="genCommunityPageUrl(item.city??'',item.cid,1)">{{item.name}}<Icon icon="tdesign:jump"/></a>
+          </li>
+        </ul>
+      </template>
+      <template v-if="data.records.length > 0" >
         <ul class="flex flex-col gap-3">
           <li v-for="(item,index) in data.records" :key="item.cid"
               class="text-sm  flex flex-row items-start gap-3"
@@ -50,10 +69,11 @@
 
           </li>
         </ul>
-      </div>
+      </template>
 
     </div>
-    <Button v-if="!isUpdateDone && data?.records?.length " @click="mutate" :disabled="status!=='idle'" class="my-4 sticky bottom-12 ">
+    <Button v-if="!isUpdateDone && data?.records?.length " @click="mutate" :disabled="status!=='idle'"
+            class="my-4 sticky bottom-12 ">
       <div v-if="status==='pending'"
            class="w-4 h-4 rounded-full animate-spin  border-2 border-t-transparent border-green-500"></div>
       确认数据
@@ -69,7 +89,7 @@
 </template>
 
 <script setup lang="tsx">
-import {HTMLAttributes, ref, toRaw} from 'vue'
+import {HTMLAttributes, onMounted, ref, toRaw} from 'vue'
 import {cn} from "@/utils/shadcn-utils";
 import {Icon} from "@iconify/vue";
 import {useRoute} from "vue-router";
@@ -81,6 +101,9 @@ import CommunityRecordCard from "@/entrypoints/options/components/CommunityRecor
 import {updateBatchCommunityWithPreview} from "@/entrypoints/reuse/community-update";
 import {browser} from "wxt/browser";
 import {useExtTitle} from "@/composables/useExtInfo";
+import InfoHover from "@/components/InfoHover.vue";
+import {CommunityTask} from "@/types/lj";
+import {genCommunityPageUrl} from "@/utils/lj-url";
 
 interface Props {
   class?: HTMLAttributes['class']
@@ -92,8 +115,22 @@ const {query: {id}} = useRoute()
 useExtTitle('小区任务运行结果确认预览' + id)
 
 const data = ref<CommunityUpdatePreview>()
-if (id)
-  db.tempCommunityUpdatePreview.get(id as string).then(rs => data.value = rs)
+const initialBatchList = ref<CommunityTask[]>([])
+const failedList = ref<CommunityTask[]>([])
+async function queryData() {
+  if (id) {
+    await db.tempCommunityUpdatePreview.get(id as string).then(rs => data.value = rs)
+  }
+  if (data.value) {
+    initialBatchList.value = (await db.tempBatchCommunity.get(data.value.tempListId))?.communityList ?? []
+    let sucIds = data.value.records.map(r=>r.cid);
+
+    const allIds=new Set(initialBatchList.value.map(r=>r.cid))
+    const failedIds=allIds.difference(new Set(sucIds))
+    failedList.value=initialBatchList.value.filter(r=>failedIds.has(r.cid))
+  }
+}
+
 
 const isUpdateDone = ref(false)
 
@@ -125,6 +162,7 @@ async function doUpdate() {
   }
   const previewData = {
     batchId: data.value.batchId,
+    tempListId: data.value.tempListId,
     at: data.value.at,
     records: data.value.records.filter((_, index) => !listDelete.value[index]).map(r => toRaw(r))
   }
@@ -143,5 +181,8 @@ async function closeWindow() {
   await browser.windows.remove(curWindow.id as number)
 }
 
+onMounted(() => {
+  queryData()
+})
 
 </script>

@@ -41,9 +41,9 @@ const retryTime = useLocalStorage('batch-house-setting-retryTime', 5)
 const maxConcurrent = useLocalStorage('batch-house-setting-maxConcurrent', 5)
 
 const DEFAULT_SETTING = {
-  interval: 500,
-  retryTime: 5,
-  maxConcurrent: 3
+  interval: 1000,
+  retryTime: 2,
+  maxConcurrent: 5
 }
 
 function resetSetting() {
@@ -57,7 +57,7 @@ onMounted(async () => {
   if (!hidList.value) {
     goSidePanelHome()
   }
-  await db.tempBatchHouse.delete(tempId)
+  // await db.tempBatchHouse.delete(tempId)
 })
 
 
@@ -97,6 +97,7 @@ async function startBathHouse() {
   preview = {
     at: Date.now(),
     batchId: batchId,
+    tempListId: tempId,
     miss: [],
     normal: [],
     sold: []
@@ -159,11 +160,11 @@ async function startBathHouse() {
       <Input v-model="maxConcurrent" id="maxConcurrent" type="number" class="w-24" :disabled="!isInit"/>
     </div>
     <div class="line">
-      <label for="retryTime">失败重试次数: </label>
+      <label for="retryTime">失败自动重试次数: </label>
       <Input v-model="retryTime" id="retryTime" type="number" class="w-24" :disabled="!isInit"/>
     </div>
     <div class="line">
-      <label for="interval">任务间隔: </label>
+      <label for="interval">任务间隔(毫秒): </label>
       <Input v-model="interval" id="interval" type="number" class="w-24" :disabled="!isInit"/>
     </div>
   </div>

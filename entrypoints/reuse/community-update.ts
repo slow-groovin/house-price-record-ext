@@ -23,8 +23,9 @@ export async function updateBatchCommunityWithPreview(preview?: CommunityUpdateP
 	for (let record of preview.records) {
 		record.at = preview.at
 		await updateOneCommunityWithRecord(record)
-
 	}
+	await db.tempBatchCommunity.delete(preview.tempListId)
+	await db.tempCommunityUpdatePreview.delete(preview.batchId)
 }
 
 /**

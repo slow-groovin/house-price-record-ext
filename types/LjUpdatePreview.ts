@@ -3,6 +3,7 @@ import {CommunityRecord, HouseTaskStatus} from "@/types/lj";
 
 interface HousesUpdatePreview {
 	batchId: string,
+	tempListId: number,
 	at: number,
 	normal: HouseNormal[],
 	miss: HouseUpdateBase[],
@@ -29,6 +30,7 @@ interface HouseNormal extends HouseUpdateBase {
 
 interface CommunityUpdatePreview{
 	batchId: string,
+	tempListId: number,
 	at: number,
 	records: CommunityRecord[]
 }

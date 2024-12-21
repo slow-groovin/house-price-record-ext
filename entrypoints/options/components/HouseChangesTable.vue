@@ -244,7 +244,6 @@ onMounted(() => {
 <template>
   <h1>H Changes</h1>
   <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility"/>
-  <!--  todo change Table to timeline,  hide basic info button-->
   <Table>
     <TableHeader>
       <TableRow v-for="headerGroup in table.getHeaderGroups()">

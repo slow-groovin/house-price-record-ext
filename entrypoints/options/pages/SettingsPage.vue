@@ -15,7 +15,7 @@
     </h1>
     <div class="flex flex-col text-right">
       <span class="text-base font-medium">已使用存储空间: {{ diskUsage?.usage?.toFixed(2) }}MB </span>
-      <span class="text-sm text-gray-300">总可用空间(取决于电脑剩余空间): {{ diskUsage?.quota?.toFixed(0) }}GB </span>
+      <span class="text-sm text-gray-300">总可用空间(取决于电脑系统盘剩余空间): {{ diskUsage?.quota?.toFixed(0) }}GB </span>
     </div>
 
 
@@ -46,8 +46,10 @@
     </div>
 
 
+
+
     <!-- 操作按钮 -->
-    <div class="flex justify-start space-x-4 pt-4">
+    <div class="flex justify-start space-x-4 py-4 mb-12">
       <button
         @click="saveSettings"
         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -60,6 +62,18 @@
       >
         重置设置
       </button>
+    </div>
+
+
+    <h1 class="text-2xl  w-fit font-bold col-span-2 border-b border-black">
+      临时数据
+    </h1>
+    <div class="flex flex-col text-right">
+      <span class="text-base font-medium">清理临时数据</span>
+    </div>
+    <div class="flex flex-col">
+      <Button variant="destructive" @click="clearTempData">清理</Button>
+      <span class="text-sm text-gray-300">删除所有的临时数据(请勿在任务运行中清理)</span>
     </div>
   </div>
 </template>
@@ -74,6 +88,8 @@ import {storage} from "wxt/storage";
 import {getIndexedDBUsage} from "@/utils/browser";
 import {useExtTitle} from "@/composables/useExtInfo";
 import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+import {db} from "@/utils/client/Dexie";
+import {Button} from "@/components/ui/button";
 
 const {isDebug}=useDevSetting()
 
@@ -141,4 +157,14 @@ onMounted(async () => {
   // 示例：调用该函数并打印结果
   diskUsage.value = await getIndexedDBUsage()
 })
+
+async function clearTempData(){
+  await db.tempBatchCommunity.clear()
+  await db.tempBatchHouse.clear()
+  await db.tempCommunityUpdatePreview.clear()
+  await db.tempHouseUpdatePreview.clear()
+  await db.debugInfo.clear()
+  await db.items.clear()
+  alert('清理临时数据完毕!')
+}
 </script>

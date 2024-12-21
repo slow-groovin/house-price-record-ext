@@ -43,8 +43,8 @@ const retryTime = useLocalStorage('batch-community-setting-retryTime', 5)
 const maxConcurrent = useLocalStorage('batch-community-setting-maxConcurrent', 5)
 
 const DEFAULT_SETTING = {
-  interval: 500,
-  retryTime: 5,
+  interval: 1000,
+  retryTime: 1,
   maxConcurrent: 3
 }
 
@@ -66,9 +66,9 @@ onMounted(async () => {
 let preview: CommunityUpdatePreview = {
   at: Date.now(),
   batchId: '',
+  tempListId: tempId,
   records: []
 }
-const failedItems = ref<CommunityTask[]>([])
 
 function* jobIter(): IterableIterator<Job> {
   for (let community of communityList.value as CommunityTask[]) {
@@ -97,6 +97,7 @@ async function startBathCommunity() {
   preview = {
     at: Date.now(),
     batchId: batchId,
+    tempListId: tempId,
     records: []
   }
   //
@@ -155,15 +156,15 @@ async function startBathCommunity() {
 
     </div>
     <div class="line">
-      <label for="maxConcurrent">maxConcurrent: </label>
+      <label for="maxConcurrent">最大同时打开页面: </label>
       <Input v-model="maxConcurrent" id="maxConcurrent" type="number" class="w-24" :disabled="!isInit"/>
     </div>
     <div class="line">
-      <label for="retryTime">retryTime: </label>
+      <label for="retryTime">失败自动重试次数: </label>
       <Input v-model="retryTime" id="retryTime" type="number" class="w-24" :disabled="!isInit"/>
     </div>
     <div class="line">
-      <label for="interval">interval: </label>
+      <label for="interval">任务间隔(毫秒): </label>
       <Input v-model="interval" id="interval" type="number" class="w-24" :disabled="!isInit"/>
     </div>
   </div>
