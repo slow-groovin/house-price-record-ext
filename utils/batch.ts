@@ -2,7 +2,7 @@ export async function batchProcess<T>(
 	items: T[],
 	batchSize: number,
 	callback:  (batch: T[]) => Promise<void>
-): void {
+): Promise<void> {
 	if (batchSize <= 0) {
 		throw new Error("batchSize must be greater than 0");
 	}

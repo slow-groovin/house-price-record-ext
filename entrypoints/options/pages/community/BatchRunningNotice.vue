@@ -65,7 +65,7 @@ queryOne()
     <h1 class="text-2xl font-bold border-b">注意事项</h1>
     <ol class="pl-4 list-decimal flex flex-col gap-4">
       <li>运行期间, 请不要关闭浏览器窗口和侧边栏</li>
-      <li>新打开标签页, 会自动成为浏览器当前活动页面,
+      <li>新打开标签页, 某些浏览器内会强制自动成为浏览器当前活动页面,
         <span class="text-red-500 font-bold">因此在任务运行中您无法使用该浏览器正常进行其它浏览</span>
         <span class="text-sm italic">(这是无法更改的浏览器插件特性,
           <span class="text-green-700">您可以最小化浏览器并使用其它软件</span>

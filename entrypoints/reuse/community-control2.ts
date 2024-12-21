@@ -3,11 +3,9 @@ import {sendMessage} from "@/messaging"
 import {db} from "@/utils/client/Dexie";
 import {stabilizeFields} from "@/utils/variable";
 import {removeRepeat} from "@/utils/array";
-import {list, sleep} from "radash";
+import {list, retry} from "radash";
 import {genCommunityPageUrl} from "@/utils/lj-url";
 import {browser} from "wxt/browser";
-import {waitForTabLoad} from "@/utils/browser";
-import {waitForElement} from "@/utils/document";
 
 
 const PREFIX = '[oneCommunityEntry]'
@@ -31,26 +29,22 @@ export async function oneCommunityEntry(communityTask: CommunityTask) {
 	 */
 	const url = genCommunityPageUrl(city as string, cid, 1)
 	const tab = await browser.tabs.create({url, active: false})
-	console.debug(PREFIX, 'start url: ', url,tab.id)
-	/*
-	等待网页可以进行爬取, 等待多种状态: 1.网页完全加载完毕document.readyState==='complete' 2.关键元素.agentCardDetailItem出现(最多等到30s结束)
-	 */
-	await Promise.any([
-		waitForTabLoad(tab),
-		waitForElement('.agentCardDetailItem',30_000)
-	])
+	console.debug(PREFIX, 'start url: ', url, tab.id)
 
-	console.debug(PREFIX, 'after loaded url: ', url,tab.id)
-	let pageItem: CommunityListPageItem = await sendMessage('parseOneCommunityListOnePage', undefined,  tab.id)
-	await browser.tabs.remove([tab.id as number])
-
-	if (!pageItem.maxPageNo || !pageItem.city) {
-		throw new Error('pageItem.maxPageNo|city not exist! ' + pageItem)
-	}
-	const oneRecord = await execOneCommunity({
-		cid: pageItem.cid, city: pageItem.city, maxPage: pageItem.maxPageNo
+	let pageItem: CommunityListPageItem | undefined = undefined
+	//重试多次
+	await retry({times: 10, delay: 1000}, async () => {
+		//首先爬取总页数等信息
+		pageItem = await sendMessage('parseOneCommunityListOnePage', undefined, tab.id)
+		if (!pageItem.maxPageNo || !pageItem.city) {
+			throw new Error('pageItem.maxPageNo|city not exist! ' + pageItem)
+		}
 	})
-
+	//pageItem必不为空, 因为retry失败会抛出异常
+	await browser.tabs.remove([tab.id as number])
+	let oneRecord = await execOneCommunity({
+		cid: pageItem!.cid, city: pageItem!.city!, maxPage: pageItem!.maxPageNo
+	})
 	return oneRecord
 }
 
@@ -65,16 +59,17 @@ export async function execOneCommunity(input: { city: string, cid: string, maxPa
 	for (const url of urlList) {
 		const tab = await browser.tabs.create({url, active: false})
 		console.debug('[execOneCommunity] open:', url, tab.id, tab.status)
-		await Promise.any([
-			waitForTabLoad(tab),
-			waitForElement('.agentCardDetailItem',30_000)
-		])
+		let parsedPageItem: CommunityListPageItem | undefined = undefined
+
 		//打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
-		const resp = await sendMessage('parseOneCommunityListOnePage', undefined, tab.id)
-		console.debug(`[execOneCommunity] one tab[${url}] record resp:`, resp)
+		await retry({times: 10, delay: 1000}, async () => {
+			parsedPageItem = await sendMessage('parseOneCommunityListOnePage', undefined, tab.id)
+		})
+
+		console.debug(`[execOneCommunity] one tab[${url}] record resp:`, parsedPageItem)
 		await browser.tabs.remove([tab.id as number])
 
-		recordsOfAllPage.push(resp as CommunityListPageItem)
+		recordsOfAllPage.push(parsedPageItem!)
 	}
 
 	verifyDiffPagesItem(recordsOfAllPage)
