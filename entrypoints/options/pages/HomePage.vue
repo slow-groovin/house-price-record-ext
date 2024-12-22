@@ -6,6 +6,9 @@ import {getIndexedDBUsage} from "@/utils/browser";
 import {zhCN} from "date-fns/locale/zh-CN";
 import {useExtInfo, useExtTitle} from "@/composables/useExtInfo";
 import {Archive, Building2, HardDrive, HouseIcon, ShoppingCartIcon, TrendingDownIcon} from 'lucide-vue-next'
+import {browser} from "wxt/browser";
+import {ljMetricRules} from "@/entrypoints/reuse/block";
+import InfoHover from "@/components/InfoHover.vue";
 
 useExtTitle('首页')
 const {name, version} = useExtInfo()
@@ -26,6 +29,8 @@ const thisWeekCount = reactive({
   sChangeCount: 0,
   cRecordCount: 0,
 })
+const enableRulesCount=ref(0)
+const allRulesCount=ref(0)
 
 const lastAt = ref(0)
 const weekStartAt = ref(0)
@@ -49,12 +54,17 @@ async function queryOverviewData() {
   thisWeekCount.cRecordCount = await db.communityRecords.where('at').above(weekStartAt.value).count()
 }
 
+async function loadRules() {
+  const _rules = await browser.declarativeNetRequest.getDynamicRules()
+  enableRulesCount.value=_rules.length
+  allRulesCount.value=ljMetricRules.length
+}
 const isEmptyUsage = computed(() => totalCount.cTaskCount === 0 && totalCount.hTaskCount === 0)
 
 
 const display = {
   cTaskCount: {label: '小区任务', icon: Building2, color: 'blue', link: '/options.html#/c/task/list', postfix: '个'},
-  hTaskCount: {label: '房源任务', icon: HouseIcon, color: 'yellow', link: '/options.html#/h/task/list', postfix: '个'},
+  hTaskCount: {label: '房源任务', icon: HouseIcon, color: 'blue', link: '/options.html#/h/task/list', postfix: '个'},
   pChangeCount: {
     label: '价格变更记录',
     icon: TrendingDownIcon,
@@ -75,6 +85,7 @@ const display = {
 }
 
 onMounted(() => {
+  loadRules()
   queryOverviewData()
   getIndexedDBUsage().then(rs => {
     totalCount.usedMb = Number(rs.usage.toPrecision(2))
@@ -86,14 +97,20 @@ onMounted(() => {
 
 
   <div class="w-full flex items-center justify-center my-8 font-bold text-2xl text-center">
-    欢迎使用 {{ name }}<img src="/icon/24.png" alt="icon" class="inline">
+    欢迎使用 {{ name }}{{version}}<img src="/icon/24.png" alt="icon" class="inline">
   </div>
   <div v-if="isEmptyUsage">
     首次使用? 请查看
     <!--    使用入门-->
-    <div class="outline  outline-green-500 rounded p-2">
+    <div class="outline w-fit h-fit  outline-green-500 rounded p-2">
       使用入门
       <a class="link" href="/options.html#/startup">去查看></a>
+    </div>
+
+    <div class="outline col-span-3  w-fit h-fit outline-green-500 rounded p-2">
+      当前已经激活 <span class="font-extrabold text-green-500">{{enableRulesCount}}</span>/{{allRulesCount}} 条请求过滤规则
+      <a class="link" href="/options.html#/blocks">去查看></a>
+      <InfoHover>如果您在访问本插件目标站点时遇到了无法排查的网络访问问题, 请尝试关闭规则进行排查</InfoHover>
     </div>
   </div>
 
@@ -112,6 +129,11 @@ onMounted(() => {
       <a class="link" href="/options.html#/startup">去查看></a>
     </div>
 
+    <div class="outline col-span-3  w-fit h-fit outline-green-500 rounded p-2">
+      当前已经激活 <span class="font-extrabold text-green-500">{{enableRulesCount}}</span>/{{allRulesCount}} 条请求过滤规则
+      <a class="link" href="/options.html#/blocks">去查看></a>
+      <InfoHover>如果您在访问本插件目标站点时遇到了无法排查的网络访问问题, 请尝试关闭规则进行排查</InfoHover>
+    </div>
 
     <div class="col-span-7 row-span-3 min-w-fit bg-gray-100 p-6 rounded-lg shadow-lg">
       <h2 class="text-2xl font-bold text-gray-800 mb-6">数据面板</h2>

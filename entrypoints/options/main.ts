@@ -20,7 +20,7 @@ import HouseStatusChangeList from "@/entrypoints/options/pages/house/HouseStatus
 import HouseDetailPage from "@/entrypoints/options/pages/house/HouseDetailPage.vue";
 import CommunityTaskList from "@/entrypoints/options/pages/community/CommunityTaskList.vue";
 import HouseUpdatePreview from "@/entrypoints/options/pages/house/HouseUpdatePreview.vue";
-import CommunityGroupList from "@/entrypoints/options/pages/community/ComuunityGroupList.vue"
+import CommunityGroupList from "@/entrypoints/options/pages/community/CommunityGroupList.vue"
 import TaskGroupDetail from "@/entrypoints/options/pages/TaskGroupDetail.vue";
 import HouseGroupList from "@/entrypoints/options/pages/house/HouseGroupList.vue";
 import BatchRunningNotice from "@/entrypoints/options/pages/community/BatchRunningNotice.vue";
