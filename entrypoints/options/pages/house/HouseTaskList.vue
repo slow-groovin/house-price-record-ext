@@ -37,6 +37,7 @@ import {useRouterQuery} from "@/composables/useRouterQuery";
 import {newQueryConditionFromQueryParam} from "@/entrypoints/reuse/query-condition";
 import {useExtTitle} from "@/composables/useExtInfo";
 import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+import {mergeParams} from "@/utils/variable";
 const {isDebug}=useDevSetting()
 
 useExtTitle('房源任务列表')
@@ -46,8 +47,8 @@ route handle BEGIN
  */
 const {pushQuery, removeQuery, pushQueries, removeQueries} = useRouterQuery()
 const {query} = useRoute()
-const {_pageIndex, _pageSize} = query
-
+const {_pageIndex, queryPageSize} = query
+const _pageSize=mergeParams(queryPageSize,localStorage.getItem('house-list-page-size'))
 
 const queryScopeLabel = ref('')
 
@@ -243,6 +244,7 @@ data END
 async function onPaginationUpdate(pageIndex: number, pageSize: number) {
   await pushQuery('_pageIndex', pageIndex)
   await pushQuery('_pageSize', pageSize)
+  localStorage.setItem('house-list-page-size', pageSize)
   await queryData(pageIndex, pageSize)
 }
 

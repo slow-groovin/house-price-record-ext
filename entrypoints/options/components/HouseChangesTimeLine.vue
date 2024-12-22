@@ -12,8 +12,6 @@ import {cn} from "@/utils/shadcn-utils";
 import {db} from "@/utils/client/Dexie";
 import {Icon} from "@iconify/vue";
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
-import useWxtStorage from "@/composables/useWxtStorage";
-import {Checkbox} from "@/components/ui/checkbox";
 import {storage} from "wxt/storage";
 
 

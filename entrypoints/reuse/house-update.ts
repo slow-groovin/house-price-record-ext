@@ -81,17 +81,16 @@ export async function updateOneNormal(houseNormal:HouseNormal, taskInDb: HouseTa
 		})
 	}
 	//如果有描述字段变动, 新增变动
-	if(commonFieldChanges && commonFieldChanges.length>0){
-		await db.houseCommonFieldChanges.bulkAdd(commonFieldChanges.map(c=>({
-			at: at,
-			cid: taskInDb.cid,
-			hid: taskInDb.hid,
-			name: c.name,
-			newValue: c.newValue,
-			oldValue: c.oldValue
-
-		})))
-	}
+	// if(commonFieldChanges && commonFieldChanges.length>0){
+	// 	await db.houseCommonFieldChanges.bulkAdd(commonFieldChanges.map(c=>({
+	// 		at: at,
+	// 		cid: taskInDb.cid,
+	// 		hid: taskInDb.hid,
+	// 		name: c.name,
+	// 		newValue: c.newValue,
+	// 		oldValue: c.oldValue
+	// 	})))
+	// }
 }
 
 

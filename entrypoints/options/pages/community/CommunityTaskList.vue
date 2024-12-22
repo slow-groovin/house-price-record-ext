@@ -61,6 +61,7 @@ import OnSellCount from "@/components/lj/column/OnSellCount.vue";
 import TwoLineAt from "@/components/lj/column/TwoLineAt.vue";
 import {useExtTitle} from "@/composables/useExtInfo";
 import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+import {mergeParams} from "@/utils/variable";
 
 const {isDebug}=useDevSetting()
 useExtTitle('小区任务列表')
@@ -101,9 +102,9 @@ ref definition DONE
 /**
  * pagination
  */
-
+const storagePageSize=localStorage.getItem('community-list-page-size')
 const pagination = ref<PageState>({
-  pageSize: _pageSize ? Number(_pageSize) : 10,
+  pageSize:  mergeParams(_pageSize,storagePageSize) ? Number(mergeParams(_pageSize,storagePageSize)) : 10,
   pageIndex: _pageIndex ? Number(_pageIndex) : 1,
 })
 
@@ -389,6 +390,7 @@ table END
 
 /**更新分页*/
 async function onPaginationUpdate(pageIndex: number, pageSize: number) {
+  localStorage.setItem('community-list-page-size',String(pageSize))
   await pushQuery('_pageIndex', pageIndex)
   await pushQuery('_pageSize', pageSize)
   await queryData(pageIndex, pageSize)

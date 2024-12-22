@@ -19,11 +19,11 @@ const extName = import.meta.env.VITE_EXT_NAME
     <div>
       <h2>适合哪些群体?</h2>
       <ol>
-        <li>买房一方</li>
+        <li>买房方</li>
         <li>准备购买二手房, 正在关注房价趋势</li>
         <li>同时关注大量目标小区的, 希望批量地掌握价格和上下架动态</li>
         <li>觉得①城市统计数据 ②媒体/中介的消息 与自己的目标小区/房源的房价趋势有所差异,
-          想要得到针对自己目标的实际、有效、第一手的数据
+          想要得到针对自己购房目标(区域、小区、房源)的实际、有效、一手的数据
         </li>
         <li>希望将关注的数据保存为历史, 以备后续查看</li>
       </ol>
@@ -40,7 +40,13 @@ const extName = import.meta.env.VITE_EXT_NAME
                 <Icon icon="icon-park-outline:point"/>
               </div>
             </template>
-            <img src="/desc/community-login.jpg" alt="">
+
+            <div class="flex gap-4">
+              <img src="/desc/community-home-page-jump.jpg" alt="">
+              <img src="/desc/community-login.jpg" alt="">
+
+            </div>
+
           </InfoHover>
         </li>
         <li>在页面内右侧, 点击

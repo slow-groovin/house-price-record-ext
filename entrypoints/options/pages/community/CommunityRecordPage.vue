@@ -7,13 +7,12 @@ import {HouseDetailUrl} from "@/utils/url-component";
 import DataEmptyState from "@/components/DataEmptyState.vue";
 import TwoLineAt from "@/components/lj/column/TwoLineAt.vue";
 import TotalPriceItem from "@/entrypoints/options/components/TotalPriceItem.vue";
-import ValueChangeBudget from "@/components/lj/house/ValueChangeBudget.vue";
-import PriceChangeBudget from "@/components/lj/house/PriceChangeBudget.vue";
 import NewPriceChangeBudget from "@/components/lj/house/NewPriceChangeBudget.vue";
 import {Button} from '@/components/ui/button'
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
 import {toast} from "vue-sonner";
 import {useExtTitle} from '@/composables/useExtInfo'
+
 const {query} = useRoute()
 const id = Number.parseInt(query['id'] as string)
 useExtTitle('记录详情'+id)

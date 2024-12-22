@@ -1,40 +1,83 @@
 <script setup lang="ts">
 import {db} from "@/utils/client/Dexie";
-import {onMounted, ref} from "vue";
-import {Separator} from "@/components/ui/separator";
-import {formatDistanceToNow} from 'date-fns'
+import {computed, onMounted, reactive, ref} from "vue";
+import {formatDistanceToNow, startOfWeek} from 'date-fns'
 import {getIndexedDBUsage} from "@/utils/browser";
 import {zhCN} from "date-fns/locale/zh-CN";
 import {useExtInfo, useExtTitle} from "@/composables/useExtInfo";
+import {Archive, Building2, HardDrive, HouseIcon, ShoppingCartIcon, TrendingDownIcon} from 'lucide-vue-next'
 
 useExtTitle('首页')
-const {name,version}=useExtInfo()
+const {name, version} = useExtInfo()
 
 
-const cTaskCount = ref(0)
-const hTaskCount = ref(0)
-const pChangeCount = ref(0)
-const sChangeCount = ref(0)
-const cRecordCount = ref(0)
-const usedMb=ref(0)
+const totalCount = reactive({
+  cTaskCount: 0,
+  hTaskCount: 0,
+  pChangeCount: 0,
+  sChangeCount: 0,
+  cRecordCount: 0,
+  usedMb: 0,
+})
+const thisWeekCount = reactive({
+  cTaskCount: 0,
+  hTaskCount: 0,
+  pChangeCount: 0,
+  sChangeCount: 0,
+  cRecordCount: 0,
+})
+
 const lastAt = ref(0)
+const weekStartAt = ref(0)
 
 async function queryOverviewData() {
-  cTaskCount.value = await db.communityTasks.count()
-  hTaskCount.value = await db.houseTasks.count()
-  pChangeCount.value = await db.houseChanges.count()
-  sChangeCount.value = await db.houseStatusChanges.count()
-  cRecordCount.value = await db.communityRecords.count()
+  totalCount.cTaskCount = await db.communityTasks.count()
+  totalCount.hTaskCount = await db.houseTasks.count()
+  totalCount.pChangeCount = await db.houseChanges.count()
+  totalCount.sChangeCount = await db.houseStatusChanges.count()
+  totalCount.cRecordCount = await db.communityRecords.count()
 
   const cLastAt = (await db.communityTasks.orderBy('lastRunningAt').last())?.lastRunningAt
   const hLastAt = (await db.houseTasks.orderBy('lastRunningAt').last())?.lastRunningAt
   lastAt.value = Math.max(cLastAt || 0, hLastAt || 0)
+
+  weekStartAt.value = startOfWeek(new Date(), {weekStartsOn: 1}).getTime()
+  thisWeekCount.cTaskCount = await db.communityTasks.where('createdAt').above(weekStartAt.value).count()
+  thisWeekCount.hTaskCount = await db.houseTasks.where('createdAt').above(weekStartAt.value).count()
+  thisWeekCount.pChangeCount = await db.houseChanges.where('at').above(weekStartAt.value).count()
+  thisWeekCount.sChangeCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).count()
+  thisWeekCount.cRecordCount = await db.communityRecords.where('at').above(weekStartAt.value).count()
+}
+
+const isEmptyUsage = computed(() => totalCount.cTaskCount === 0 && totalCount.hTaskCount === 0)
+
+
+const display = {
+  cTaskCount: {label: '小区任务', icon: Building2, color: 'blue', link: '/options.html#/c/task/list', postfix: '个'},
+  hTaskCount: {label: '房源任务', icon: HouseIcon, color: 'yellow', link: '/options.html#/h/task/list', postfix: '个'},
+  pChangeCount: {
+    label: '价格变更记录',
+    icon: TrendingDownIcon,
+    color: 'green',
+    link: '/options.html#/h/task/change',
+    postfix: '条'
+  },
+  sChangeCount: {
+    label: '状态变更记录',
+    icon: ShoppingCartIcon,
+    color: 'red',
+    link: '/options.html#/h/task/status/change',
+    postfix: '条'
+
+  },
+  cRecordCount: {label: '小区运行记录', icon: Archive, color: 'purple', link: '#', postfix: '个'},
+  usedMb: {label: '数据总量', icon: HardDrive, color: 'gray', link: '#', postfix: 'MB'}
 }
 
 onMounted(() => {
   queryOverviewData()
-  getIndexedDBUsage().then(rs=>{
-    usedMb.value=rs.usage
+  getIndexedDBUsage().then(rs => {
+    totalCount.usedMb = Number(rs.usage.toPrecision(2))
   })
 })
 </script>
@@ -43,73 +86,75 @@ onMounted(() => {
 
 
   <div class="w-full flex items-center justify-center my-8 font-bold text-2xl text-center">
-    欢迎使用  {{ name }}<img src="/icon/24.png" alt="icon" class="inline">
+    欢迎使用 {{ name }}<img src="/icon/24.png" alt="icon" class="inline">
   </div>
-
-
-  <div class="grid grid-cols-9 grid-rows-9 auto-rows-auto grid-flow-row gap-9">
-    <!--    上次运行-->
-    <div v-if="lastAt" class="col-span-3 outline rounded text-nowrap min-w-fit p-2 ">
-      距离上次运行任务
-      <span class="text-green-500"> {{ new Date(lastAt).toLocaleString() }}</span>
-      已过去 <span class="text-green-500"> {{ formatDistanceToNow(lastAt, {locale:zhCN}) }}</span>
-    </div>
-
-
+  <div v-if="isEmptyUsage">
+    首次使用? 请查看
     <!--    使用入门-->
     <div class="outline  outline-green-500 rounded p-2">
       使用入门
       <a class="link" href="/options.html#/startup">去查看></a>
     </div>
+  </div>
 
-
-    <!--    数据看板-->
-    <div class="outline col-start-1 row-span-6 w-fit text-nowrap outline-green-500 rounded">
-      <h1 class="font-bold text-2xl m-2">数据看板</h1>
-      <Separator class="w-full"/>
-      <div class="p-2 pr-8">
-        截至今天, 您已:
-        <div>
-          <div>
-            添加<span class="text-green-500 font-bold m-1">小区</span>任务数量:
-            <span class="font-bold text-amber-500">{{ cTaskCount }}</span>个
-            <a href="/options.html#/c/task/list" class="link ml-16 text-right">去查看></a>
-          </div>
-
-          <div>
-            添加<span class="text-green-500 font-bold m-1">单房源</span>任务数量:
-            <span class="font-bold text-amber-500">{{ hTaskCount }}</span>个
-            <a href="/options.html#/h/task/list" class="link ml-16">去查看></a>
-          </div>
-
-          <div>
-            追踪<span class="text-green-500 font-bold m-1">房源价格变更</span>次数:
-            <span class="font-bold text-amber-500">{{ pChangeCount }}</span>个
-            <a href="/options.html#/h/task/change" class="link ml-16">去查看></a>
-          </div>
-
-          <div>
-            追踪<span class="text-green-500 font-bold m-1">房源状态变更</span>次数:
-            <span class="font-bold text-amber-500">{{ sChangeCount }}</span>个
-            <a href="/options.html#/h/task/status/change" class="link ml-16">去查看></a>
-          </div>
-
-          <div>
-            存入<span class="text-green-500 font-bold m-1">小区记录</span>数量:
-            <span class="font-bold text-amber-500">{{ cRecordCount }}</span>个
-          </div>
-
-          <div>
-            <span class="text-green-500 font-bold m-1">总数据大小</span>:
-            <span class="font-bold text-amber-500">{{ usedMb.toFixed(2) }}</span>MB
-          </div>
-        </div>
-      </div>
-
+  <div v-if="!isEmptyUsage" class="grid grid-cols-9 grid-rows-9 auto-rows-auto grid-flow-row gap-9">
+    <!--    上次运行-->
+    <div v-if="lastAt" class="col-span-3 h-fit outline rounded text-nowrap min-w-fit p-2 ">
+      距离上次运行任务
+      <span class="text-green-500"> {{ new Date(lastAt).toLocaleString() }}</span>
+      已过去 <span class="text-green-500"> {{ formatDistanceToNow(lastAt, {locale: zhCN}) }}</span>
     </div>
 
 
+    <!--    使用入门-->
+    <div class="outline h-fit outline-green-500 rounded p-2">
+      使用入门
+      <a class="link" href="/options.html#/startup">去查看></a>
+    </div>
+
+
+    <div class="col-span-7 row-span-3 min-w-fit bg-gray-100 p-6 rounded-lg shadow-lg">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">数据面板</h2>
+      <h3 class="mb-4">截至今天, 您已添加:</h3>
+
+      <div class="flex flex-wrap -mx-3">
+        <div v-for="(value, key) in totalCount" :key="key"
+             class="px-3 mb-6">
+          <div class="bg-white rounded-lg shadow p-6 flex items-center">
+            <div :class="`mr-4`" :style="{color: display[key].color}">
+              <component :is="display[key].icon" class="w-8 h-8"/>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">{{ display[key].label }}</p>
+              <a class="text-2xl font-semibold hover-link text-gray-800" :href="display[key].link">{{ value }}<span>{{ display[key]?.postfix }}</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-span-6 row-span-3 bg-gray-100 p-6 rounded-lg shadow-lg">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">本周新增数据概览</h2>
+      <h3 class="mb-4">从 {{ new Date(weekStartAt).toLocaleString() }} 到当前, 新增:</h3>
+
+      <div class="flex flex-wrap mx-3">
+        <div v-for="(value, key) in thisWeekCount" :key="key"
+             class="px-3 mb-6">
+          <div class="bg-white rounded-lg shadow p-6 flex items-center">
+            <div :class="`mr-4`" :style="{color: display[key].color}">
+              <component :is="display[key].icon" class="w-8 h-8"/>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">{{ display[key].label }}</p>
+              <p class="text-2xl font-semibold text-gray-800">{{ value }}<span>{{ display[key]?.postfix }}</span></p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
 </template>
 
 <style scoped>

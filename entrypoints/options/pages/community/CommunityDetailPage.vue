@@ -167,7 +167,7 @@ onMounted(() => {
     <!-- house list -->
     <div id="houses-nav" v-if="task?.cid && task?.name" class="my-8 border-b ">
       <h2 class="border-b my-8">房源列表</h2>
-      <a :href="`/options.html#/h/task/list?cid=${task.cid}&name=${task.name}`" target="_blank" class="link my-8 font-bold" >去查看</a>
+      <a :href="`/options.html#/h/task/list?cidEqual=${task.cid}&name=${task.name}`" target="_blank" class="link my-8 font-bold" >去查看</a>
     </div>
 
     <div id="calendar-nav" class=" w-fit border-b">

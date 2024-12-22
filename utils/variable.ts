@@ -140,3 +140,21 @@ export function parseToType<T>(val: string, type: 'string' | 'number' | 'boolean
 			return null;
 	}
 }
+
+/**
+ * 合并参数函数 (Prompt: 优化的需求提示词：合并来自不同来源的参数，按优先级确定最终结果)
+ *
+ * 本函数接收变长参数列表，每个参数均为可选值（如 route query 和 localStorage）。
+ * 按参数的先后顺序，返回第一个非空值。若所有参数均为空，返回空字符串。
+ */
+export function mergeParams<T>(...values: (T | undefined | null)[]): T|undefined {
+	// 遍历参数列表，找到第一个非空（非 undefined 或 null 或空字符串）的值
+	for (const value of values) {
+		if (value) {
+			return value;
+		}
+	}
+
+	// 若所有参数均为空，返回空字符串
+	return undefined;
+}

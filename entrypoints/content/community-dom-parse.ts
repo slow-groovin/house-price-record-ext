@@ -8,6 +8,7 @@ import {extractNumber, waitForElement} from "@/utils/document";
 import {CommunityListPageItem, HouseListDetailItem, HousePriceItem} from "@/types/lj";
 import {removeNull} from "@/types/generic";
 import {PauseError} from "@/utils/lib/BatchQueueExecutor";
+import {isNumber} from "radash";
 
 export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 	/**
@@ -51,7 +52,7 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 	// 列表中的所有id
 	const houseItems:HouseListDetailItem[] = [];
 	// .info.clear > .title > a .info.clear > .priceInfo > .totalPrice
-	document.querySelectorAll('.info.clear ').forEach((element) => {
+	document.querySelectorAll('[log-mod=\'list\'] .info.clear ').forEach((element) => {
 		const {city,hid}=extractCityAndHidFromHouseUrl(element.querySelector('.title > a')?.getAttribute('href'))
 		const totalPrice=extractNumber(element.querySelector('.priceInfo > .totalPrice')?.textContent)
 		const unitPrice=extractNumber(element.querySelector('.priceInfo > .unitPrice')?.getAttribute('data-price'))??undefined
@@ -64,7 +65,6 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 		const roomSubType=info[4]?.trim()
 		const yearBuilt= info[5]?.trim()
 		const buildingType=info[6]?.trim()
-
 
 		// console.log(name,info)
 		if(!hid || !totalPrice){
@@ -79,6 +79,11 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 	 * 显示的 总套数 成交量 价格 带看数量
 	 */
 	let showedOnSellCount=NaN,showedAvgPrice=NaN,showedDoneCountIn90Days=NaN,showedVisitCountIn90Days=NaN;
+	//计算当前页的最大数量,对houseItems进行裁剪
+	if(isNumber(showedOnSellCount && isNumber(pageNo))){
+		houseItems.splice(Math.min(30, showedOnSellCount-(pageNo-1)*30))
+	}
+
 	await waitForElement('.agentCardDetailItem',30_000)
 		.then((element) => {
 			showedAvgPrice = Number(extractNumber(document.querySelector('.agentCardDetailItem:nth-child(1)>.agentCardDetailInfo')?.textContent));

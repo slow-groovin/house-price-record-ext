@@ -43,11 +43,9 @@ async function updateOneCommunityWithRecord(record: CommunityRecord) {
 
 
 	//查询可能存在的本周的record
-	const lastRecordThisWeek=await db.communityRecords.where('cid').equals(record.cid).and(r => r.at >= weekStartAt).last()
+	const lastRecordThisWeek = await db.communityRecords.where('cid').equals(record.cid).and(r => r.at >= weekStartAt).last()
 
-	const lastRecord = lastRecordBeforeThisWeek
-
-
+	const lastRecord = lastRecordBeforeThisWeek ?? lastRecordThisWeek
 
 
 	//如果存在lastRecordBeforeThisWeek, 则计算priceUp,priceDown, added,removed,
@@ -67,19 +65,17 @@ async function updateOneCommunityWithRecord(record: CommunityRecord) {
 	}
 
 	// 对removedItem,addedItem中的item更新状态, 如果存在lastRecordThisWeek则之更新相对于它的变更
-	let removedItemForUpdate:HousePriceItem[]=record.removedItem??[]
-	let addedItemForUpdate:HousePriceItem[]=record.addedItem??[]
-	if(lastRecordThisWeek && lastRecordThisWeek.houseList){
+	let removedItemForUpdate: HousePriceItem[] = record.removedItem ?? []
+	let addedItemForUpdate: HousePriceItem[] = record.addedItem ?? []
+	if (lastRecordThisWeek && lastRecordThisWeek.houseList) {
 		const {
 			removedItem,
 			addedItem
 		} = calculateListDifferences(record.houseList, lastRecordThisWeek.houseList)
-		removedItemForUpdate=removedItem
-		addedItemForUpdate=addedItem
+		removedItemForUpdate = removedItem
+		addedItemForUpdate = addedItem
 	}
-	await updateAddedAndRemovedItems(addedItemForUpdate,removedItemForUpdate,record.cid,record.at)
-
-
+	await updateAddedAndRemovedItems(addedItemForUpdate, removedItemForUpdate, record.cid, record.at)
 
 	// record 入库
 	record.houseList = record.houseList.map(({price, hid}) => ({hid, price}))
@@ -109,8 +105,14 @@ async function updateOneCommunityWithRecord(record: CommunityRecord) {
 		runningCount: task.runningCount + 1,
 	})
 	//删除本周的record(相当于合并)
-	if(lastRecordThisWeek)
+	if(lastRecordBeforeThisWeek && lastRecordThisWeek){ //如果存在本周之前的记录, 则直接删除本周记录
 		await db.communityRecords.delete(lastRecordThisWeek.id)
+	}else if(lastRecordThisWeek){ //如果不存在本周之前的记录,则根据记录总数判断是否是第一个记录
+		const count=await db.communityRecords.where('cid').equals(record.cid).count()
+		if(count>1){//如果不是第一条, 则删除
+			await db.communityRecords.delete(lastRecordThisWeek.id)
+		}
+	}
 
 }
 
@@ -134,8 +136,8 @@ async function autoUpdateOrCreateHouseTask(record: CommunityRecord) {
 					newValue: item.price,
 				})
 				task.totalPrice = item.price
-				if(task.area)
-					task.unitPrice= Math.trunc(10000*item.price/task.area)
+				if (task.area)
+					task.unitPrice = Math.trunc(10000 * item.price / task.area)
 			}
 
 			task.status = HouseTaskStatus.running
@@ -153,7 +155,7 @@ async function autoUpdateOrCreateHouseTask(record: CommunityRecord) {
 				return
 			}
 
-			let houseTask = HouseTask.newFromListItem(item,record.cid,record.city);
+			let houseTask = HouseTask.newFromListItem(item, record.cid, record.city);
 			houseTask.markAccess()
 			houseTask.addedType = TaskAddedType.autoByCommunity
 			await db.houseTasks.add(houseTask)
@@ -165,7 +167,7 @@ async function autoUpdateOrCreateHouseTask(record: CommunityRecord) {
 /**
  * 为record中的removeItem中的项更新状态
  */
-async function updateAddedAndRemovedItems(addedItem: HousePriceItem[],removedItem: HousePriceItem[], cid:string,at:number) {
+async function updateAddedAndRemovedItems(addedItem: HousePriceItem[], removedItem: HousePriceItem[], cid: string, at: number) {
 
 	for (let item of removedItem) {
 		const task = await db.houseTasks.where('hid').equals(item.hid).first()
@@ -174,7 +176,7 @@ async function updateAddedAndRemovedItems(addedItem: HousePriceItem[],removedIte
 			await db.houseStatusChanges.add({
 				hid: item.hid,
 				cid: cid,
-				at:  at,
+				at: at,
 				oldValue: HouseTaskStatus.running,
 				newValue: HouseTaskStatus.miss,
 			})
@@ -192,7 +194,7 @@ async function updateAddedAndRemovedItems(addedItem: HousePriceItem[],removedIte
 			await db.houseStatusChanges.add({
 				hid: item.hid,
 				cid: cid,
-				at:  at,
+				at: at,
 				oldValue: task.status,
 				newValue: HouseTaskStatus.running,
 			})
