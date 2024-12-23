@@ -33,6 +33,13 @@ const menuGroups = ref<MenuGroup[]>([
     ]
   },
   {
+    name: '小区',
+    menus: [
+      {name: '列表', link: '/c/task/list'},
+      {name: '任务分组', link: '/c/group/list'},
+    ]
+  },
+  {
     emoji: '🏠',
     name: '房源',
     menus: [
@@ -43,13 +50,7 @@ const menuGroups = ref<MenuGroup[]>([
 
     ]
   },
-  {
-    name: '小区',
-    menus: [
-      {name: '列表', link: '/c/task/list'},
-      {name: '任务分组', link: '/c/group/list'},
-    ]
-  },
+
   {
     emoji:'⚙️',
     name: '️设置',

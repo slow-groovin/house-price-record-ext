@@ -52,7 +52,7 @@ export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 	// 列表中的所有id
 	const houseItems:HouseListDetailItem[] = [];
 	// .info.clear > .title > a .info.clear > .priceInfo > .totalPrice
-	document.querySelectorAll('[log-mod=\'list\'] .info.clear ').forEach((element) => {
+	document.querySelectorAll('.info.clear:not(#lessResultIds .info.clear)').forEach((element) => {
 		const {city,hid}=extractCityAndHidFromHouseUrl(element.querySelector('.title > a')?.getAttribute('href'))
 		const totalPrice=extractNumber(element.querySelector('.priceInfo > .totalPrice')?.textContent)
 		const unitPrice=extractNumber(element.querySelector('.priceInfo > .unitPrice')?.getAttribute('data-price'))??undefined

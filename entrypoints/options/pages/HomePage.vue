@@ -124,7 +124,7 @@ onMounted(() => {
 
 
     <!--    使用入门-->
-    <div class="outline h-fit outline-green-500 rounded p-2">
+    <div class="outline h-fit col-span-3 text-nowrap outline-green-500 rounded p-2">
       使用入门
       <a class="link" href="/options.html#/startup">去查看></a>
     </div>

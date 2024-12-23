@@ -106,11 +106,15 @@ async function updateOneCommunityWithRecord(record: CommunityRecord) {
 	})
 	//删除本周的record(相当于合并)
 	if(lastRecordBeforeThisWeek && lastRecordThisWeek){ //如果存在本周之前的记录, 则直接删除本周记录
+		console.log('[community-update]',record.cid, '合并本周的唯一记录')
 		await db.communityRecords.delete(lastRecordThisWeek.id)
 	}else if(lastRecordThisWeek){ //如果不存在本周之前的记录,则根据记录总数判断是否是第一个记录
 		const count=await db.communityRecords.where('cid').equals(record.cid).count()
-		if(count>1){//如果不是第一条, 则删除
+		if(count>2){//如果lastRecordThisWeek不是第一条, 则删除
+			console.log('[community-update]',record.cid, '当前是第一周, 合并上一条记录')
 			await db.communityRecords.delete(lastRecordThisWeek.id)
+		}else{
+			console.log('[community-update]',record.cid, '当前是第一周, 当前记录是第二条,不合并')
 		}
 	}
 
@@ -142,7 +146,9 @@ async function autoUpdateOrCreateHouseTask(record: CommunityRecord) {
 
 			task.status = HouseTaskStatus.running
 			const taskObj = HouseTask.fromHouseTask(task)
-
+			if(task.cid!==record.cid){
+				task.cid=record.cid
+			}
 			taskObj.markAccess()
 
 			await db.houseTasks.where('id').equals(task!.id as number).modify(taskObj)

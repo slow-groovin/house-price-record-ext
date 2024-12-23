@@ -15,7 +15,7 @@ async function openOptionHomePage() {
 }
 
 async function openStartUpPage() {
-  return sendMessage('openOptionPage', '/options.html#/doc/startup')
+  return sendMessage('openOptionPage', '/options.html#/startup')
 }
 
 const extname = import.meta.env.VITE_EXT_NAME
