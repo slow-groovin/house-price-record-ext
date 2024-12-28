@@ -12,7 +12,7 @@
     <span class="">{{ newValue }} {{ unit }}</span>
 
   </span>
-  <span :class="diffClassName">({{ diffStr }}{{unit}})</span>
+  <span :class="diffClassName" class="font-bold">({{ diffStr }}{{unit}})</span>
 
 </template>
 <script setup lang="ts">

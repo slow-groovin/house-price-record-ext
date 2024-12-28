@@ -15,7 +15,7 @@
     </h1>
     <div class="flex flex-col text-right">
       <span class="text-base font-medium">已使用存储空间: {{ diskUsage?.usage?.toFixed(2) }}MB </span>
-      <span class="text-sm text-gray-300">总可用空间(取决于电脑系统盘剩余空间): {{ diskUsage?.quota?.toFixed(0) }}GB </span>
+      <span class="text-sm text-gray-500">总可用空间(取决于电脑系统盘剩余空间): {{ diskUsage?.quota?.toFixed(0) }}GB </span>
     </div>
 
 
@@ -30,7 +30,7 @@
     </div>
     <div class="flex flex-col">
       <Switch v-model:checked="settings.autoRunHouseTask" class="text-right"/>
-      <span class="text-sm text-gray-300">每次打开房源页面时自动运行任务更新信息</span>
+      <span class="text-sm text-gray-500">每次打开房源页面时自动运行任务更新信息</span>
     </div>
 
 
@@ -42,7 +42,7 @@
     </div>
     <div class="flex flex-col">
       <Switch v-model:checked="settings.confirmDeleteChangeItem" class="text-right" disabled/>
-      <span class="text-sm text-gray-300">删除变更记录前尽心确认</span>
+      <span class="text-sm text-gray-500">删除变更记录前尽心确认</span>
     </div>
 
 
@@ -73,7 +73,7 @@
     </div>
     <div class="flex flex-col">
       <Button variant="destructive" @click="clearTempData">清理</Button>
-      <span class="text-sm text-gray-300">删除所有的临时数据(请勿在任务运行中清理)</span>
+      <span class="text-sm text-gray-500">删除所有的临时数据(请勿在任务运行中清理)</span>
     </div>
   </div>
 </template>

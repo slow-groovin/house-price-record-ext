@@ -13,7 +13,7 @@
     <table>
       <tbody>
       <template v-for="(rule,index) in ljMetricRules">
-        <tr v-if="!rule.must_on">
+        <tr>
           <th>{{ index + 1 }}.</th>
           <th>
             <div class="flex flex-col text-right">
@@ -23,11 +23,16 @@
           </th>
           <th>
             <div class="flex flex-col text-left">
-              <Switch v-model:checked="settings2[rule.id]" class="text-right"/>
+              <Switch v-model:checked="settings2[rule.id]" :disabled="settings2[rule.id] && rule.must_on" class="text-right"/>
             </div>
           </th>
           <th>
-            默认值: {{ rule.default_on ? '✅' : '❌' }}
+            <template v-if="!rule.must_on">
+              默认值: {{ rule.default_on ? '✅' : '❌' }}
+            </template>
+            <template v-else>
+              必选值⚪
+            </template>
           </th>
         </tr>
       </template>

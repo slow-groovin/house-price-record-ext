@@ -25,7 +25,7 @@ const _name=isDisguise?'Open Search':name
         <div class="flex flex-nowrap gap-4 text-white">
           <a class="flex items-center hover-link" href="/options.html#/startup"><Icon icon="carbon:course"/> 使用入门</a>
           <a class="flex items-center hover-link" href="/options.html#/about"><Icon icon="flat-color-icons:about"/> 关于</a>
-          <a class="flex items-center hover-link" href="/options.html#/about"><Icon icon="codicon:feedback"/> 反馈</a>
+          <a class="flex items-center hover-link" href="https://real-price.api2o.com/docs/feedback.html" target="_blank"><Icon icon="codicon:feedback"/> 反馈</a>
         </div>
 
       </template>

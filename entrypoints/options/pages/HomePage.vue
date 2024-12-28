@@ -135,25 +135,6 @@ onMounted(() => {
       <InfoHover>如果您在访问本插件目标站点时遇到了无法排查的网络访问问题, 请尝试关闭规则进行排查</InfoHover>
     </div>
 
-    <div class="col-span-7 row-span-3 min-w-fit bg-gray-100 p-6 rounded-lg shadow-lg">
-      <h2 class="text-2xl font-bold text-gray-800 mb-6">数据面板</h2>
-      <h3 class="mb-4">截至今天, 您已添加:</h3>
-
-      <div class="flex flex-wrap -mx-3">
-        <div v-for="(value, key) in totalCount" :key="key"
-             class="px-3 mb-6">
-          <div class="bg-white rounded-lg shadow p-6 flex items-center">
-            <div :class="`mr-4`" :style="{color: display[key].color}">
-              <component :is="display[key].icon" class="w-8 h-8"/>
-            </div>
-            <div>
-              <p class="text-sm text-gray-600">{{ display[key].label }}</p>
-              <a class="text-2xl font-semibold hover-link text-gray-800" :href="display[key].link">{{ value }}<span>{{ display[key]?.postfix }}</span></a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div class="col-span-6 row-span-3 bg-gray-100 p-6 rounded-lg shadow-lg">
       <h2 class="text-2xl font-bold text-gray-800 mb-6">本周新增数据概览</h2>
@@ -175,6 +156,27 @@ onMounted(() => {
         </div>
       </div>
     </div>
+
+    <div class="col-span-7 row-span-3 min-w-fit bg-gray-100 p-6 rounded-lg shadow-lg">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">数据面板</h2>
+      <h3 class="mb-4">截至今天, 您已添加:</h3>
+
+      <div class="flex flex-wrap -mx-3">
+        <div v-for="(value, key) in totalCount" :key="key"
+             class="px-3 mb-6">
+          <div class="bg-white rounded-lg shadow p-6 flex items-center">
+            <div :class="`mr-4`" :style="{color: display[key].color}">
+              <component :is="display[key].icon" class="w-8 h-8"/>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">{{ display[key].label }}</p>
+              <a class="text-2xl font-semibold hover-link text-gray-800" :href="display[key].link">{{ value }}<span>{{ display[key]?.postfix }}</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </template>
