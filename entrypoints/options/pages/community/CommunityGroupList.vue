@@ -20,6 +20,7 @@ import {Input} from "@/components/ui/input";
 import {toast} from "vue-sonner";
 import {browser} from "wxt/browser";
 import {useExtTitle} from "@/composables/useExtInfo";
+import {startPageEntry} from "@/entrypoints/reuse/community-control2";
 useExtTitle('小区任务分组')
 
 const data = ref<TaskGroup[]>([])
@@ -42,10 +43,7 @@ async function createGroup() {
 async function goBeginGroupTasks(index:number) {
   const cidList =toRaw(data.value[index].idList)
   const communityList = await db.communityTasks.where('cid').anyOf(cidList).toArray()
-  const id = await db.tempBatchCommunity.add({communityList: communityList})
-  const newWindow = await browser.windows.create({state: 'maximized'})
-  await chrome.sidePanel.open({windowId: newWindow.id as number})
-  await chrome.sidePanel.setOptions({path: '/sidepanel.html#/c/batch?id=' + id})
+  await startPageEntry(communityList)
   db.communityTaskGroups.update(data.value[index].id,{
     lastRunningAt: Date.now()
   })

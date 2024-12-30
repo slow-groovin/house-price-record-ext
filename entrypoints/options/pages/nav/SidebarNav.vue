@@ -29,11 +29,11 @@ const menuGroups = ref<MenuGroup[]>([
   {
     name:'',
     menus:[
-      {name: '首页',link:'/'}
+      {name: '📇首页',link:'/'}
     ]
   },
   {
-    name: '小区',
+    name: '🏙️小区',
     menus: [
       {name: '列表', link: '/c/task/list'},
       {name: '任务分组', link: '/c/group/list'},

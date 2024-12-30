@@ -136,7 +136,7 @@ async function startBathHouse() {
 
 
 <template>
-  <h1 class="mt-2">批量房源任务运行</h1>
+  <h1 class="mt-2 text-primary">🟢批量房源任务运行</h1>
 <!--  init hint-->
   <div v-if="isInit && hidList" class="min-h-64 flex flex-col items-center gap-4 justify-center border rounded m-1 ">
     <div>
@@ -151,7 +151,7 @@ async function startBathHouse() {
 
   <div id="setting-area" class="flex flex-col w-fit gap-1 p-2 border rounded">
     <div class="line">
-      <span>任务设置:</span>
+      <span>⚙️任务设置:</span>
       <Icon v-if="isInit" icon="material-symbols:refresh" class="w-4 h-4 active:outline" @click="resetSetting"></Icon>
 
     </div>

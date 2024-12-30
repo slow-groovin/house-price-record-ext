@@ -40,8 +40,8 @@ const isRise=newNum>oldNum
 
 const diff=newNum-oldNum
 const diffStr=diff<0
-  ? String(diff)
-  : `+${diff}`
+  ? String(diff.toFixed(1))
+  : `+${diff.toFixed(1)}`
 
 const diffClassName=isRise?'text-red-500':'text-green-500'
 const borderClassName=isRise?'border-red-500':'border-green-500'

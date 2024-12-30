@@ -3,7 +3,7 @@
   <div :class="cn('flex flex-wrap gap-4', props.class)">
     <!-- 字符串匹配输入区块 -->
     <div class="flex flex-col">
-      <label class="text-sm mb-2">hid</label>
+      <label class="text-sm mb-2">房源id</label>
       <input
         type="text"
         v-model.lazy="queryCondition.hidInclude"
@@ -13,7 +13,7 @@
     </div>
 
     <div class="flex flex-col">
-      <label class="text-sm mb-2">cid</label>
+      <label class="text-sm mb-2">小区id</label>
       <input
         type="text"
         v-model.lazy="queryCondition.cidInclude"

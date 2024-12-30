@@ -43,8 +43,8 @@ async function goBeginGroupTasks(index:number) {
   const hidList =toRaw(data.value[index].idList)
   const id = await db.tempBatchHouse.add({hidList})
 
-  const newWindow = await browser.windows.create({state: 'maximized'})
-  await chrome.sidePanel.open({windowId: newWindow.id as number})
+  const newWindow = await browser.windows.create({url:"/options.html#/h/running/notice", state: 'maximized'})
+  await chrome.sidePanel.open({ windowId: newWindow.id as number})
   await chrome.sidePanel.setOptions({path: '/sidepanel.html#/h/batch?id=' + id})
   db.houseTaskGroups.update(data.value[index].id,{
     lastRunningAt: Date.now()

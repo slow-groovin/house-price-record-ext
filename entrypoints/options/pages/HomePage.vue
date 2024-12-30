@@ -29,8 +29,8 @@ const thisWeekCount = reactive({
   sChangeCount: 0,
   cRecordCount: 0,
 })
-const enableRulesCount=ref(0)
-const allRulesCount=ref(0)
+const enableRulesCount = ref(0)
+const allRulesCount = ref(0)
 
 const lastAt = ref(0)
 const weekStartAt = ref(0)
@@ -56,9 +56,10 @@ async function queryOverviewData() {
 
 async function loadRules() {
   const _rules = await browser.declarativeNetRequest.getDynamicRules()
-  enableRulesCount.value=_rules.length
-  allRulesCount.value=ljMetricRules.length
+  enableRulesCount.value = _rules.length
+  allRulesCount.value = ljMetricRules.length
 }
+
 const isEmptyUsage = computed(() => totalCount.cTaskCount === 0 && totalCount.hTaskCount === 0)
 
 
@@ -97,7 +98,7 @@ onMounted(() => {
 
 
   <div class="w-full flex items-center justify-center my-8 font-bold text-2xl text-center">
-    欢迎使用 {{ name }}{{version}}<img src="/icon/24.png" alt="icon" class="inline">
+    欢迎使用 {{ name }}{{ version }}<img src="/icon/24.png" alt="icon" class="inline">
   </div>
   <div v-if="isEmptyUsage">
     首次使用? 请查看
@@ -108,35 +109,38 @@ onMounted(() => {
     </div>
 
     <div class="outline col-span-3  w-fit h-fit outline-green-500 rounded p-2">
-      当前已经激活 <span class="font-extrabold text-green-500">{{enableRulesCount}}</span>/{{allRulesCount}} 条请求过滤规则
+      当前已经激活 <span class="font-extrabold text-green-500">{{ enableRulesCount }}</span>/{{ allRulesCount }} 条请求过滤规则
       <a class="link" href="/options.html#/blocks">去查看></a>
       <InfoHover>如果您在访问本插件目标站点时遇到了无法排查的网络访问问题, 请尝试关闭规则进行排查</InfoHover>
     </div>
   </div>
 
   <div v-if="!isEmptyUsage" class="grid grid-cols-9 grid-rows-9 auto-rows-auto grid-flow-row gap-9">
-    <!--    上次运行-->
-    <div v-if="lastAt" class="col-span-3 h-fit outline rounded text-nowrap min-w-fit p-2 ">
-      距离上次运行任务
-      <span class="text-green-500"> {{ new Date(lastAt).toLocaleString() }}</span>
-      已过去 <span class="text-green-500"> {{ formatDistanceToNow(lastAt, {locale: zhCN}) }}</span>
+    <div class="flex flex-row flex-wrap gap-2 col-span-full row-span-1 h-fit">
+      <!--    上次运行-->
+      <div v-if="lastAt" class=" h-fit outline rounded  min-w-fit p-2 ">
+        距离上次运行任务
+        <span class="text-green-500"> {{ new Date(lastAt).toLocaleString() }}</span>
+        已过去 <span class="text-green-500"> {{ formatDistanceToNow(lastAt, {locale: zhCN}) }}</span>
+      </div>
+
+      <div class="outline   w-fit h-fit outline-green-500 rounded p-2">
+        当前已经激活 <span class="font-extrabold text-green-500">{{ enableRulesCount }}</span>/{{ allRulesCount }}
+        条请求过滤规则
+        <a class="link" href="/options.html#/blocks">去查看></a>
+        <InfoHover>如果您在访问本插件目标站点时遇到了无法排查的网络访问问题, 请尝试关闭规则进行排查</InfoHover>
+      </div>
+
+
+      <!--    使用入门-->
+      <div class="outline h-fit   outline-green-500 rounded p-2">
+        使用入门
+        <a class="link" href="/options.html#/startup">去查看></a>
+      </div>
+
     </div>
 
-
-    <!--    使用入门-->
-    <div class="outline h-fit col-span-3 text-nowrap outline-green-500 rounded p-2">
-      使用入门
-      <a class="link" href="/options.html#/startup">去查看></a>
-    </div>
-
-    <div class="outline col-span-3  w-fit h-fit outline-green-500 rounded p-2">
-      当前已经激活 <span class="font-extrabold text-green-500">{{enableRulesCount}}</span>/{{allRulesCount}} 条请求过滤规则
-      <a class="link" href="/options.html#/blocks">去查看></a>
-      <InfoHover>如果您在访问本插件目标站点时遇到了无法排查的网络访问问题, 请尝试关闭规则进行排查</InfoHover>
-    </div>
-
-
-    <div class="col-span-6 row-span-3 bg-gray-100 p-6 rounded-lg shadow-lg">
+    <div class="col-start-1 col-span-6 row-span-3 bg-gray-100 p-6 rounded-lg shadow-lg">
       <h2 class="text-2xl font-bold text-gray-800 mb-6">本周新增数据概览</h2>
       <h3 class="mb-4">从 {{ new Date(weekStartAt).toLocaleString() }} 到当前, 新增:</h3>
 
@@ -170,7 +174,9 @@ onMounted(() => {
             </div>
             <div>
               <p class="text-sm text-gray-600">{{ display[key].label }}</p>
-              <a class="text-2xl font-semibold hover-link text-gray-800" :href="display[key].link">{{ value }}<span>{{ display[key]?.postfix }}</span></a>
+              <a class="text-2xl font-semibold hover-link text-gray-800" :href="display[key].link">{{
+                  value
+                }}<span>{{ display[key]?.postfix }}</span></a>
             </div>
           </div>
         </div>
