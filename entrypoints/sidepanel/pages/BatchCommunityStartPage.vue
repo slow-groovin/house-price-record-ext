@@ -140,7 +140,7 @@ async function startBathCommunity() {
   <div v-if="isInit && communityList"
        class="min-h-64 flex flex-col items-center gap-4 justify-center border rounded m-1 ">
     <div>
-      本次任务, 共需打开 {{ communityList.length }} 个房源网页
+      本次任务, 共需打开 {{ communityList.length }} 个小区页面
     </div>
 
     <div class="w-full flex flex-col items-center">

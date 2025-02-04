@@ -291,27 +291,27 @@ const columnDef: (ColumnDef<CommunityTask>)[] = [
   {accessorKey: 'avgUnitPrice', header: '平均单价', id: '平米单价'},
   {
     accessorKey: 'cid',
-    header: '近期涨价',
+    header: '近期涨价↗',
     id: '近期涨价',
-    cell: ({cell}) => relatedData.value[cell.row.original.cid]?.priceUpCount
+    cell: ({cell}) => <div class='text-red-500 font-bold'>{relatedData.value[cell.row.original.cid]?.priceUpCount}</div>
   },
   {
     accessorKey: 'cid',
-    header: '近期降价',
+    header: '近期降价↘',
     id: '近期降价',
-    cell: ({cell}) => relatedData.value[cell.row.original.cid]?.priceDownCount
+    cell: ({cell}) => <div class='text-green-500 font-bold'>{relatedData.value[cell.row.original.cid]?.priceDownCount}</div>
   },
   {
     accessorKey: 'cid',
-    header: '近期上架',
+    header: '近期上架🆕',
     id: '近期上架',
-    cell: ({cell}) => relatedData.value[cell.row.original.cid]?.addedCount
+    cell: ({cell}) => <div class='text-blue-500 font-bold'>{relatedData.value[cell.row.original.cid]?.addedCount}</div>
   },
   {
     accessorKey: 'cid',
-    header: '近期下架',
+    header: '近期下架➖',
     id: '近期下架',
-    cell: ({cell}) => relatedData.value[cell.row.original.cid]?.removedCount
+    cell: ({cell}) =>  <div class='text-neutral-500 font-bold'>{relatedData.value[cell.row.original.cid]?.removedCount}</div>
   },
   {accessorKey: 'visitCountIn90Days', header: '过去90天带看数', id: '过去90天带看数'},
   {accessorKey: 'doneCountIn90Days', header: '过去90天成交量', id: '过去90天成交量'},

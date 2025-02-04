@@ -33,6 +33,7 @@ function translate(v: number | string|null|undefined) {
   if(v===null || v===undefined) return NaN
   return toInt(v)
 }
+
 const oldNum=translate(oldValue)
 const newNum=translate(newValue)
 
@@ -40,11 +41,14 @@ const isRise=newNum>oldNum
 
 const diff=newNum-oldNum
 const diffStr=diff<0
-  ? String(diff.toFixed(1))
-  : `+${diff.toFixed(1)}`
+  ? formatInteterOrFloat(diff) : `+${formatInteterOrFloat(diff) }`
 
 const diffClassName=isRise?'text-red-500':'text-green-500'
 const borderClassName=isRise?'border-red-500':'border-green-500'
+
+function formatInteterOrFloat(diff:number){
+  return Number.isInteger(diff) ? diff.toString() : diff.toFixed(1);
+}
 </script>
 
 <style scoped>
