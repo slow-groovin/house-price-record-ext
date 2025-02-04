@@ -23,7 +23,7 @@ function openLjListUrl() {
 <template>
 <div :class="cn('flex flex-row flex-wrap items-center gap-x-7', classNames)">
   <h1 class="text-3xl font-bold text-primary">
-    {{ community.name }}
+    🏙️  {{ community.name }}
   </h1>
   <div class=" px-2 py-1 ml-[-1em] font-bold text-sm  text-green-600/60 border rounded-full shadow ">
     ● Running

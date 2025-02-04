@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import {ref, computed} from 'vue'
 import {Icon} from '@iconify/vue'
-import {RouterLink} from 'vue-router'
+import {RouterLink, useRoute} from 'vue-router'
 import {Button} from '@/components/ui/button'
 import {cn} from '@/utils/shadcn-utils'
 import {random} from "radash";
@@ -74,6 +74,9 @@ if (isDisguise) {
   menuGroups.value.forEach(v => v.name = random(1, 100) + '')
 }
 
+const route = useRoute();
+
+
 </script>
 
 <template>
@@ -85,11 +88,11 @@ if (isDisguise) {
           <span v-if="group.emoji"> {{ group.emoji }} </span>
           {{ group.name }}
         </h2>
-        <div class="space-y-1">
+        <div class="space-y-1" >
           <template v-for="menu in group.menus"
                     :key="menu.name">
-            <RouterLink :to="menu.link" class="">
-              <Button variant="ghost" class="flex items-center justify-start font-normal w-full">
+            <RouterLink :to="menu.link" >
+              <Button variant="ghost" class="flex items-center justify-start font-normal w-full" :class="{'bg-primary/40 border-primary border-l-4 rounded-l-none':route.path===menu.link}">
                 <Icon v-if="menu.icon" :icon="menu.icon" class="mr-2 h-4 w-4"/>
                 <span v-if="menu.emoji"> {{ menu.emoji }} </span>
                 {{ menu.name }}

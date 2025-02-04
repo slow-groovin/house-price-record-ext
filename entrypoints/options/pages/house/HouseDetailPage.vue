@@ -41,7 +41,7 @@ async function queryData() {
   changes.value = await db.houseChanges.where('hid').equals(hid).toArray()
   statusChanges.value = await db.houseStatusChanges.where('hid').equals(hid).toArray()
   commonFieldChanges.value = await db.houseCommonFieldChanges.where('hid').equals(hid).toArray()
-  communityTask.value=await db.communityTasks.where('cid').equals(task.value.cid).last()
+  communityTask.value=await db.communityTasks.where('cid').equals(task.value!.cid).last()
 }
 
 async function beginCrawlOne() {
@@ -122,13 +122,13 @@ onMounted(() => {
     </div>
 
     <div class="flex flex-row items-center gap-8  ">
-      <div class="flex self-end items-center text-sm font-bold  text-primary">
-        最后运行于:
-        <div class="flex gap-2">
-          <TwoLineAt :at="task.lastRunningAt"/>
+      <div class="flex self-end items-center  font-bold  ">
+        <span class="text-primary text-sm mr-2">最后运行于:</span>
+        <div class="flex  gap-4 text-gray-600">
+          <TwoLineAt :at="task.lastRunningAt" class="text-lg"/>
         </div>
       </div>
-      <div class="grow"/>
+      <div class="grow"></div>
       <Button class="py-0.5 pl-1 [&_svg]:size-6 gap-x-0 bg-green-600" size="sm" :disable="beginCrawlStatus!=='pending'"
               @click="beginCrawlMutate()">
 

@@ -9,8 +9,12 @@ const extName = import.meta.env.VITE_EXT_NAME
   <h1 class="text-3xl font-bold border-b my-6">使用入门</h1>
   <div class="flex flex-col gap-8">
     <div>
-      <a href="https://real-price.api2o.com/" class="link" target="_blank">官方网站</a>
+      <h2>
+        <a href="https://real-price.api2o.com/" title="去访问" class="text-blue-500 hover:text-blue-700 transition-colors duration-300 underline decoration-wavy decoration-blue-300 hover:decoration-blue-500" target="_blank">官方网站</a>
+
+      </h2>
     </div>
+
     <div>
       <h2>这个插件是干什么的?</h2>
       帮助用户(您)方便地收集关注范围内的小区/房源状态, 记录价格/状态变动数据, 分析和展示历史数据<br/>
