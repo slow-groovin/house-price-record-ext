@@ -27,10 +27,11 @@ import BatchRunningNotice from "@/entrypoints/options/pages/community/BatchRunni
 import HouseBatchRunningNotice from "@/entrypoints/options/pages/house/BatchRunningNotice.vue";
 import BlocksPage from "@/entrypoints/options/pages/BlocksPage.vue";
 import IFrameDocSite from "@/entrypoints/options/pages/IFrameDocSite.vue";
-import StartupIntro from "@/entrypoints/options/pages/StartupIntro.vue";
-import AboutMe from "@/entrypoints/options/pages/AboutMe.vue";
+import StartupIntro from "@/entrypoints/options/pages/docs/StartupIntro.vue";
+import AboutMe from "@/entrypoints/options/pages/docs/AboutMe.vue";
 import ExportImport from "@/entrypoints/options/pages/ExportImport.vue";
 import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+import StartupIntroDetail from './pages/docs/StartupIntroDetail.vue';
 
 const {isDisguise}=useDevSetting()
 
@@ -45,6 +46,7 @@ const router = createRouter({
 				{path: '/', component: HomePage,},
 				{path: '/doc', component: IFrameDocSite,},
 				{path: '/startup', component: StartupIntro,},
+				{path: '/startup-detail', component: StartupIntroDetail,},
 				{path: '/about', component: AboutMe,},
 				{path: '/debug', component: OptionDebugEntry},
 				{path: '/settings', component: SettingsPage},

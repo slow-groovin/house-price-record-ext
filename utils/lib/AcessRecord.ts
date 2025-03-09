@@ -1,5 +1,5 @@
 const MAX_BIT = 32;
-const START_DATE = new Date(2024, 0, 1, 0, 0, 0);
+const START_DATE = new Date(new Date().getFullYear(), 0, 1, 0, 0, 0);
 const EIGHT_HOUR = 8 * 60 * 60 * 1000;
 const DAY = 24 * 60 * 60 * 1000;
 

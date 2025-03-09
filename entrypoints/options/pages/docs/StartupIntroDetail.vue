@@ -1,23 +1,20 @@
 <script setup lang="ts">
-import InfoHover from "@/components/InfoHover.vue";
-import {Icon} from "@iconify/vue";
+import InfoHover from "@/components/information/InfoHover.vue";
+import { Icon } from "@iconify/vue";
 
-const extName = import.meta.env.VITE_EXT_NAME
 </script>
 
 <template>
-  <h1 class="text-3xl font-bold border-b my-6">使用入门</h1>
+  <h1 class="text-3xl font-bold border-b my-6">详细使用入门</h1>
   <div class="flex flex-col gap-8">
-    <div>
-      <h2>
-        <a href="https://real-price.api2o.com/" title="去访问" class="text-blue-500 hover:text-blue-700 transition-colors duration-300 underline decoration-wavy decoration-blue-300 hover:decoration-blue-500" target="_blank">官方网站</a>
-
-      </h2>
+    <div class="flex gap-4">
+      <a href="https://real-price.api2o.com/" class="link text-lg" target="_blank">官方网站</a>
+      <a href="/options.html#/startup" class="link text-lg">查看简单使用入门</a>
     </div>
 
     <div>
       <h2>这个插件是干什么的?</h2>
-      帮助用户(您)方便地收集关注范围内的小区/房源状态, 记录价格/状态变动数据, 分析和展示历史数据<br/>
+      帮助用户(您)方便地收集关注范围内的小区/房源状态, 记录价格/状态变动数据, 分析和展示历史数据<br />
 
     </div>
 
@@ -36,14 +33,20 @@ const extName = import.meta.env.VITE_EXT_NAME
     </div>
 
     <div>
-      <h2>新手入门</h2>
+      <h2>
+        <span class="bg-gradient-to-r from-blue-800 via-purple-500 to-green-500 bg-clip-text text-transparent w-fit">
+          新手入门
+        </span>
+        🚀
+      </h2>
       <ol>
         <li>打开一个
+          小区页面 或者
           <InfoHover>
             <template #trigger>
               <div class="bg-gray-200 px-2 rounded inline-flex items-center">
                 小区的在售列表网页
-                <Icon icon="icon-park-outline:point"/>
+                <Icon icon="icon-park-outline:point" />
               </div>
             </template>
 
@@ -60,7 +63,7 @@ const extName = import.meta.env.VITE_EXT_NAME
             <template #trigger>
               <div class="bg-gray-200 px-2 rounded inline-flex items-center">
                 添加任务按钮
-                <Icon icon="icon-park-outline:point"/>
+                <Icon icon="icon-park-outline:point" />
               </div>
             </template>
             <img src="/desc/community-list-create.jpg" alt="">
@@ -71,7 +74,7 @@ const extName = import.meta.env.VITE_EXT_NAME
             <template #trigger>
               <div class="bg-gray-200 px-2 rounded inline-flex items-center">
                 后台页面
-                <Icon icon="icon-park-outline:point"/>
+                <Icon icon="icon-park-outline:point" />
               </div>
             </template>
             <div class="flex gap-2 max-w-[100vw]">
@@ -85,7 +88,7 @@ const extName = import.meta.env.VITE_EXT_NAME
             <template #trigger>
               <div class="bg-gray-200 px-2 rounded inline-flex items-center">
                 小区任务列表
-                <Icon icon="icon-park-outline:point"/>
+                <Icon icon="icon-park-outline:point" />
               </div>
             </template>
             <div class="flex gap-2 max-w-[100vw]">
@@ -99,7 +102,7 @@ const extName = import.meta.env.VITE_EXT_NAME
             <template #trigger>
               <div class="bg-gray-200 px-2 rounded inline-flex items-center">
                 选中任务, 点击开始任务
-                <Icon icon="icon-park-outline:point"/>
+                <Icon icon="icon-park-outline:point" />
               </div>
             </template>
             <div class="flex gap-2">
@@ -111,7 +114,7 @@ const extName = import.meta.env.VITE_EXT_NAME
             <template #trigger>
               <div class="bg-gray-200 px-2 rounded inline-flex items-center">
                 运行任务
-                <Icon icon="icon-park-outline:point"/>
+                <Icon icon="icon-park-outline:point" />
               </div>
             </template>
             <div class="flex gap-2">
@@ -125,7 +128,7 @@ const extName = import.meta.env.VITE_EXT_NAME
             <template #trigger>
               <div class="bg-gray-200 px-2 rounded inline-flex items-center">
                 确认结果进行保存
-                <Icon icon="icon-park-outline:point"/>
+                <Icon icon="icon-park-outline:point" />
               </div>
             </template>
             <div class="flex gap-2">
@@ -139,7 +142,7 @@ const extName = import.meta.env.VITE_EXT_NAME
             <template #trigger>
               <div class="bg-gray-200 px-2 rounded inline-flex items-center">
                 点开查看
-                <Icon icon="icon-park-outline:point"/>
+                <Icon icon="icon-park-outline:point" />
               </div>
             </template>
             <div class="flex gap-2">
@@ -171,7 +174,7 @@ const extName = import.meta.env.VITE_EXT_NAME
       <ol>
         <li>作为补充, 具有额外的功能: 上下架, 实际面积与单价计算...</li>
         <li>批量化: 中介不会无偿的提供给您批量的历史数据</li>
-        <li>清晰:  ①具有查询/排序的列表展示价格变动, 方便您快速掌握想要的信息   ②表格和图表化, 更加有效地展示数据</li>
+        <li>清晰: ①具有查询/排序的列表展示价格变动, 方便您快速掌握想要的信息 ②表格和图表化, 更加有效地展示数据</li>
         <li>隐私: 您在使用app去看房比价时, 您的使用过程会被记录下来, 作为模型的数据用来分析您的价格底线</li>
         <li>真实: 自己记录的数据是绝对真实有效的</li>
       </ol>
@@ -216,8 +219,6 @@ const extName = import.meta.env.VITE_EXT_NAME
 </template>
 
 <style scoped lang="postcss">
-
-
 h2 {
   @apply text-2xl font-bold
 }

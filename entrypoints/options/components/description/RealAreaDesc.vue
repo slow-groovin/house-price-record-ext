@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import InfoHover from "@/components/InfoHover.vue";
+import InfoHover from "@/components/information/InfoHover.vue";
 </script>
 
 <template>

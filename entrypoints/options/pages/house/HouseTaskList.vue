@@ -334,7 +334,7 @@ onMounted(() => {
     <h2 class="mb-3 mx-2">查询条件:</h2>
     <HouseTaskTableQueryDock v-if="queryCondition" v-model="queryCondition" @update="onUpdateQueryCondition"/>
   </div>
-  <div class="flex items-center p-2 gap-4 border rounded">
+  <div class="flex items-center p-2 gap-4 border rounded my-2">
     <span>排序:</span>
     <GenericSortDock :fields="sortFields" v-model="sortCondition" :field-text-map="frequentFieldZhMap" @update="onUpdateQueryCondition"/>
   </div>
@@ -344,7 +344,7 @@ onMounted(() => {
     <span class="border rounded mr-2">Debug</span>
     {{ queryCondition }} {{ sortCondition }}
   </div>
-  <div class="flex gap-4">
+  <div class="flex gap-4  mb-4">
     <div>共 <span class="text-primary">{{ rowCount }}</span> 个</div>
     <div>查询耗时: <span class="text-primary">{{ queryCost / 1000 }}</span> 秒</div>
     <div v-if="rowSelection">选中 <span class="text-primary"> {{ selectionCount }}</span> 个</div>

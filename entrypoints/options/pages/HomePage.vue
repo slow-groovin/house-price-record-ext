@@ -5,10 +5,11 @@ import {formatDistanceToNow, startOfWeek} from 'date-fns'
 import {getIndexedDBUsage} from "@/utils/browser";
 import {zhCN} from "date-fns/locale/zh-CN";
 import {useExtInfo, useExtTitle} from "@/composables/useExtInfo";
-import {Archive, Building2, HardDrive, HouseIcon, ShoppingCartIcon, TrendingDownIcon} from 'lucide-vue-next'
+import {Archive, Building2, EyeOffIcon, HardDrive, HouseIcon, ShoppingCartIcon, TrendingDownIcon, TrendingUpIcon} from 'lucide-vue-next'
 import {browser} from "wxt/browser";
 import {ljMetricRules} from "@/entrypoints/reuse/block";
-import InfoHover from "@/components/InfoHover.vue";
+import InfoHover from "@/components/information/InfoHover.vue";
+import { HouseTask, HouseTaskStatus } from "@/types/lj";
 
 useExtTitle('首页')
 const {name, version} = useExtInfo()
@@ -25,8 +26,13 @@ const totalCount = reactive({
 const thisWeekCount = reactive({
   cTaskCount: 0,
   hTaskCount: 0,
-  pChangeCount: 0,
-  sChangeCount: 0,
+  // pChangeCount: 0,
+  pUpCount:0,
+  pDownCount:0,
+  
+  // sChangeCount: 0,
+  sAddedCount:0,
+  sRemovedCount:0,
   cRecordCount: 0,
 })
 const enableRulesCount = ref(0)
@@ -48,9 +54,15 @@ async function queryOverviewData() {
 
   weekStartAt.value = startOfWeek(new Date(), {weekStartsOn: 1}).getTime()
   thisWeekCount.cTaskCount = await db.communityTasks.where('createdAt').above(weekStartAt.value).count()
+
   thisWeekCount.hTaskCount = await db.houseTasks.where('createdAt').above(weekStartAt.value).count()
-  thisWeekCount.pChangeCount = await db.houseChanges.where('at').above(weekStartAt.value).count()
-  thisWeekCount.sChangeCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).count()
+  // thisWeekCount.pChangeCount = await db.houseChanges.where('at').above(weekStartAt.value).count()
+  thisWeekCount.pUpCount = await db.houseChanges.where('at').above(weekStartAt.value).and(item=>item.newValue>item.oldValue).count()
+  thisWeekCount.pDownCount = await db.houseChanges.where('at').above(weekStartAt.value).and(item=>item.newValue<item.oldValue).count()
+
+  // thisWeekCount.sChangeCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).count()
+  thisWeekCount.sAddedCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).and(item=>item.newValue===HouseTaskStatus.running).count()
+  thisWeekCount.sRemovedCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).and(item=>item.newValue===HouseTaskStatus.miss||item.newValue===HouseTaskStatus.sold).count()
   thisWeekCount.cRecordCount = await db.communityRecords.where('at').above(weekStartAt.value).count()
 }
 
@@ -73,14 +85,46 @@ const display = {
     link: '/options.html#/h/task/change',
     postfix: '条'
   },
+
+  pUpCount: {
+    label: '房源涨价记录',
+    icon: TrendingUpIcon,
+    color: 'red',
+    link: '/options.html#/h/task/change',
+    postfix: '条'
+  },
+
+
+  pDownCount: {
+    label: '房源降价记录',
+    icon: TrendingDownIcon,
+    color: 'green',
+    link: '/options.html#/h/task/change',
+    postfix: '条'
+  },
+
   sChangeCount: {
     label: '状态变更记录',
     icon: ShoppingCartIcon,
     color: 'red',
     link: '/options.html#/h/task/status/change',
     postfix: '条'
-
   },
+  sAddedCount: {
+    label: '房源上架记录',
+    icon: ShoppingCartIcon,
+    color: 'blue',
+    link: '/options.html#/h/task/status/change',
+    postfix: '条'
+  },
+  sRemovedCount: {
+    label: '房源下架/售出记录',
+    icon: EyeOffIcon,
+    color: 'gray',
+    link: '/options.html#/h/task/status/change',
+    postfix: '条'
+  },
+
   cRecordCount: {label: '小区运行记录', icon: Archive, color: 'purple', link: '#', postfix: '个'},
   usedMb: {label: '数据总量', icon: HardDrive, color: 'gray', link: '#', postfix: 'MB'}
 }

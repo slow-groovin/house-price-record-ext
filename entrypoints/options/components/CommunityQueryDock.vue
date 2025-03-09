@@ -97,7 +97,12 @@
     </div>
 
     <div class="flex flex-col">
-      <label class="text-sm mb-2">最后一次运行时间</label>
+      <div class="flex items-center gap-2 text-sm mb-2">
+        <label class=" ">最后一次运行时间</label>
+        <Button variant="link" class="p-0 text-sm h-4" @click="()=>queryCondition.lastRunningAtMin=ISODateStringOfDaysBefore(7)">近一周</Button>
+        <Button variant="link" class="p-0 text-sm h-4" @click="()=>queryCondition.lastRunningAtMin=ISODateStringOfDaysBefore(30)">近一月</Button>
+        <Button variant="link" class="p-0 text-sm h-4" @click="()=>queryCondition.lastRunningAtMin=ISODateStringOfDaysBefore(180)">近半年</Button>
+      </div>
       <div class="flex items-center gap-2">
         <input
           type="date"
@@ -141,6 +146,8 @@ import {cn} from "@/utils/shadcn-utils"
 import {CommunityQueryCondition} from "@/types/query-condition";
 import {Label} from '@/components/ui/label'
 import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
+import { ISODateStringOfDaysBefore } from '@/utils/date';
+import { Button } from '@/components/ui/button';
 
 
 // Props定义

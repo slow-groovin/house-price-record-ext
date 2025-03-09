@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { onMounted, ref } from "vue"
 import { db } from "@/utils/client/Dexie";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
-import { getIndexedDBUsage } from "@/utils/browser";
+import { getIndexedDBUsage, usePreventUnload } from "@/utils/browser";
 import { useExtTitle } from "@/composables/useExtInfo";
 import { CommonFieldChange, CommunityRecord, CommunityTask, HouseChange, HouseTask } from "@/types/lj";
 import { BulkError, EntityTable } from "dexie";
@@ -96,6 +96,8 @@ onMounted(async () => {
 
 async function importJson() {
   isPending.value = true
+  const { preventUnload, cancelPreventUnload } = usePreventUnload()
+  preventUnload()
 
   const _importResult: ImportResult = {}
   try {
@@ -107,10 +109,12 @@ async function importJson() {
     const importObj = JSON.parse(contents) as ExportDataStructure
     if (!importObj.version || !importObj.lj || !importObj.compatibilityVersion) {
       alert(`导入失败, json文件内容格式非预期`)
+      cancelPreventUnload()
       return
     }
     if (importObj.compatibilityVersion !== compatibilityVersion) {
       alert(`导入失败, json文件的插件版本[${importObj.version}] 与当前版本[${version}] 不兼容`)
+      cancelPreventUnload()
       return
     }
 
@@ -136,10 +140,14 @@ async function importJson() {
     if (e.name === 'AbortError') return
     console.error(e)
     alert(`导入失败:` + e)
+    cancelPreventUnload()
+
+  }finally{
+    cancelPreventUnload()
+    isPending.value = false
 
   }
   importResult.value = _importResult
-  isPending.value = false
 }
 
 const BATCH_SIZE = 10
@@ -184,7 +192,7 @@ async function insertRecords<T extends { id?: string|number }>(records: T[], ent
     当前数据总量大小约: {{ (usedMb)?.toFixed(2) }}MB
   </blockquote>
 
-  <div class="relative">
+  <div class="relative flex gap-4">
     <Button @click="exportAllData">导出</Button>
     <Button @click="importJson">导入</Button>
     <LoadingOverlay v-if="isPending" :delay="0" />

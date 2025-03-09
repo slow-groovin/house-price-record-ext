@@ -45,3 +45,19 @@ export async function waitForTabLoad(tab:Tab): Promise<any> {
 	});
 }
 
+// 用户离开时确认
+const unloadEvent = (event: BeforeUnloadEvent) => {
+  event.preventDefault();
+}
+
+function preventUnload(){
+	window.addEventListener('beforeunload',unloadEvent)
+}
+
+function cancelPreventUnload(){
+	window.removeEventListener('beforeunload',unloadEvent)
+}
+
+export function usePreventUnload(){
+	return {preventUnload,cancelPreventUnload}
+}

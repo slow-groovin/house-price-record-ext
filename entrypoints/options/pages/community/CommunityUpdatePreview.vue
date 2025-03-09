@@ -101,9 +101,10 @@ import CommunityRecordCard from "@/entrypoints/options/components/CommunityRecor
 import {updateBatchCommunityWithPreview} from "@/entrypoints/reuse/community-update";
 import {browser} from "wxt/browser";
 import {useExtTitle} from "@/composables/useExtInfo";
-import InfoHover from "@/components/InfoHover.vue";
+import InfoHover from "@/components/information/InfoHover.vue";
 import {CommunityTask} from "@/types/lj";
 import {genCommunityPageUrl} from "@/utils/lj-url";
+import { usePreventUnload } from '@/utils/browser';
 
 interface Props {
   class?: HTMLAttributes['class']
@@ -155,11 +156,15 @@ const {mutate, status, isError, error} = useMutation({
   mutationFn: doUpdate,
 })
 
+
+
 async function doUpdate() {
   if (!data.value) {
     alert('出现错误, 更新数据不存在!')
     return
   }
+  const { preventUnload, cancelPreventUnload } = usePreventUnload()
+  preventUnload()
   const previewData = {
     batchId: data.value.batchId,
     tempListId: data.value.tempListId,
@@ -167,13 +172,14 @@ async function doUpdate() {
     records: data.value.records.filter((_, index) => !listDelete.value[index]).map(r => toRaw(r))
   }
 
-  console.log(previewData)
+  // console.log(previewData)
 
 
   await updateBatchCommunityWithPreview(previewData)
   isUpdateDone.value = true
   // 滚动到页面顶部
   window.scrollTo({top: 0, behavior: 'smooth'});
+  cancelPreventUnload()
 }
 
 async function closeWindow() {

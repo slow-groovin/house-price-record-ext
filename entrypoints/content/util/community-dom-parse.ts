@@ -1,14 +1,30 @@
+import { removeNull } from "@/types/generic";
+import { CommunityBasic, CommunityListPageItem, HouseListDetailItem } from "@/types/lj";
+import { extractNumber, waitForElement } from "@/utils/document";
 import {
+	extractCidFromHomePageUrl,
 	extractCidFromListUrl,
 	extractCityAndHidFromHouseUrl,
 	extractCityFromUrl,
-	extractPageNumberFromListUrl, isLoginPage
+	extractPageNumberFromListUrl
 } from "@/utils/lj-url";
-import {extractNumber, waitForElement} from "@/utils/document";
-import {CommunityListPageItem, HouseListDetailItem, HousePriceItem} from "@/types/lj";
-import {removeNull} from "@/types/generic";
-import {PauseError} from "@/utils/lib/BatchQueueExecutor";
-import {isNumber} from "radash";
+import { isNumber } from "radash";
+
+export function parseCommunityHome():CommunityBasic {
+	const name=document.querySelector('.detailTitle')?.textContent??''
+	const avgUnitPrice=parseInt(document.querySelector('.xiaoquUnitPrice')?.textContent??'0')
+	const city = extractCityFromUrl(window.location.href) ?? 'unknown'
+	const cid=extractCidFromHomePageUrl(window.location.href)
+	if(!cid){
+		throw new Error("cid is null. url:"+window.location.href)
+	}
+	return {
+		cid,
+		city,
+		name,
+		avgUnitPrice,
+	}
+}
 
 export async function parseAllOfCommunity():Promise<CommunityListPageItem>{
 	/**

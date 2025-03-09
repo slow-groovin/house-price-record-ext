@@ -20,8 +20,10 @@ export function isLoginPage(url?: string){
 }
 
 export function isCommunityHomePage(url?:string){
-	return url?.includes('lianjia.com/xiaoqu/')
+	if (!url) return false
+	return /lianjia.com\/xiaoqu\/\d+(\/)?$/.test(url)
 }
+
 export function isCommunityListPage(url?: string) {
 	if (!url) return false
 	return /ershoufang\/(pg\d+)?(co\d+)?c\d+\//.test(url)
@@ -86,6 +88,17 @@ export function extractCidFromListUrl(url?: string | null): string | null {
 	return match ? match[1].replace('c', '') : null;
 }
 
+
+export function extractCidFromHomeOrListUrl(url?: string | null): string | null {
+	if (!url) {
+		return null
+	}
+	if(isCommunityHomePage(url)){
+		return extractCidFromHomePageUrl(url)
+	}else{
+		return extractCidFromListUrl(url)
+	}
+}
 
 export function extractPageNumberFromListUrl(str: string): number | null {
 	const regex = /\/pg(\d+)c/g;

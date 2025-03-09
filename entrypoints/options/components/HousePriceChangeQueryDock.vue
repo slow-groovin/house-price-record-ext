@@ -4,79 +4,52 @@
     <!-- 字符串匹配输入区块 -->
     <div class="flex flex-col">
       <label class="text-sm mb-2">房源id</label>
-      <input
-        type="text"
-        v-model.lazy="queryCondition.hidInclude"
-        class="px-3 py-2 rounded border focus:outline-none focus:ring-2"
-        placeholder="请输入关键词"
-      />
+      <input type="text" v-model.lazy="queryCondition.hidInclude"
+        class="px-3 py-2 rounded border focus:outline-none focus:ring-2" placeholder="请输入关键词" />
     </div>
 
     <div class="flex flex-col">
       <label class="text-sm mb-2">小区id</label>
-      <input
-        type="text"
-        v-model.lazy="queryCondition.cidInclude"
-        class="px-3 py-2 rounded border focus:outline-none focus:ring-2"
-        placeholder="请输入关键词"
-      />
+      <input type="text" v-model.lazy="queryCondition.cidInclude"
+        class="px-3 py-2 rounded border focus:outline-none focus:ring-2" placeholder="请输入关键词" />
     </div>
 
     <!-- 数值范围输入区块 -->
     <div class="flex flex-col">
       <label class="text-sm mb-2">老价格</label>
       <div class="flex items-center gap-2">
-        <input
-          type="number"
-          v-model="queryCondition.oldValueMin"
-          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2"
-          placeholder="最小值"
-        />
+        <input type="number" v-model="queryCondition.oldValueMin"
+          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2" placeholder="最小值" />
         <span>-</span>
-        <input
-          type="number"
-          v-model="queryCondition.oldValueMax"
-          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2"
-          placeholder="最大值"
-        />
+        <input type="number" v-model="queryCondition.oldValueMax"
+          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2" placeholder="最大值" />
       </div>
     </div>
     <div class="flex flex-col">
       <label class="text-sm mb-2">新价格</label>
       <div class="flex items-center gap-2">
-        <input
-          type="number"
-          v-model="queryCondition.newValueMin"
-          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2"
-          placeholder="最小值"
-        />
+        <input type="number" v-model="queryCondition.newValueMin"
+          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2" placeholder="最小值" />
         <span>-</span>
-        <input
-          type="number"
-          v-model="queryCondition.newValueMax"
-          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2"
-          placeholder="最大值"
-        />
+        <input type="number" v-model="queryCondition.newValueMax"
+          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2" placeholder="最大值" />
       </div>
     </div>
 
     <div class="flex flex-col">
-      <label class="text-sm mb-2">创建时间</label>
+      <div class="flex items-center gap-2 text-sm mb-2">
+        <label class=" ">创建时间</label>
+        <Button variant="link" class="p-0 text-sm h-4" @click="()=>queryCondition.atMin=ISODateStringOfDaysBefore(7)">近一周</Button>
+        <Button variant="link" class="p-0 text-sm h-4" @click="()=>queryCondition.atMin=ISODateStringOfDaysBefore(30)">近一月</Button>
+        <Button variant="link" class="p-0 text-sm h-4" @click="()=>queryCondition.atMin=ISODateStringOfDaysBefore(180)">近半年</Button>
+      </div>
       <div class="flex items-center gap-2">
-        <input
-          type="date"
-          v-model="queryCondition.atMin"
-          class="px-3 py-2  rounded border focus:outline-none focus:ring-2"
-          placeholder="最小值"
-        />
+        <input type="date" v-model="queryCondition.atMin"
+          class="px-3 py-2  rounded border focus:outline-none focus:ring-2" placeholder="最小值" />
 
         <span>-</span>
-        <input
-          type="date"
-          v-model="queryCondition.atMax"
-          class="px-3 py-2  rounded border focus:outline-none focus:ring-2"
-          placeholder="最大值"
-        />
+        <input type="date" v-model="queryCondition.atMax"
+          class="px-3 py-2  rounded border focus:outline-none focus:ring-2" placeholder="最大值" />
       </div>
     </div>
 
@@ -92,10 +65,8 @@
 
     <!-- 操作按钮区块 -->
     <div class="flex flex-col justify-end">
-      <button
-        @click="handleApply"
-        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2"
-      >
+      <button @click="handleApply"
+        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2">
         应用
       </button>
     </div>
@@ -103,11 +74,13 @@
 </template>
 
 <script setup lang="ts">
-import type {HTMLAttributes} from 'vue'
-import {cn} from "@/utils/shadcn-utils"
-import {HouseChangeQueryCondition} from "@/types/query-condition";
-import {Label} from '@/components/ui/label'
+import type { HTMLAttributes } from 'vue'
+import { cn } from "@/utils/shadcn-utils"
+import { HouseChangeQueryCondition } from "@/types/query-condition";
+import { Label } from '@/components/ui/label'
 import SelectButton from "@/components/custom/SelectButton.vue";
+import { Button } from '@/components/ui/button';
+import { ISODateStringOfDaysBefore } from '@/utils/date';
 
 
 

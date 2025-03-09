@@ -59,6 +59,13 @@ const menuGroups = ref<MenuGroup[]>([
       {name: '拦截规则', link: '/blocks'},
       {name: '导入/导出', link: '/export'},
     ]
+  },
+  {
+    emoji:'',
+    name: '️说明',
+    menus: [
+      {name: '使用入门', link: '/startup-detail'},
+    ]
   }
 ])
 

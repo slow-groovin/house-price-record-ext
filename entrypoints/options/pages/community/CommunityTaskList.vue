@@ -464,7 +464,7 @@ onMounted(() => {
     <CommunityQueryDock v-if="queryCondition" v-model="queryCondition" @update="onQueryConditionUpdate"/>
   </div>
 
-  <div class="relative mb-5 rounded p-2 border">
+  <div class="relative mb-5 mt-2 rounded p-2 border">
     排序:
     <GenericSortDock v-model="sortCondition" :fields="['lastRunningAt','createdAt']" :field-text-map="frequentFieldZhMap"
                        @update="onQueryConditionUpdate"/>

@@ -33,3 +33,10 @@ export function calendarDateToDate(calendarDate?:CalendarDate){
 	return calendarDate?.toDate(getLocalTimeZone())
 }
 
+
+export function ISODateStringOfDaysBefore(day:number):string{
+	const date = new Date();
+	date.setDate(date.getDate() - day);
+	return date.toISOString().split('T')[0];
+
+}

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import {Separator} from "@/components/ui/separator";
-import InfoHover from "@/components/InfoHover.vue";
+import InfoHover from "@/components/information/InfoHover.vue";
 import {Icon} from "@iconify/vue";
 import {db} from "@/utils/client/Dexie";
 import {CommunityTask} from "@/types/lj";

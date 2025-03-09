@@ -2,7 +2,7 @@
 import {HTMLAttributes} from "vue";
 import {cn} from "@/utils/shadcn-utils";
 import {TaskAddedType} from "@/types/lj";
-import InfoHover from "@/components/InfoHover.vue";
+import InfoHover from "@/components/information/InfoHover.vue";
 
 const props=defineProps<{
   addedType:TaskAddedType

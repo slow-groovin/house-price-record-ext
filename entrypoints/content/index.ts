@@ -1,19 +1,21 @@
-import {housePageEntry} from "@/entrypoints/content/house-page";
-import {communityListPageEntry} from "@/entrypoints/content/community-list-page";
-import {isCaptchaPage, isCommunityListPage, isHousePage, isHouseSoldPage, isLoginPage} from "@/utils/lj-url";
+import { housePageUIInject } from "@/entrypoints/content/ui/house-ui-inject";
+import { communityPageUIInject } from "@/entrypoints/content/ui/community-ui-inject";
+import { isCaptchaPage, isCommunityHomePage, isCommunityListPage, isHousePage, isHouseSoldPage, isLoginPage } from "@/utils/lj-url";
 import '~/assets/tailwind.css'
 import '~/assets/shacn.css'
-import {pageDebugEntry} from "@/entrypoints/content/page-debug";
-import {defineContentScript} from "wxt/sandbox";
-import {houseSoldPageEntry} from "@/entrypoints/content/house-sold-page";
-import {captchaPageEntry, loginPageEntry} from './exception-page'
-import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+import { debugUIInject } from "@/entrypoints/content/ui/debug-ui-inject";
+import { defineContentScript } from "wxt/sandbox";
+import { captchaPageOnMessage, loginPageOnMessage } from './message/exception-msgs'
+import { useDevSetting } from "@/entrypoints/reuse/global-variables";
+import { houseSoldPageOnMessages } from "./message/house-sold-msgs";
+import { housePageOnMessages } from "./message/house-page-msgs";
+import { communityListPageOnMessages } from "./message/community-list-page-msgs";
 
 const matches = () => { //this will be exec on build
 	return import.meta.env.MODE === 'development' ?
 		[
 			'*://*.lianjia.com/*',
-			// '*://*.example.com/*'
+			'*://*.example.com/*'
 		] :
 		[
 			'*://*.lianjia.com/*',
@@ -24,11 +26,11 @@ export default defineContentScript({
 	matches: matches(),
 	cssInjectionMode: 'ui',
 	async main(ctx) {
-		const {isDebug, isDisguise} = useDevSetting()
+		const { isDebug, isDisguise } = useDevSetting()
 
 
 		// ctx.block
-		console.log('hit lj page.', window.location.href);
+		console.debug('hit lj page.', window.location.href);
 
 
 		if (isDisguise) {
@@ -38,18 +40,22 @@ export default defineContentScript({
 
 		const url = window.location.href
 		if (isHousePage(url)) {
-			housePageEntry(ctx)
+			housePageUIInject(ctx)
+			housePageOnMessages()
+		} else if (isCommunityHomePage(url)) {
+			await communityPageUIInject(ctx)
 		} else if (isCommunityListPage(url)) {
-			await communityListPageEntry(ctx)
+			await communityPageUIInject(ctx)
+			communityListPageOnMessages()
 		} else if (isHouseSoldPage(url)) {
 			console.log("sold out hit")
-			await houseSoldPageEntry(ctx)
+			houseSoldPageOnMessages()
 		} else if (isLoginPage(url)) {
-			loginPageEntry()
+			loginPageOnMessage()
 		} else if (isCaptchaPage(url)) {
-			captchaPageEntry()
-		}else if (url.includes('example.com')) {
-			pageDebugEntry(ctx)
+			captchaPageOnMessage()
+		} else if (import.meta.env.MODE === 'development' && url.includes('example.com')) {
+			debugUIInject(ctx)
 		}
 	},
 });

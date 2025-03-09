@@ -4,7 +4,7 @@ import {Icon} from "@iconify/vue";
 import {cn} from "@/utils/shadcn-utils";
 import {Card, CardContent, CardDescription, CardHeader} from "@/components/ui/card";
 import {HTMLAttributes} from "vue";
-import InfoHover from "@/components/InfoHover.vue";
+import InfoHover from "@/components/information/InfoHover.vue";
 const props=defineProps<{
   name:string,
   value?:number|string,

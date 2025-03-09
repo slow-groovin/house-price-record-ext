@@ -46,7 +46,12 @@
     </div>
 
     <div class="flex flex-col">
-      <label class="text-sm mb-2">时间</label>
+      <div class="flex items-center gap-2 text-sm mb-2">
+        <label class=" ">时间</label>
+        <Button variant="link" class="p-0 text-sm h-4" @click="()=>queryCondition.atMin=ISODateStringOfDaysBefore(7)">近一周</Button>
+        <Button variant="link" class="p-0 text-sm h-4" @click="()=>queryCondition.atMin=ISODateStringOfDaysBefore(30)">近一月</Button>
+        <Button variant="link" class="p-0 text-sm h-4" @click="()=>queryCondition.atMin=ISODateStringOfDaysBefore(180)">近半年</Button>
+      </div>
       <div class="flex items-center gap-2">
         <input
           type="date"
@@ -87,6 +92,8 @@ import {HouseStatusChangeQueryCondition} from "@/types/query-condition";
 import {Label} from '@/components/ui/label'
 import SelectButton from "@/components/custom/SelectButton.vue";
 import {HouseTaskStatus} from "@/types/lj";
+import { ISODateStringOfDaysBefore } from '@/utils/date';
+import { Button } from '@/components/ui/button';
 
 
 // Props定义

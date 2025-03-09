@@ -1,11 +1,12 @@
 import {ContentScriptContext, createShadowRootUi} from "wxt/client";
 import {onMessage} from "@/messaging";
 import {createApp} from "vue";
-import DebugUI from "@/entrypoints/content/DebugUI.vue";
+import DebugUI from "@/entrypoints/content/ui/DebugUI.vue";
 import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+import ContentUIContainer from "@/components/layout/ContentUIContainer.vue";
 
-export function pageDebugEntry(ctx: ContentScriptContext) {
-
+export function debugUIInject(ctx: ContentScriptContext) {
+	console.log('[debugUIInject]')
 	const {isDebug}=useDevSetting()
 
 

@@ -20,81 +20,65 @@
     <!-- 字符串匹配输入区块 -->
     <div class="flex flex-col">
       <label class="text-sm mb-2">id</label>
-      <input
-        type="text"
-        v-model.lazy="queryCondition.hidInclude"
-        class="px-3 py-2 rounded border focus:outline-none focus:ring-2"
-        placeholder="请输入关键词"
-      />
+      <input type="text" v-model.lazy="queryCondition.hidInclude"
+        class="px-3 py-2 rounded border focus:outline-none focus:ring-2" placeholder="请输入关键词" />
     </div>
 
     <div class="flex flex-col">
       <label class="text-sm mb-2">小区ID</label>
-      <input
-        type="text"
-        v-model.lazy="queryCondition.cidInclude"
-        class="px-3 py-2 rounded border focus:outline-none focus:ring-2"
-        placeholder="请输入关键词"
-      />
+      <input type="text" v-model.lazy="queryCondition.cidInclude"
+        class="px-3 py-2 rounded border focus:outline-none focus:ring-2" placeholder="请输入关键词" />
     </div>
 
     <div class="flex flex-col">
       <label class="text-sm mb-2">小区</label>
-      <CommunityQueryBox v-model="communityQueryValue" :initial-cid="queryCondition.cidEqual"/>
+      <CommunityQueryBox v-model="communityQueryValue" :initial-cid="queryCondition.cidEqual" />
     </div>
 
     <div class="flex flex-col">
       <label class="text-sm mb-2">分组</label>
-      <TaskGroupQueryBox v-model="groupQueryValue" type="house" :initial-group-id="queryCondition.groupId"/>
+      <TaskGroupQueryBox v-model="groupQueryValue" type="house" :initial-group-id="queryCondition.groupId" />
     </div>
 
     <!-- 数值范围输入区块 -->
     <div class="flex flex-col">
       <label class="text-sm mb-2">总价</label>
       <div class="flex items-center gap-2">
-        <input
-          type="number"
-          v-model="queryCondition.totalPriceMin"
-          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2"
-          placeholder="最小值"
-        />
+        <input type="number" v-model="queryCondition.totalPriceMin"
+          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2" placeholder="最小值" />
         <span>-</span>
-        <input
-          type="number"
-          v-model="queryCondition.totalPriceMax"
-          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2"
-          placeholder="最大值"
-        />
+        <input type="number" v-model="queryCondition.totalPriceMax"
+          class="px-3 py-2 w-24 rounded border focus:outline-none focus:ring-2" placeholder="最大值" />
       </div>
     </div>
 
     <div class="flex flex-col">
-      <label class="text-sm mb-2">创建时间</label>
+      <div class="flex items-center gap-2 text-sm mb-2">
+        <label class=" ">创建时间</label>
+        <Button variant="link" class="p-0 text-sm h-4"
+          @click="() => queryCondition.createdAtMin = ISODateStringOfDaysBefore(7)">近一周</Button>
+        <Button variant="link" class="p-0 text-sm h-4"
+          @click="() => queryCondition.createdAtMin = ISODateStringOfDaysBefore(30)">近一月</Button>
+        <Button variant="link" class="p-0 text-sm h-4"
+          @click="() => queryCondition.createdAtMin = ISODateStringOfDaysBefore(180)">近半年</Button>
+      </div>
       <div class="flex items-center gap-2">
-        <input
-          type="date"
-          v-model="queryCondition.createdAtMin"
-          class="px-3 py-2  rounded border focus:outline-none focus:ring-2"
-          placeholder="最小值"
-        />
+        <input type="date" v-model="queryCondition.createdAtMin"
+          class="px-3 py-2  rounded border focus:outline-none focus:ring-2" placeholder="最小值" />
 
         <span>-</span>
-        <input
-          type="date"
-          v-model="queryCondition.createdAtMax"
-          class="px-3 py-2  rounded border focus:outline-none focus:ring-2"
-          placeholder="最大值"
-        />
+        <input type="date" v-model="queryCondition.createdAtMax"
+          class="px-3 py-2  rounded border focus:outline-none focus:ring-2" placeholder="最大值" />
       </div>
     </div>
 
     <div class="mx-2 ">
       状态
       <div class="grid grid-cols-2 grid-rows-2 gap-2 ">
-        <NumSelectButton v-model="queryCondition.status" :value="undefined" >全部</NumSelectButton>
-        <NumSelectButton v-model="queryCondition.status" :value="HouseTaskStatus.running" >正常</NumSelectButton>
-        <NumSelectButton v-model="queryCondition.status" :value="HouseTaskStatus.sold" >售出</NumSelectButton>
-        <NumSelectButton v-model="queryCondition.status" :value="HouseTaskStatus.miss" >下架</NumSelectButton>
+        <NumSelectButton v-model="queryCondition.status" :value="undefined">全部</NumSelectButton>
+        <NumSelectButton v-model="queryCondition.status" :value="HouseTaskStatus.running">正常</NumSelectButton>
+        <NumSelectButton v-model="queryCondition.status" :value="HouseTaskStatus.sold">售出</NumSelectButton>
+        <NumSelectButton v-model="queryCondition.status" :value="HouseTaskStatus.miss">下架</NumSelectButton>
       </div>
     </div>
 
@@ -103,24 +87,21 @@
     <div class="mx-2">
       添加方式
       <div class="grid grid-cols-2 grid-rows-2 gap-2">
-        <NumSelectButton v-model="queryCondition.addedType" :value="undefined" >全部</NumSelectButton>
-        <NumSelectButton v-model="queryCondition.addedType" :value="TaskAddedType.manual" >手动添加</NumSelectButton>
-        <NumSelectButton class="col-start-1 col-end-3" v-model="queryCondition.addedType" :value="TaskAddedType.autoByCommunity">小区任务自动添加</NumSelectButton>
+        <NumSelectButton v-model="queryCondition.addedType" :value="undefined">全部</NumSelectButton>
+        <NumSelectButton v-model="queryCondition.addedType" :value="TaskAddedType.manual">手动添加</NumSelectButton>
+        <NumSelectButton class="col-start-1 col-end-3" v-model="queryCondition.addedType"
+          :value="TaskAddedType.autoByCommunity">小区任务自动添加</NumSelectButton>
       </div>
     </div>
 
     <!-- 操作按钮区块 -->
     <div class="flex flex-nowrap items-end justify-end gap-2">
-      <button
-        @click="handleApply"
-        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2"
-      >
+      <button @click="handleApply"
+        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2">
         应用
       </button>
-      <button
-        @click="resetCondition"
-        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2"
-      >
+      <button @click="resetCondition"
+        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2">
         重置
       </button>
     </div>
@@ -128,16 +109,18 @@
 </template>
 
 <script setup lang="ts">
-import {HTMLAttributes, ref, watch} from 'vue'
-import {cn} from "@/utils/shadcn-utils"
-import {HouseTaskQueryCondition} from "@/types/query-condition";
-import {Label} from '@/components/ui/label'
-import {HouseTaskStatus, TaskAddedType} from "@/types/lj";
+import { HTMLAttributes, ref, watch } from 'vue'
+import { cn } from "@/utils/shadcn-utils"
+import { HouseTaskQueryCondition } from "@/types/query-condition";
+import { Label } from '@/components/ui/label'
+import { HouseTaskStatus, TaskAddedType } from "@/types/lj";
 import SelectButton from "@/components/custom/SelectButton.vue";
 import CommunityQueryBox from "@/components/lj/community/CommunityQueryBox.vue";
 import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
+import { ISODateStringOfDaysBefore } from '@/utils/date';
+import { Button } from '@/components/ui/button';
 
-const NumSelectButton=SelectButton<number>
+const NumSelectButton = SelectButton<number>
 
 
 // Props定义
@@ -155,15 +138,15 @@ const queryCondition = defineModel<HouseTaskQueryCondition>({
 })
 
 //子组件model
-const communityQueryValue=ref<{cid:string,name:string}>()
-const groupQueryValue=ref<{ groupId: number, name: string }>()
-watch(communityQueryValue,(newValue)=>{
-  queryCondition.value.cidEqual=newValue?.cid
+const communityQueryValue = ref<{ cid: string, name: string }>()
+const groupQueryValue = ref<{ groupId: number, name: string }>()
+watch(communityQueryValue, (newValue) => {
+  queryCondition.value.cidEqual = newValue?.cid
 })
 
-watch(groupQueryValue,(newValue)=>{
+watch(groupQueryValue, (newValue) => {
   console.log(newValue)
-  queryCondition.value.groupId=newValue?.groupId
+  queryCondition.value.groupId = newValue?.groupId
 })
 
 // 定义更新事件
