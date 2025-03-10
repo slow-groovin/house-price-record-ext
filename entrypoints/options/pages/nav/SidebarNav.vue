@@ -66,6 +66,7 @@ const menuGroups = ref<MenuGroup[]>([
     menus: [
       {name: '操作指南', link: '/startup'},
       {name: '使用详情', link: '/startup-detail'},
+      {name: '更新记录', link: 'https://github.com/slow-groovin/house-price-record-ext/blob/main/CHANGELOG.md'},
       {name: '关于', link: '/about'},
     ]
   }
@@ -100,7 +101,8 @@ const route = useRoute();
         <div class="space-y-1" >
           <template v-for="menu in group.menus"
                     :key="menu.name">
-            <RouterLink :to="menu.link" >
+            <a v-if="!menu.link.startsWith('/')" :href="menu.link" target="_blank" class="text-sm pl-4 py-2"> {{ menu.name }}</a>
+            <RouterLink v-else :to="menu.link" >
               <Button variant="ghost" class="flex items-center justify-start font-normal w-full" :class="{'bg-primary/40 border-primary border-l-4 rounded-l-none':route.path===menu.link}">
                 <Icon v-if="menu.icon" :icon="menu.icon" class="mr-2 h-4 w-4"/>
                 <span v-if="menu.emoji"> {{ menu.emoji }} </span>
