@@ -32,6 +32,7 @@ import AboutMe from "@/entrypoints/options/pages/docs/AboutMe.vue";
 import ExportImport from "@/entrypoints/options/pages/ExportImport.vue";
 import {useDevSetting} from "@/entrypoints/reuse/global-variables";
 import StartupIntroDetail from './pages/docs/StartupIntroDetail.vue';
+import NotSupport from './pages/docs/NotSupport.vue';
 
 const {isDisguise}=useDevSetting()
 
@@ -47,6 +48,7 @@ const router = createRouter({
 				{path: '/doc', component: IFrameDocSite,},
 				{path: '/startup', component: StartupIntro,},
 				{path: '/startup-detail', component: StartupIntroDetail,},
+				{path: '/not-support', component: NotSupport,},
 				{path: '/about', component: AboutMe,},
 				{path: '/debug', component: OptionDebugEntry},
 				{path: '/settings', component: SettingsPage},

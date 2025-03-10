@@ -1,12 +1,12 @@
-import {browser} from "wxt/browser";
-import {omit} from "radash";
-import {storage} from "wxt/storage";
-import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+import { browser } from "wxt/browser";
+import { omit } from "radash";
+import { storage } from "wxt/storage";
+import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 
-const{isDebug}=useDevSetting()
-let debugRules:any[]=[]
-if(isDebug){
-	debugRules=[
+const { isDebug } = useDevSetting()
+let debugRules: any[] = []
+if (isDebug) {
+	debugRules = [
 		// {
 		// 	// 阻止所有 .jpg, .jpg, .jpeg 文件
 		// 	id: 17001,
@@ -23,7 +23,7 @@ if(isDebug){
 			// 阻止 https://dig.lianjia.com, https://ajax.api.lianjia.com, https://ex.lianjia.com 的所有请求
 			id: 17101,
 			priority: 1,
-			action: {type: "block"},
+			action: { type: "block" },
 			condition: {
 				initiatorDomains: ["lianjia.com"],
 				urlFilter: "||ajax.api.lianjia.com",
@@ -37,7 +37,7 @@ if(isDebug){
 			// 阻止 https://dig.lianjia.com, https://ajax.api.lianjia.com, https://ex.lianjia.com 的所有请求
 			id: 17102,
 			priority: 1,
-			action: {type: "block"},
+			action: { type: "block" },
 			condition: {
 				initiatorDomains: ["lianjia.com"],
 				urlFilter: "||ex.lianjia.com",
@@ -51,7 +51,7 @@ if(isDebug){
 			// 阻止 https://dig.lianjia.com, https://ajax.api.lianjia.com, https://ex.lianjia.com 的所有请求
 			id: 17103,
 			priority: 1,
-			action: {type: "block"},
+			action: { type: "block" },
 			condition: {
 				initiatorDomains: ["lianjia.com"],
 				urlFilter: "||dig.lianjia.com",
@@ -65,7 +65,7 @@ if(isDebug){
 			// 阻止包含 "google" 的所有请求
 			id: 17104,
 			priority: 1,
-			action: {type: "block"},
+			action: { type: "block" },
 			condition: {
 				initiatorDomains: ["lianjia.com"],
 				regexFilter: ".*google.*",
@@ -79,7 +79,7 @@ if(isDebug){
 			// 阻止包含 "baidu.com" 的所有请求
 			id: 17105,
 			priority: 1,
-			action: {type: "block"},
+			action: { type: "block" },
 			condition: {
 				initiatorDomains: ["lianjia.com"],
 				regexFilter: ".*baidu.*",
@@ -95,7 +95,7 @@ if(isDebug){
 			// 阻止包含 "cnzz" 的所有请求
 			id: 17106,
 			priority: 1,
-			action: {type: "block"},
+			action: { type: "block" },
 			condition: {
 				initiatorDomains: ["lianjia.com"],
 				regexFilter: ".*cnzz.*",
@@ -109,7 +109,7 @@ if(isDebug){
 			// 阻止包含 "bdstatic" 的所有请求
 			id: 17108,
 			priority: 1,
-			action: {type: "block"},
+			action: { type: "block" },
 			condition: {
 				initiatorDomains: ["lianjia.com"],
 				regexFilter: ".*bdstatic.*",
@@ -123,7 +123,7 @@ if(isDebug){
 			// 阻止包含 "bdimg" 的所有请求
 			id: 17109,
 			priority: 1,
-			action: {type: "block"},
+			action: { type: "block" },
 			condition: {
 				initiatorDomains: ["lianjia.com"],
 				regexFilter: ".*bdimg.*",
@@ -138,7 +138,7 @@ if(isDebug){
 			id: 17110,
 			priority: 10,
 			// action: { type: "block" },
-			action: {type: "allow"},
+			action: { type: "allow" },
 			condition: {
 				initiatorDomains: ["hip.lianjia.com"],
 				urlFilter: "||s1.ljcdn.com/",
@@ -152,7 +152,7 @@ if(isDebug){
 			// 阻止包含 "baidu.com" 的所有请求
 			id: 17112,
 			priority: 1,
-			action: {type: "block"},
+			action: { type: "block" },
 			condition: {
 				initiatorDomains: ["lianjia.com"],
 				urlFilter: "||cdnmaster.com",
@@ -167,14 +167,14 @@ if(isDebug){
 }
 
 
-export const ljMetricRules:any[] = [
+export const ljMetricRules: any[] = [
 	...debugRules,
 	{
 		// 允许包含 "geetest.com" 的图片
 		id: 17120,
 		priority: 10,
 		// action: { type: "block" },
-		action: {type: "allow"},
+		action: { type: "allow" },
 		condition: {
 			initiatorDomains: ["lianjia.com"],
 			// urlFilter: "||geetest.com",
@@ -188,7 +188,7 @@ export const ljMetricRules:any[] = [
 	{
 		id: 18010,
 		priority: 1,
-		action: {type: 'block'},
+		action: { type: 'block' },
 		condition: {
 			initiatorDomains: ["lianjia.com"],
 			urlFilter: "||www.google-analytics",
@@ -196,27 +196,27 @@ export const ljMetricRules:any[] = [
 		},
 		action_desc: '阻止google-analytics统计访问数据',
 		effect_desc: '阻止所有发向 www.google-analytics.com 的请求',
-		default_on: true,
+		default_on: false,
 	},
 	//www.googletagmanager.com
 	{
 		id: 18012,
 		priority: 1,
-		action: {type: 'block'},
+		action: { type: 'block' },
 		condition: {
 			initiatorDomains: ["lianjia.com"],
 			urlFilter: "||www.googletagmanager.com",
-			resourceTypes: ["xmlhttprequest","script"]
+			resourceTypes: ["xmlhttprequest", "script"]
 		},
 		action_desc: '阻止googletagmanager进行营销分析',
 		effect_desc: '阻止所有发向 www.googletagmanager.com 的请求',
-		default_on: true,
+		default_on: false,
 	},
 
 	{
 		id: 18020,
 		priority: 1,
-		action: {type: 'block'},
+		action: { type: 'block' },
 		condition: {
 			initiatorDomains: ["lianjia.com"],
 			urlFilter: "||dig.lianjia.com",
@@ -231,7 +231,7 @@ export const ljMetricRules:any[] = [
 	{
 		id: 18029,
 		priority: 1,
-		action: {type: 'block'},
+		action: { type: 'block' },
 		condition: {
 			initiatorDomains: ["lianjia.com"],
 			regexFilter: ".*baidu.*",
@@ -239,7 +239,7 @@ export const ljMetricRules:any[] = [
 		},
 		action_desc: '阻止百度相关的所有营销/行为分析/功能请求: 营销分析,位置上报,用户行为分析,百度地图内嵌等等',
 		effect_desc: '阻止所有url中包含 *.*baidu.* 的任何请求',
-		default_on: true,
+		default_on: false,
 	},
 	// {
 	// 	id: 18030,
@@ -272,7 +272,7 @@ export const ljMetricRules:any[] = [
 	{
 		id: 18050,
 		priority: 1,
-		action: {type: 'block'},
+		action: { type: 'block' },
 		condition: {
 			initiatorDomains: ["lianjia.com"],
 			regexFilter: ".imapi.lianjia.com\/msg\/sync*",
@@ -280,29 +280,29 @@ export const ljMetricRules:any[] = [
 		},
 		action_desc: '阻止imapi.lianjia.com同步未知信息',
 		effect_desc: '阻止所有发向 imapi.lianjia.com/msg/sync 的post请求',
-		default_on: true,
+		default_on: false,
 	},
 	//ajax.api.lianjia.com/login/login/getuserinfo
 	{
 		id: 18060,
 		priority: 1,
-		action: {type: 'block'},
+		action: { type: 'block' },
 		condition: {
 			initiatorDomains: ["lianjia.com"],
 			urlFilter: "ajax.api.lianjia.com*?callback",
 			// regexFilter: "(.*)ajax\\.api\\.lianjia\\.com(.*)", //❌ regexFilter只匹配主机
-			resourceTypes: ["xmlhttprequest",'script']
+			resourceTypes: ["xmlhttprequest", 'script']
 		},
 		action_desc: '阻止ajax.api.lianjia.com 同步用户信息',
-		effect_desc: '阻止 网址为ajax.api.lianjia.com切包含callback参数的情请求',
-		default_on: true,
+		effect_desc: '阻止 网址为ajax.api.lianjia.com且包含callback参数的情请求',
+		default_on: false,
 	},
 
 	{
 		// 阻止包含 "baidu.com" 的所有请求
 		id: 18070,
 		priority: 1,
-		action: {type: "block"},
+		action: { type: "block" },
 		condition: {
 			initiatorDomains: ["lianjia.com"],
 			urlFilter: "||mediav.com",
@@ -311,14 +311,10 @@ export const ljMetricRules:any[] = [
 		},
 		action_desc: '阻止所有 mediav.com 的营销请求',
 		effect_desc: '阻止所有包含mediav.com的请求',
-		default_on: true,
+		default_on: false,
 	},
 ]
 
-if(isDebug){
-	ljMetricRules.push(
-	)
-}
 
 
 
@@ -326,8 +322,8 @@ const ljRulesWithoutDesc = ljMetricRules.map(rule => omit(rule, ["action_desc", 
 
 //只记录 开启的
 const getBlockSettings = async () => await storage.getItem<Record<number, boolean>>('local:block-setting', {
-	fallback: ljMetricRules.filter(rule => !rule.default_on).reduce((acc, cur) => {
-		return {...acc, [cur.id]: true}
+	fallback: ljMetricRules.filter(rule => rule.default_on).reduce((acc, cur) => {
+		return { ...acc, [cur.id]: true }
 	}, {}),
 })
 
@@ -348,6 +344,7 @@ export async function clearRules() {
 export async function addRules() {
 	const setting = await getBlockSettings()
 	let rules = ljRulesWithoutDesc.filter(rule => setting[rule.id]);
+	console.log('rules', rules, setting)
 	await browser.declarativeNetRequest.updateDynamicRules({
 		// @ts-ignore
 		addRules: rules,

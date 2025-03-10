@@ -18,18 +18,19 @@ export default defineBackground(() => {
 
 	if (typeof chrome !== "undefined" && chrome.sidePanel) {
 		// Chrome 或 Edge
-		chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
+		// chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
+
 	} else if (typeof browser !== "undefined" && browser.sidebarAction) {
 		// Firefox
 		// browser.sidebarAction.setPanel({ panel: "sidebar.html" });
 	} else {
-		console.log("Side Panel API not supported in this browser.");
+
 	}
 	// browser.sidebarAction.setPanel({ panel: "sidebar2.html" });
 
-	db.debugInfo.add({
-		at: new Date().toLocaleString(), msg: " onInstalled in background.js"
-	})
+	// db.debugInfo.add({
+	// 	at: new Date().toLocaleString(), msg: " onInstalled in background.js"
+	// })
 
 
 	onMessage('openOptionPage',async (msg)=>{
@@ -41,6 +42,10 @@ export default defineBackground(() => {
 	// registerSimpleMessage()
 
 	browser.runtime.onInstalled.addListener(()=>{
+		if (typeof chrome === "undefined" ||  !(chrome.sidePanel)) {
+			console.error("Side Panel API not supported in this browser.");
+			browser.tabs.create({url:'/options.html#/not-support'});
+		}
 		if(!isDebug){
 			browser.tabs.create({url:'/options.html#/'})
 		}
