@@ -5,10 +5,10 @@ import Code from "@/components/information/Code.vue";
 
 <template>
   <h1 class="flex justify-between text-3xl font-bold border-b my-6">
-    使用入门
+    操作指南
     <div class="flex gap-4">
       <a href="https://real-price.api2o.com/" class="link text-lg" target="_blank">官方网站</a>
-      <a href="/options.html#/startup-detail" class="link text-lg">查看详细使用入门</a>
+      <a href="/options.html#/startup-detail" class="link text-lg">查看使用详情</a>
     </div>
 
   </h1>

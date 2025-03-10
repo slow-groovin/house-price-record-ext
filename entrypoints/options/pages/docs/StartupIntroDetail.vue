@@ -5,11 +5,11 @@ import { Icon } from "@iconify/vue";
 </script>
 
 <template>
-  <h1 class="text-3xl font-bold border-b my-6">详细使用入门</h1>
+  <h1 class="text-3xl font-bold border-b my-6">使用详情</h1>
   <div class="flex flex-col gap-8">
     <div class="flex gap-4">
       <a href="https://real-price.api2o.com/" class="link text-lg" target="_blank">官方网站</a>
-      <a href="/options.html#/startup" class="link text-lg">查看简单使用入门</a>
+      <a href="/options.html#/startup" class="link text-lg">查看操作指南(跟随步骤)</a>
     </div>
 
     <div>

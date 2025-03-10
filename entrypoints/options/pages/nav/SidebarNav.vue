@@ -64,7 +64,9 @@ const menuGroups = ref<MenuGroup[]>([
     emoji:'',
     name: '️说明',
     menus: [
-      {name: '使用入门', link: '/startup-detail'},
+      {name: '操作指南', link: '/startup'},
+      {name: '使用详情', link: '/startup-detail'},
+      {name: '关于', link: '/about'},
     ]
   }
 ])
