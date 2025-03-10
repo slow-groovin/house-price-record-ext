@@ -8,6 +8,7 @@ import {CommunityTask} from "@/types/lj";
 import {genCommunityPageUrl} from "@/utils/lj-url";
 import {ref} from 'vue'
 import {useExtTitle} from "@/composables/useExtInfo";
+import QuickLoginDesc from "../../components/description/QuickLoginDesc.vue";
 useExtTitle('运行前确认 | 批量运行小区任务')
 
 const lastRunningTask=ref<CommunityTask>()
@@ -44,6 +45,8 @@ queryOne()
             </template>
           </InfoHover>
         </div>
+
+        <QuickLoginDesc/>
 
       </div>
       <div class="p-2 border rounded w-fit">

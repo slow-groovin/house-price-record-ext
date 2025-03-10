@@ -1,9 +1,10 @@
 <script setup lang="ts">
 
-import {Separator} from "@/components/ui/separator";
+import { Separator } from "@/components/ui/separator";
 import InfoHover from "@/components/information/InfoHover.vue";
-import {Icon} from "@iconify/vue";
-import {useExtTitle} from "@/composables/useExtInfo";
+import { Icon } from "@iconify/vue";
+import { useExtTitle } from "@/composables/useExtInfo";
+import QuickLoginDesc from "../../components/description/QuickLoginDesc.vue";
 useExtTitle('运行前确认 | 批量运行房源任务')
 
 </script>
@@ -19,7 +20,7 @@ useExtTitle('运行前确认 | 批量运行房源任务')
             <template #trigger>
               <span class="bg-gray-200 border inline-flex  items-center">
                 不会出现验证码
-                <Icon icon="icon-park-outline:point"/>
+                <Icon icon="icon-park-outline:point" />
               </span>
             </template>
             <template #default>
@@ -36,7 +37,7 @@ useExtTitle('运行前确认 | 批量运行房源任务')
             <template #trigger>
               <span class="bg-gray-200 border inline-flex items-center">
                 可以查看详细信息(登陆状态有效)
-                <Icon icon="icon-park-outline:point"/>
+                <Icon icon="icon-park-outline:point" />
               </span>
             </template>
             <template #default>
@@ -55,6 +56,8 @@ useExtTitle('运行前确认 | 批量运行房源任务')
           </InfoHover>
         </div>
 
+        <!-- 快捷登录说明 -->
+        <QuickLoginDesc></QuickLoginDesc>
       </div>
       <div class="p-2 border rounded w-fit">
         <h1 class="text-2xl font-bold border-b">任务运行说明</h1>
@@ -70,7 +73,7 @@ useExtTitle('运行前确认 | 批量运行房源任务')
     </div>
 
 
-    <Separator class="my-6"/>
+    <Separator class="my-6" />
 
     <h1 class="text-2xl font-bold border-b">注意事项</h1>
     <ol class="pl-4 list-decimal flex flex-col gap-4">
@@ -92,6 +95,4 @@ useExtTitle('运行前确认 | 批量运行房源任务')
 
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

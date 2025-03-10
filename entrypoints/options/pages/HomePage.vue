@@ -141,14 +141,17 @@ onMounted(() => {
 <template>
 
 
-  <div class="w-full flex items-center justify-center my-8 font-bold text-2xl text-center">
-    欢迎使用 {{ name }}{{ version }}<img src="/icon/24.png" alt="icon" class="inline">
-  </div>
-  <div v-if="isEmptyUsage">
+  <h1 class="w-full flex items-center justify-center my-8 font-bold text-2xl text-center">
+    欢迎使用
+    <span class="bg-gradient-to-r from-primary via-lime-500 to-blue-500 text-transparent bg-clip-text w-fit">
+      {{ name }}{{ version }}
+    </span> <img src="/icon/24.png" alt="icon" class="inline">
+  </h1>
+  <div v-if="isEmptyUsage" class="flex flex-col gap-2">
     首次使用? 请查看
     <!--    使用入门-->
     <div class="outline w-fit h-fit  outline-green-500 rounded p-2">
-      使用入门
+      操作指南
       <a class="link" href="/options.html#/startup">去查看></a>
     </div>
 
@@ -178,13 +181,13 @@ onMounted(() => {
 
       <!--    使用入门-->
       <div class="outline h-fit   outline-green-500 rounded p-2">
-        使用入门
-        <a class="link" href="/options.html#/startup">去查看></a>
+        使用详情
+        <a class="link" href="/options.html#/startup-detail">去查看></a>
       </div>
 
     </div>
 
-    <div class="col-start-1 col-span-6 row-span-3 bg-gray-100 p-6 rounded-lg shadow-lg">
+    <div class="col-start-1 col-span-8 row-span-3 bg-gray-100 p-6 rounded-lg shadow-lg">
       <h2 class="text-2xl font-bold text-gray-800 mb-6">本周新增数据概览</h2>
       <h3 class="mb-4">从 {{ new Date(weekStartAt).toLocaleString() }} 到当前, 新增:</h3>
 

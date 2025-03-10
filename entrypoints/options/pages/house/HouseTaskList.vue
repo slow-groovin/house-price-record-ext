@@ -244,7 +244,7 @@ data END
 async function onPaginationUpdate(pageIndex: number, pageSize: number) {
   await pushQuery('_pageIndex', pageIndex)
   await pushQuery('_pageSize', pageSize)
-  localStorage.setItem('house-list-page-size', pageSize)
+  localStorage.setItem('house-list-page-size', pageSize+'')
   await queryData(pageIndex, pageSize)
 }
 

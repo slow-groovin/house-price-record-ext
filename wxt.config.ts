@@ -5,30 +5,13 @@ import customStrToUtf8 from "./scripts/vite-plugin-to-utf8";
 export default defineConfig({
 
 	extensionApi: 'chrome',
-	// dev:{
-	// 	server: {
-	// 		port:3000,
-	// 	}
-	//
-	// },
+
 	modules: ['@wxt-dev/module-vue'],
 	imports: false,   // disable auto-import
-	// imports:{
-	// 	presets:[
-	// 		{
-	// 			package: '@vueuse/core',
-	// 			ignore: [
-	// 				// exported from `vue`
-	// 				'toRef',
-	// 				'toRefs',
-	// 				'toValue',
-	// 				// exported from `wxt/storage`
-	// 				'useStorage',
-	// 			],
-	// 		},
-	// 	]
-	//
-	// },
+  zip:{
+		name: 'house-price-ext'
+
+	},
 	manifest: {
 		name: '真实房价助手',
 		description: '帮助您方便地收集关注范围内的小区/房源状态(链家平台), 记录价格/状态变动数据, 并分析和展示历史数据',

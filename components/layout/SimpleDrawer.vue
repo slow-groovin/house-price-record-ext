@@ -1,20 +1,23 @@
 <template>
-  <div :class="cn('flex', position === 'right' ? '' : 'flex-row-reverse', isOpen ? '' : 'translate-x-[calc(100%-1.5rem)]', props.class)">
+  <div :class="cn('flex',
+    position === 'right' ? '' : 'flex-row-reverse',
+    isOpen ? '' :
+      position === 'right' ? 'translate-x-[calc(100%-1.5rem)]' : '-translate-x-[calc(100%-1.5rem)]',
+    props.class)">
 
     <div class="self-center" @click="toggle"
       :class="cn('cursor-pointer hover:bg-neutral-300 shadow  w-6 h-8  border-2  text-gray-800 stroke-2 bg-white', toggleClass)">
-      <Icon v-show="!isOpen"  icon="lets-icons:expand-left-light"  class="size-full"/>
-      <Icon v-show="isOpen" icon="lets-icons:expand-right-light" class="size-full"/>
+      <Icon  :icon="arrowIcon" class="size-full" />
     </div>
 
-      <slot name="default"></slot>
+    <slot name="default"></slot>
 
 
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { HTMLAttributes } from 'vue'
 import type { ClassValue } from 'clsx'
 import { Icon } from '@iconify/vue'
@@ -37,8 +40,13 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const isOpen = ref(props.defaultOpen)
+const arrowIcon=computed(()=>{
+  const bit1=isOpen.value?1:0
+  const bit2=props.position==='left'?1:0
+  return (bit1 ^ bit2)?"lets-icons:expand-right-light":"lets-icons:expand-left-light"
+})
 
-const toggle=()=>{
-  isOpen.value=!isOpen.value
+const toggle = () => {
+  isOpen.value = !isOpen.value
 }
 </script>

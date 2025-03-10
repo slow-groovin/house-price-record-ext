@@ -33,6 +33,7 @@ import TotalPriceItem from "@/entrypoints/options/components/TotalPriceItem.vue"
 import SelectButton from "@/components/custom/SelectButton.vue";
 import {tryMax, tryMin} from "@/utils/variable";
 import {tryGreaterThanOrFalse, tryLessThanOrFalse} from "@/utils/operator";
+import HouseFieldsLackDesc from "./description/HouseFieldsLackDesc.vue";
 
 
 type RelatedData = {
@@ -377,6 +378,8 @@ onMounted(() => {
         <SelectButton v-model="priceRelatedShowType" value="max" can-cancel>最高价</SelectButton>
         <SelectButton v-model="priceRelatedShowType" value="min" can-cancel>最低价</SelectButton>
         <SelectButton v-model="priceRelatedShowType" value="init" can-cancel>初始价格</SelectButton>
+        <HouseFieldsLackDesc/>
+
       </div>
     </div>
     <Table class="w-fit overflow-scroll text-nowrap">
