@@ -12,7 +12,7 @@
         <ol class="list-decimal p-2">
           <li>打开链家首页<a href="https://lianjia.com" target="_blank" class="link">https://lianjia.com</a></li>
           <li>点击右上角登录, 选择"扫码登录"</li>
-          <li>使用 【贝壳APP】 进行扫码登录</li>
+          <li>使用 【贝壳APP】, 进入 "我的" 标签页,  点击右上方扫码按钮,  进行扫码登录</li>
         </ol>
       </template>
     </InfoHover>
