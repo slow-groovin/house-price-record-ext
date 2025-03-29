@@ -1,8 +1,9 @@
 <script setup lang="tsx">
 //
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {toast} from "vue-sonner";
-import {sendMessage} from "@/messaging";
+import { saveAs } from 'file-saver'; // 需要安装 file-saver 库
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { toast } from "vue-sonner";
+import { sendMessage } from "@/messaging";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -17,16 +18,16 @@ import {
   useVueTable,
   VisibilityState,
 } from '@tanstack/vue-table'
-import {db} from "@/utils/client/Dexie";
-import {CommunityTask} from "@/types/lj";
+import { db } from "@/utils/client/Dexie";
+import { CommunityTask } from "@/types/lj";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
-import {valueUpdater} from "@/utils/shadcn-utils";
-import {calcOffset, PageState} from "@/utils/table-utils";
-import {computed, onMounted, ref, toRaw} from "vue";
-import {useLocalStorage} from "@vueuse/core";
-import {Button} from "@/components/ui/button";
-import {toInt} from "radash";
-import {startPageEntry} from "@/entrypoints/reuse/community-control2";
+import { valueUpdater } from "@/utils/shadcn-utils";
+import { calcOffset, PageState } from "@/utils/table-utils";
+import { computed, onMounted, ref, toRaw } from "vue";
+import { useLocalStorage } from "@vueuse/core";
+import { Button } from "@/components/ui/button";
+import { toInt } from "radash";
+import { startPageEntry } from "@/entrypoints/reuse/community-control2";
 import CommunityQueryDock from "@/entrypoints/options/components/CommunityQueryDock.vue";
 import {
   CommunityQueryCondition,
@@ -35,9 +36,9 @@ import {
   SortState
 } from "@/types/query-condition";
 import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
-import {ArgCache} from "@/utils/lib/ArgCache";
-import {Collection, InsertType} from "dexie";
-import {tryGreaterThanOrFalse, tryLessThanOrFalse, tryMinusOrUndefined} from "@/utils/operator";
+import { ArgCache } from "@/utils/lib/ArgCache";
+import { Collection, InsertType } from "dexie";
+import { tryGreaterThanOrFalse, tryLessThanOrFalse, tryMinusOrUndefined } from "@/utils/operator";
 import GenericSortDock from "@/entrypoints/options/components/GenericSortDock.vue";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
@@ -52,22 +53,22 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
-import {useRoute} from "vue-router";
-import {newQueryConditionFromQueryParam} from "@/entrypoints/reuse/query-condition";
-import {useRouterQuery} from "@/composables/useRouterQuery";
+import { useRoute } from "vue-router";
+import { newQueryConditionFromQueryParam } from "@/entrypoints/reuse/query-condition";
+import { useRouterQuery } from "@/composables/useRouterQuery";
 import CidAndName from "@/components/lj/column/CidAndName.vue";
 import AvgTotalPrice from "@/components/lj/column/AvgTotalPrice.vue";
 import OnSellCount from "@/components/lj/column/OnSellCount.vue";
 import TwoLineAt from "@/components/lj/column/TwoLineAt.vue";
-import {useExtTitle} from "@/composables/useExtInfo";
-import {useDevSetting} from "@/entrypoints/reuse/global-variables";
-import {mergeParams} from "@/utils/variable";
+import { useExtTitle } from "@/composables/useExtInfo";
+import { useDevSetting } from "@/entrypoints/reuse/global-variables";
+import { mergeParams } from "@/utils/variable";
 
-const {isDebug}=useDevSetting()
+const { isDebug } = useDevSetting()
 useExtTitle('小区任务列表')
-const {query} = useRoute()
-const {_pageIndex, _pageSize} = query
-const {pushQuery, removeQueries, pushQueries, removeQuery} = useRouterQuery()
+const { query } = useRoute()
+const { _pageIndex, _pageSize } = query
+const { pushQuery, removeQueries, pushQueries, removeQuery } = useRouterQuery()
 
 
 /*
@@ -102,9 +103,9 @@ ref definition DONE
 /**
  * pagination
  */
-const storagePageSize=localStorage.getItem('community-list-page-size')
+const storagePageSize = localStorage.getItem('community-list-page-size')
 const pagination = ref<PageState>({
-  pageSize:  mergeParams(_pageSize,storagePageSize) ? Number(mergeParams(_pageSize,storagePageSize)) : 10,
+  pageSize: mergeParams(_pageSize, storagePageSize) ? Number(mergeParams(_pageSize, storagePageSize)) : 10,
   pageIndex: _pageIndex ? Number(_pageIndex) : 1,
 })
 
@@ -145,7 +146,7 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
     cidInclude, nameInclude, city, lastRunningAtMax, lastRunningAtMin, createdAtMin, createdAtMax, avgTotalPriceMax,
     avgTotalPriceMin, avgUnitPriceMax, avgUnitPriceMin, onSellCountMin, onSellCountMax, groupId
   } = queryCondition.value
-  const {field, order} = sortCondition.value
+  const { field, order } = sortCondition.value
   let groupIdList: string[] = []
   if (groupId) {
     const group = await db.communityTaskGroups.get(groupId)
@@ -201,18 +202,19 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
       query = query.reverse()
   }
 
-  data.value = await query.offset(calcOffset(pageIndex, pageSize)).limit(pageSize).toArray()
+  const resultData = await query.offset(calcOffset(pageIndex, pageSize)).limit(pageSize).toArray()
 
 
   queryCost.value = Date.now() - beginAt
   isPending.value = false
 
-  await queryRelatedData()
+  await queryRelatedData(resultData)
+  data.value = resultData // after query related data, trigger render
 }
 
-async function queryRelatedData() {
+async function queryRelatedData(communityData: typeof data.value) {
   // relatedData.value = {}
-  const cidList = data.value.map(item => item.cid)
+  const cidList = communityData.map(item => item.cid)
   for (let cid of cidList) {
     const lastTwoRecords = await db.communityRecords.where('cid').equals(cid).reverse().limit(2).toArray()
     if (lastTwoRecords[0]) {
@@ -240,20 +242,20 @@ const columnHelper = createColumnHelper<CommunityTask>()
 const columnDef: (ColumnDef<CommunityTask>)[] = [
   {
     id: 'select',
-    header: ({table}: { table: any }) => {
+    header: ({ table }: { table: any }) => {
       return (
         <input type="checkbox"
-               checked={table.getIsAllRowsSelected()}
-               onChange={table.getToggleAllRowsSelectedHandler()}></input>
+          checked={table.getIsAllRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}></input>
       )
     },
-    cell: ({row}: { row: any }) => {
+    cell: ({ row }: { row: any }) => {
       return (
         <div class="px-1">
           <input type="checkbox"
-                 checked={row.getIsSelected()}
-                 disabled={!row.getCanSelect()}
-                 onChange={row.getToggleSelectedHandler()}></input>
+            checked={row.getIsSelected()}
+            disabled={!row.getCanSelect()}
+            onChange={row.getToggleSelectedHandler()}></input>
         </div>
       )
     },
@@ -264,69 +266,81 @@ const columnDef: (ColumnDef<CommunityTask>)[] = [
     id: '名字',
     header: '名字',
     accessorFn: (originalRow, index) => {
-      return {name: originalRow.name, cid: originalRow.cid, city: originalRow.city}
+      return { name: originalRow.name, cid: originalRow.cid, city: originalRow.city }
     },
-    cell: ({cell}) => {
-      const {name, cid, city} = cell.getValue() as { name: string, cid: string, city: string }
-      return <CidAndName name={name} id={cid} city={city}/>
+    cell: ({ cell }) => {
+      const { name, cid, city } = cell.getValue() as { name: string, cid: string, city: string }
+      return <CidAndName name={name} id={cid} city={city} />
     },
   },
-  {accessorKey: 'city', id: "城市", header: '城市'},
+  { accessorKey: 'city', id: "城市", header: '城市' },
   {
     accessorKey: 'onSellCount',
     header: '在售数量',
     id: '在售数量',
-    cell: ({cell}) => <OnSellCount value={cell.getValue() as number}
-                                   change={relatedData.value[cell.row.original.cid]?.onSellCountChange}/>
+    cell: ({ cell }) => <OnSellCount value={cell.getValue() as number}
+      change={relatedData.value[cell.row.original.cid]?.onSellCountChange} />
   },
 
   {
     accessorKey: 'avgTotalPrice',
     header: '平均总价',
     id: '平均总价',
-    cell: ({cell}) => <AvgTotalPrice value={cell.getValue() as number}
-                                     change={relatedData.value[cell.row.original.cid]?.totalPriceChange}/>
+    cell: ({ cell }) => <AvgTotalPrice value={cell.getValue() as number}
+      change={relatedData.value[cell.row.original.cid]?.totalPriceChange} />
 
   },
-  {accessorKey: 'avgUnitPrice', header: '平均单价', id: '平米单价'},
+  { accessorKey: 'avgUnitPrice', header: '平均单价', id: '平米单价' },
   {
     accessorKey: 'cid',
     header: '近期涨价↗',
     id: '近期涨价',
-    cell: ({cell}) => <div class='text-red-500 font-bold'>{relatedData.value[cell.row.original.cid]?.priceUpCount}</div>
+    accessorFn: (originalRow, index) => {
+      return relatedData.value[originalRow.cid]?.priceUpCount
+    },
+    cell: ({ cell }) => <div class='text-red-500 font-bold'>{cell.getValue()}</div>
   },
   {
     accessorKey: 'cid',
     header: '近期降价↘',
     id: '近期降价',
-    cell: ({cell}) => <div class='text-green-500 font-bold'>{relatedData.value[cell.row.original.cid]?.priceDownCount}</div>
+    accessorFn: (originalRow, index) => {
+      return relatedData.value[originalRow.cid]?.priceDownCount
+    },
+    cell: ({ cell }) => <div class='text-green-500 font-bold'>{cell.getValue()}</div>
   },
   {
     accessorKey: 'cid',
     header: '近期上架🆕',
     id: '近期上架',
-    cell: ({cell}) => <div class='text-blue-500 font-bold'>{relatedData.value[cell.row.original.cid]?.addedCount}</div>
+    accessorFn: (originalRow, index) => {
+      return relatedData.value[originalRow.cid]?.addedCount
+    },
+    cell: ({ cell }) => <div class='text-blue-500 font-bold'>{cell.getValue()}</div>
   },
   {
     accessorKey: 'cid',
     header: '近期下架➖',
     id: '近期下架',
-    cell: ({cell}) =>  <div class='text-neutral-500 font-bold'>{relatedData.value[cell.row.original.cid]?.removedCount}</div>
+    accessorFn: (originalRow, index) => {
+      return relatedData.value[originalRow.cid]?.removedCount
+    },
+    cell: ({ cell }) => <div class='text-neutral-500 font-bold'>{cell.getValue()}</div>
   },
-  {accessorKey: 'visitCountIn90Days', header: '过去90天带看数', id: '过去90天带看数'},
-  {accessorKey: 'doneCountIn90Days', header: '过去90天成交量', id: '过去90天成交量'},
-  {accessorKey: 'runningCount', header: '运行次数', id: '运行次数'},
+  { accessorKey: 'visitCountIn90Days', header: '过去90天带看数', id: '过去90天带看数' },
+  { accessorKey: 'doneCountIn90Days', header: '过去90天成交量', id: '过去90天成交量' },
+  { accessorKey: 'runningCount', header: '运行次数', id: '运行次数' },
   {
     accessorKey: 'createdAt',
     header: '创建时间',
     id: '创建时间',
-    cell: ({cell}) => <TwoLineAt at={cell.getValue() as number}/>
+    cell: ({ cell }) => <TwoLineAt at={cell.getValue() as number} />
   },
   {
     accessorKey: 'lastRunningAt',
     header: '最后运行时间',
     id: '最后运行时间',
-    cell: ({cell}) => <TwoLineAt at={cell.getValue() as number}/>
+    cell: ({ cell }) => <TwoLineAt at={cell.getValue() as number} />
   },
 ]
 /*
@@ -390,7 +404,7 @@ table END
 
 /**更新分页*/
 async function onPaginationUpdate(pageIndex: number, pageSize: number) {
-  localStorage.setItem('community-list-page-size',String(pageSize))
+  localStorage.setItem('community-list-page-size', String(pageSize))
   await pushQuery('_pageIndex', pageIndex)
   await pushQuery('_pageSize', pageSize)
   await queryData(pageIndex, pageSize)
@@ -449,6 +463,49 @@ async function addToGroup() {
   })
 }
 
+async function exportToCSV() {
+  const selectRowIds = Object.keys(rowSelection.value)
+  const visibleRows = table.getRowModel().rows.filter(row => selectRowIds.includes(row.id));
+  if (visibleRows.length === 0) {
+    toast.info('没有数据可以导出');
+    return;
+  }
+
+  const visibleColumns = table.getVisibleLeafColumns();
+  const headers = visibleColumns
+    .map(col => col.id) // 使用列的 ID 作为表头
+    .filter(id => id !== 'select'); // 排除选择列
+
+  const csvRows = [headers.join(',')]; // 添加表头行
+
+  visibleRows.forEach(row => {
+    const rowData = visibleColumns
+      .filter(col => col.id !== 'select') // 排除选择列
+      .map(col => {
+        const cellValue = row.getValue(col.id);
+        let formattedValue = '';
+        // 根据列 ID 或数据类型进行特殊处理
+        if (col.id === '名字') {
+          const nameData = cellValue as { name: string, cid: string, city: string };
+          formattedValue = nameData.name
+        } else if (col.id === '创建时间' || col.id === '最后运行时间') {
+          formattedValue = cellValue ? new Date(cellValue as number).toLocaleString() : '';
+        } else {
+          formattedValue = String(cellValue ?? ''); // 处理 null 或 undefined
+        }
+        return formattedValue;
+      });
+    csvRows.push(rowData.join(','));
+  });
+
+  const csvString = csvRows.join('\n');
+  const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' }); // 添加 BOM 头确保 Excel 正确识别 UTF-8
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  saveAs(blob, `小区任务列表导出-${timestamp}.csv`);
+  toast.success('CSV 文件已导出');
+}
+
 onMounted(() => {
   queryData(pagination.value.pageIndex, pagination.value.pageSize)
 })
@@ -460,15 +517,15 @@ onMounted(() => {
 
   <div class="relative flex  flex-col p-2 rounded border">
     <h2 class="text-2xl font-bold">查询条件</h2>
-    <LoadingOverlay v-if="isPending"/>
-    <CommunityQueryDock v-if="queryCondition" v-model="queryCondition" @update="onQueryConditionUpdate"/>
+    <LoadingOverlay v-if="isPending" />
+    <CommunityQueryDock v-if="queryCondition" v-model="queryCondition" @update="onQueryConditionUpdate" />
   </div>
 
   <div class="relative mb-5 mt-2 rounded p-2 border">
     排序:
-    <GenericSortDock v-model="sortCondition" :fields="['lastRunningAt','createdAt']" :field-text-map="frequentFieldZhMap"
-                       @update="onQueryConditionUpdate"/>
-    <LoadingOverlay v-if="isPending" disable-anim/>
+    <GenericSortDock v-model="sortCondition" :fields="['lastRunningAt', 'createdAt']"
+      :field-text-map="frequentFieldZhMap" @update="onQueryConditionUpdate" />
+    <LoadingOverlay v-if="isPending" disable-anim />
   </div>
 
 
@@ -504,7 +561,7 @@ onMounted(() => {
           </DialogDescription>
         </DialogHeader>
 
-        <TaskGroupQueryBox v-model="groupForAdd"/>
+        <TaskGroupQueryBox v-model="groupForAdd" />
 
         <DialogFooter class="sm:justify-start">
           <DialogClose as-child>
@@ -521,7 +578,8 @@ onMounted(() => {
       </DialogContent>
     </Dialog>
 
-    <LoadingOverlay v-if="isPending" disable-anim/>
+    <Button @click="exportToCSV" class="p-1 h-fit" :disabled="!selectionCount">导出CSV(选中)</Button>
+    <LoadingOverlay v-if="isPending" disable-anim />
   </div>
 
 
@@ -531,26 +589,24 @@ onMounted(() => {
     <div> {{ sortCondition }}</div>
   </div>
 
-  <ColumnVisibleOption :columns="table.getAllColumns()"/>
+  <ColumnVisibleOption :columns="table.getAllColumns()" />
 
   <div class=" overflow-x-auto text-nowrap">
     <Table>
       <TableHeader>
         <TableRow v-for="headerGroup in table.getHeaderGroups()">
           <TableHead v-for="header in headerGroup.headers">
-            <FlexRender
-              v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
-              :props="header.getContext()"
-            />
+            <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+              :props="header.getContext()" />
           </TableHead>
 
         </TableRow>
 
       </TableHeader>
       <TableBody>
-        <TableRow v-for="row in table.getRowModel().rows">
+        <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
           <TableCell v-for="cell in row.getVisibleCells()">
-            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()"/>
+            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
           </TableCell>
         </TableRow>
       </TableBody>
@@ -558,18 +614,13 @@ onMounted(() => {
   </div>
 
   <div class="relative">
-    <PaginationComponent
-      :set-page-index="table.setPageIndex"
-      :set-page-size="table.setPageSize"
-      :pagination="pagination"
-      :row-count="rowCount"/>
-    <LoadingOverlay v-if="isPending" disable-anim/>
+    <PaginationComponent :set-page-index="table.setPageIndex" :set-page-size="table.setPageSize"
+      :pagination="pagination" :row-count="rowCount" />
+    <LoadingOverlay v-if="isPending" disable-anim />
 
   </div>
 
 
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
