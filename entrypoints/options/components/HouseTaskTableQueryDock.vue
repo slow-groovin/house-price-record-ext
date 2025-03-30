@@ -77,7 +77,7 @@
       <div class="grid grid-cols-2 grid-rows-2 gap-2 ">
         <NumSelectButton v-model="queryCondition.status" :value="undefined">全部</NumSelectButton>
         <NumSelectButton v-model="queryCondition.status" :value="HouseTaskStatus.running">正常</NumSelectButton>
-        <NumSelectButton v-model="queryCondition.status" :value="HouseTaskStatus.sold">售出</NumSelectButton>
+        <NumSelectButton v-model="queryCondition.status" :value="HouseTaskStatus.sold">成交</NumSelectButton>
         <NumSelectButton v-model="queryCondition.status" :value="HouseTaskStatus.miss">下架</NumSelectButton>
       </div>
     </div>

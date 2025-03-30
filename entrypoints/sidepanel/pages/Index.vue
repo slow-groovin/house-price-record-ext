@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import {isHousePage} from "@/utils/lj-url";
+import { isHousePage } from "@/utils/lj-url";
 import HouseTaskPanel from "@/entrypoints/sidepanel/pages/HouseTaskPanel.vue";
 
-import {onMounted, onUnmounted, ref} from "vue";
-import {browser, Tabs} from "wxt/browser";
+import { onMounted, onUnmounted, ref } from "vue";
+import { browser, Tabs } from "wxt/browser";
 import TabChangeInfo = chrome.tabs.TabChangeInfo;
-import {useLocalStorage} from "@vueuse/core";
-import {useDevSetting} from "@/entrypoints/reuse/global-variables";
-import {useExtInfo} from "@/composables/useExtInfo";
+import { useLocalStorage } from "@vueuse/core";
+import { useDevSetting } from "@/entrypoints/reuse/global-variables";
+import { useExtInfo } from "@/composables/useExtInfo";
 
-const {isDebug,isDisguise}=useDevSetting()
-const {name,version}=useExtInfo()
+const { isDebug, isDisguise } = useDevSetting()
+const { name, version } = useExtInfo()
 async function queryTab() {
   // 获取当前活动的标签页信息
-  const tabs = await browser.tabs.query({ active: true, currentWindow: true})
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true })
 
   if (tabs.length > 0) {
     const currentTab = tabs[0];
@@ -72,8 +72,8 @@ onUnmounted(() => {//取消监听
 
 
 const isHousePageFlag = ref(false)
-const defaultOpenDebugPanel=useLocalStorage('side-panel-debug-panel-open',false)
-const initialOpenDebugPanel=defaultOpenDebugPanel.value
+const defaultOpenDebugPanel = useLocalStorage('side-panel-debug-panel-open', false)
+const initialOpenDebugPanel = defaultOpenDebugPanel.value
 const tabId = ref<number | undefined>(0)
 onMounted(() => {
   queryTab()
@@ -83,15 +83,21 @@ onMounted(() => {
 
 <template>
 
-  <div class="c-block">
-    <h1>欢迎使用 {{name}} {{version}}</h1>
+  <div class="c-block shadow-none border-none">
+    <h1 class=" w-full flex items-center justify-center my-2 font-bold text-2xl text-center" style="border:none">
+      欢迎使用
+      <span class="bg-gradient-to-r from-primary via-lime-500 to-blue-500 text-transparent bg-clip-text w-fit">
+        {{ name }}{{ version }}
+      </span> <img src="/icon/24.png" alt="icon" class="inline">
+    </h1>
 
     <div v-if="isHousePageFlag">
-      <HouseTaskPanel v-if="tabId" :tab-id="tabId"/>
+      <HouseTaskPanel v-if="tabId" :tab-id="tabId" />
       isHousePage: {{ isHousePageFlag }}
     </div>
   </div>
-  <details  v-if="isDebug" :open="initialOpenDebugPanel"  @toggle="(v)=>{defaultOpenDebugPanel=v.newState==='open'}">
+  <details v-if="isDebug" :open="initialOpenDebugPanel"
+    @toggle="(v) => { defaultOpenDebugPanel = v.newState === 'open' }">
     <summary>debug panel</summary>
     <a href="/sidepanel.html#/debug">go</a>
 
@@ -100,6 +106,4 @@ onMounted(() => {
 
 </template>
 
-<style>
-
-</style>
+<style></style>

@@ -8,7 +8,7 @@ import InfoHover from '@/components/information/InfoHover.vue';
     <pre class="text-sm">
 运行小区任务只能获取小区列表页中的房源信息, 会缺少:
 1. 计算面积/计算面积单价
-2. 上架时间/售出时间
+2. 上架时间/成交时间
 3. 楼型
 4. 成交状态
 

@@ -178,7 +178,7 @@ async function startBathCommunity() {
 
 
     <!--  running ids-->
-    <div v-if="batchExecutor?.runningIds && batchExecutor?.runningIds.length>0" class="border rounded p-2">
+    <div v-if="batchExecutor?.runningIds && batchExecutor?.runningIds.length > 0" class="border rounded p-2">
       正在运行中的任务:
       <TransitionGroup name="list" tag="ul" class="list-disc pl-10">
         <li v-for="id in batchExecutor.runningIds" :key="id">

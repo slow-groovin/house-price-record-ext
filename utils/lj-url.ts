@@ -1,64 +1,89 @@
 export function isHousePage(url?: string) {
-	if (!url) return false
-	return /lianjia.com\/ershoufang\/\d+.html/.test(url)
+  if (!url) return false;
+  return /lianjia.com\/ershoufang\/\d+.html/.test(url);
 }
 
-
 export function isHouseSoldPage(url?: string) {
-	if (!url) return false
-	return /lianjia.com\/chengjiao\/\d+.html/.test(url)
+  if (!url) return false;
+  return /lianjia.com\/chengjiao\/\d+.html/.test(url);
 }
 
 export function isCaptchaPage(url?: string) {
-	if (!url) return false
-	return /lianjia.com\/captcha/.test(url)
+  if (!url) return false;
+  return /lianjia.com\/captcha/.test(url);
 }
 
-export function isLoginPage(url?: string){
-	if (!url) return false
-	return url.includes('com/login')
+export function isLoginPage(url?: string) {
+  if (!url) return false;
+  return url.includes("com/login");
 }
 
-export function isCommunityHomePage(url?:string){
-	if (!url) return false
-	return /lianjia.com\/xiaoqu\/\d+(\/)?$/.test(url)
+export function isCommunityHomePage(url?: string) {
+  if (!url) return false;
+  return /lianjia.com\/xiaoqu\/\d+(\/)?$/.test(url);
 }
 
 export function isCommunityListPage(url?: string) {
-	if (!url) return false
-	return /ershoufang\/(pg\d+)?(co\d+)?c\d+\//.test(url)
+  if (!url) return false;
+  return /ershoufang\/(pg\d+)?(co\d+)?c\d+\//.test(url);
 }
 
+export function isCommunitySoldListPage(url?: string) {
+  if (!url) return false;
+  return /chengjiao\/(pg\d+)?(co\d+)?c\d+\//.test(url);
+}
 
 export function extractCityAndHidFromHouseUrl(url: string | undefined | null): {
-	city: string | undefined,
-	hid: string | undefined
+  city: string | undefined;
+  hid: string | undefined;
 } {
-	const empty = {city: undefined, hid: undefined}
-	if (!url) return empty
-	// 定义正则表达式来匹配URL中的city和houseId
-	const regex = /(:?https?:\/\/)(.+?)\.lianjia\.com\/ershoufang\/(\d+)\/?/;
-	const matches = url.match(regex);
+  return _extractCityAndHidFromHouseUrl(url);
+}
 
-	// 检查匹配结果，如果匹配成功则返回解析出的city和id
-	if (matches) {
-		const city = matches[2];
-		const id = matches[3];
-		return {city, hid: id};
-	} else {
-		return empty;
-	}
+export function extractCityAndHidFromHouseSoldUrl(
+  url: string | undefined | null
+): {
+  city: string | undefined;
+  hid: string | undefined;
+} {
+  return _extractCityAndHidFromHouseUrl(url, "chengjiao");
+}
+
+function _extractCityAndHidFromHouseUrl(
+  url: string | undefined | null,
+  subType: "chengjiao" | "ershoufang" = "ershoufang"
+): {
+  city: string | undefined;
+  hid: string | undefined;
+} {
+  const empty = { city: undefined, hid: undefined };
+  if (!url) return empty;
+  // 定义正则表达式来匹配URL中的city和houseId
+  const regex =
+    subType === "ershoufang"
+      ? /(:?https?:\/\/)(.+?)\.lianjia\.com\/ershoufang\/(\d+)\/?/
+      : /(:?https?:\/\/)(.+?)\.lianjia\.com\/chengjiao\/(\d+)\/?/;
+  const matches = url.match(regex);
+
+  // 检查匹配结果，如果匹配成功则返回解析出的city和id
+  if (matches) {
+    const city = matches[2];
+    const id = matches[3];
+    return { city, hid: id };
+  } else {
+    return empty;
+  }
 }
 
 export function extractCommunityListPageNumber(str: string): number | null {
-	const regex = /\/pg(\d+)c/g;
-	const match = regex.exec(str);
+  const regex = /\/pg(\d+)c/g;
+  const match = regex.exec(str);
 
-	if (match) {
-		return Number(match[1]);
-	}
+  if (match) {
+    return Number(match[1]);
+  }
 
-	return null;
+  return null;
 }
 
 /**
@@ -66,12 +91,12 @@ export function extractCommunityListPageNumber(str: string): number | null {
  * @param url
  */
 export function extractCidFromHomePageUrl(url?: string | null): string | null {
-	if (!url) {
-		return null
-	}
-	const regex = /xiaoqu\/(\d+)/;
-	const match = url.match(regex);
-	return match ? match[1] : null;
+  if (!url) {
+    return null;
+  }
+  const regex = /xiaoqu\/(\d+)/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
 }
 
 /**
@@ -79,36 +104,36 @@ export function extractCidFromHomePageUrl(url?: string | null): string | null {
  * @param url
  */
 export function extractCidFromListUrl(url?: string | null): string | null {
-
-	if (!url) {
-		return null
-	}
-	const regex = /ershoufang\/\w*(c\d+)\//;
-	const match = url.match(regex);
-	return match ? match[1].replace('c', '') : null;
+  if (!url) {
+    return null;
+  }
+  const regex = /ershoufang\/\w*(c\d+)\//;
+  const match = url.match(regex);
+  return match ? match[1].replace("c", "") : null;
 }
 
-
-export function extractCidFromHomeOrListUrl(url?: string | null): string | null {
-	if (!url) {
-		return null
-	}
-	if(isCommunityHomePage(url)){
-		return extractCidFromHomePageUrl(url)
-	}else{
-		return extractCidFromListUrl(url)
-	}
+export function extractCidFromHomeOrListUrl(
+  url?: string | null
+): string | null {
+  if (!url) {
+    return null;
+  }
+  if (isCommunityHomePage(url)) {
+    return extractCidFromHomePageUrl(url);
+  } else {
+    return extractCidFromListUrl(url);
+  }
 }
 
 export function extractPageNumberFromListUrl(str: string): number | null {
-	const regex = /\/pg(\d+)c/g;
-	const match = regex.exec(str);
+  const regex = /\/pg(\d+)c/g;
+  const match = regex.exec(str);
 
-	if (match) {
-		return Number(match[1]);
-	}
+  if (match) {
+    return Number(match[1]);
+  }
 
-	return null;
+  return null;
 }
 
 /**
@@ -116,16 +141,16 @@ export function extractPageNumberFromListUrl(str: string): number | null {
  * 如果成功解析到则返回第一个字符串，否则返回 null
  */
 export function extractCityFromUrl(urlStr: string) {
-	try {
-		const url = new URL(urlStr);
-		const hostnameParts = url.hostname.split('.');
+  try {
+    const url = new URL(urlStr);
+    const hostnameParts = url.hostname.split(".");
 
-		// 检查是否有足够的部分，提取第一个部分
-		return hostnameParts.length > 0 ? hostnameParts[0] : null;
-	} catch (error) {
-		console.error('Failed to extract segment from URL:', error);
-		return null;
-	}
+    // 检查是否有足够的部分，提取第一个部分
+    return hostnameParts.length > 0 ? hostnameParts[0] : null;
+  } catch (error) {
+    console.error("Failed to extract segment from URL:", error);
+    return null;
+  }
 }
 
 /**
@@ -140,18 +165,33 @@ export function extractCityFromUrl(urlStr: string) {
  * @param order 排序方式，默认为"time"，可选值包括"time"、"area"和"price"
  * @returns 返回生成的社区页面URL字符串
  */
-export function genCommunityPageUrl(city: string, cid: string, page: number, order: 'time' | 'default'  = "time"): string {
-	const orderFlag=order==='default'?'':'co32'
-	const pageFlag=page===1?'':`pg${page}`
-	return `https://${city}.lianjia.com/ershoufang/${pageFlag}${orderFlag}c${cid}/`;
+export function genCommunityPageUrl(
+  city: string,
+  cid: string,
+  page: number,
+  order: "time" | "default" = "time"
+): string {
+  const orderFlag = order === "default" ? "" : "co32";
+  const pageFlag = page === 1 ? "" : `pg${page}`;
+  return `https://${city}.lianjia.com/ershoufang/${pageFlag}${orderFlag}c${cid}/`;
+}
+
+/**
+ * 生成成交页的url
+ */
+export function genCommunitySoldPageUrl(
+  city: string,
+  cid: string,
+  page: number
+): string {
+  const pageFlag = page === 1 ? "" : `pg${page}`;
+  return `https://${city}.lianjia.com/chengjiao/${pageFlag}c${cid}/`;
 }
 
 export function genHousePageUrl(city: string, hid: string): string {
-	return `https://${city}.lianjia.com/ershoufang/${hid}.html`;
+  return `https://${city}.lianjia.com/ershoufang/${hid}.html`;
 }
 
-
-
-export function genOptionCommunityUrl(cid:string):string{
-	return '#/c/task/detail?id='+cid
+export function genOptionCommunityUrl(cid: string): string {
+  return "#/c/task/detail?id=" + cid;
 }

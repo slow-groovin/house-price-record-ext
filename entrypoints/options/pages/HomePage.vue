@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import {db} from "@/utils/client/Dexie";
-import {computed, onMounted, reactive, ref} from "vue";
-import {formatDistanceToNow, startOfWeek} from 'date-fns'
-import {getIndexedDBUsage} from "@/utils/browser";
-import {zhCN} from "date-fns/locale/zh-CN";
-import {useExtInfo, useExtTitle} from "@/composables/useExtInfo";
-import {Archive, Building2, EyeOffIcon, HardDrive, HouseIcon, ShoppingCartIcon, TrendingDownIcon, TrendingUpIcon} from 'lucide-vue-next'
-import {browser} from "wxt/browser";
-import {ljMetricRules} from "@/entrypoints/reuse/block";
+import { db } from "@/utils/client/Dexie";
+import { computed, onMounted, reactive, ref } from "vue";
+import { formatDistanceToNow, startOfWeek } from 'date-fns'
+import { getIndexedDBUsage } from "@/utils/browser";
+import { zhCN } from "date-fns/locale/zh-CN";
+import { useExtInfo, useExtTitle } from "@/composables/useExtInfo";
+import { Archive, Building2, EyeOffIcon, HardDrive, HouseIcon, ShoppingCartIcon, TrendingDownIcon, TrendingUpIcon } from 'lucide-vue-next'
+import { browser } from "wxt/browser";
+import { ljMetricRules } from "@/entrypoints/reuse/block";
 import InfoHover from "@/components/information/InfoHover.vue";
 import { HouseTask, HouseTaskStatus } from "@/types/lj";
 
 useExtTitle('首页')
-const {name, version} = useExtInfo()
+const { name, version } = useExtInfo()
 
 
 const totalCount = reactive({
@@ -27,12 +27,12 @@ const thisWeekCount = reactive({
   cTaskCount: 0,
   hTaskCount: 0,
   // pChangeCount: 0,
-  pUpCount:0,
-  pDownCount:0,
-  
+  pUpCount: 0,
+  pDownCount: 0,
+
   // sChangeCount: 0,
-  sAddedCount:0,
-  sRemovedCount:0,
+  sAddedCount: 0,
+  sRemovedCount: 0,
   cRecordCount: 0,
 })
 const enableRulesCount = ref(0)
@@ -52,17 +52,17 @@ async function queryOverviewData() {
   const hLastAt = (await db.houseTasks.orderBy('lastRunningAt').last())?.lastRunningAt
   lastAt.value = Math.max(cLastAt || 0, hLastAt || 0)
 
-  weekStartAt.value = startOfWeek(new Date(), {weekStartsOn: 1}).getTime()
+  weekStartAt.value = startOfWeek(new Date(), { weekStartsOn: 1 }).getTime()
   thisWeekCount.cTaskCount = await db.communityTasks.where('createdAt').above(weekStartAt.value).count()
 
   thisWeekCount.hTaskCount = await db.houseTasks.where('createdAt').above(weekStartAt.value).count()
   // thisWeekCount.pChangeCount = await db.houseChanges.where('at').above(weekStartAt.value).count()
-  thisWeekCount.pUpCount = await db.houseChanges.where('at').above(weekStartAt.value).and(item=>item.newValue>item.oldValue).count()
-  thisWeekCount.pDownCount = await db.houseChanges.where('at').above(weekStartAt.value).and(item=>item.newValue<item.oldValue).count()
+  thisWeekCount.pUpCount = await db.houseChanges.where('at').above(weekStartAt.value).and(item => item.newValue > item.oldValue).count()
+  thisWeekCount.pDownCount = await db.houseChanges.where('at').above(weekStartAt.value).and(item => item.newValue < item.oldValue).count()
 
   // thisWeekCount.sChangeCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).count()
-  thisWeekCount.sAddedCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).and(item=>item.newValue===HouseTaskStatus.running).count()
-  thisWeekCount.sRemovedCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).and(item=>item.newValue===HouseTaskStatus.miss||item.newValue===HouseTaskStatus.sold).count()
+  thisWeekCount.sAddedCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).and(item => item.newValue === HouseTaskStatus.running).count()
+  thisWeekCount.sRemovedCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).and(item => item.newValue === HouseTaskStatus.miss || item.newValue === HouseTaskStatus.sold).count()
   thisWeekCount.cRecordCount = await db.communityRecords.where('at').above(weekStartAt.value).count()
 }
 
@@ -76,8 +76,8 @@ const isEmptyUsage = computed(() => totalCount.cTaskCount === 0 && totalCount.hT
 
 
 const display = {
-  cTaskCount: {label: '小区任务', icon: Building2, color: 'blue', link: '/options.html#/c/task/list', postfix: '个'},
-  hTaskCount: {label: '房源任务', icon: HouseIcon, color: 'blue', link: '/options.html#/h/task/list', postfix: '个'},
+  cTaskCount: { label: '小区任务', icon: Building2, color: 'blue', link: '/options.html#/c/task/list', postfix: '个' },
+  hTaskCount: { label: '房源任务', icon: HouseIcon, color: 'blue', link: '/options.html#/h/task/list', postfix: '个' },
   pChangeCount: {
     label: '价格变更记录',
     icon: TrendingDownIcon,
@@ -118,15 +118,15 @@ const display = {
     postfix: '条'
   },
   sRemovedCount: {
-    label: '房源下架/售出记录',
+    label: '房源下架/成交记录',
     icon: EyeOffIcon,
     color: 'gray',
     link: '/options.html#/h/task/status/change',
     postfix: '条'
   },
 
-  cRecordCount: {label: '小区运行记录', icon: Archive, color: 'purple', link: '#', postfix: '个'},
-  usedMb: {label: '数据总量', icon: HardDrive, color: 'gray', link: '#', postfix: 'MB'}
+  cRecordCount: { label: '小区运行记录', icon: Archive, color: 'purple', link: '#', postfix: '个' },
+  usedMb: { label: '数据总量', icon: HardDrive, color: 'gray', link: '#', postfix: 'MB' }
 }
 
 onMounted(() => {
@@ -168,7 +168,7 @@ onMounted(() => {
       <div v-if="lastAt" class=" h-fit outline rounded  min-w-fit p-2 ">
         距离上次运行任务
         <span class="text-green-500"> {{ new Date(lastAt).toLocaleString() }}</span>
-        已过去 <span class="text-green-500"> {{ formatDistanceToNow(lastAt, {locale: zhCN}) }}</span>
+        已过去 <span class="text-green-500"> {{ formatDistanceToNow(lastAt, { locale: zhCN }) }}</span>
       </div>
 
       <div class="outline   w-fit h-fit outline-green-500 rounded p-2">
@@ -192,11 +192,10 @@ onMounted(() => {
       <h3 class="mb-4">从 {{ new Date(weekStartAt).toLocaleString() }} 到当前, 新增:</h3>
 
       <div class="flex flex-wrap mx-3">
-        <div v-for="(value, key) in thisWeekCount" :key="key"
-             class="px-3 mb-6">
+        <div v-for="(value, key) in thisWeekCount" :key="key" class="px-3 mb-6">
           <div class="bg-white rounded-lg shadow p-6 flex items-center">
-            <div :class="`mr-4`" :style="{color: display[key].color}">
-              <component :is="display[key].icon" class="w-8 h-8"/>
+            <div :class="`mr-4`" :style="{ color: display[key].color }">
+              <component :is="display[key].icon" class="w-8 h-8" />
             </div>
             <div>
               <p class="text-sm text-gray-600">{{ display[key].label }}</p>
@@ -213,17 +212,16 @@ onMounted(() => {
       <h3 class="mb-4">截至今天, 您已添加:</h3>
 
       <div class="flex flex-wrap -mx-3">
-        <div v-for="(value, key) in totalCount" :key="key"
-             class="px-3 mb-6">
+        <div v-for="(value, key) in totalCount" :key="key" class="px-3 mb-6">
           <div class="bg-white rounded-lg shadow p-6 flex items-center">
-            <div :class="`mr-4`" :style="{color: display[key].color}">
-              <component :is="display[key].icon" class="w-8 h-8"/>
+            <div :class="`mr-4`" :style="{ color: display[key].color }">
+              <component :is="display[key].icon" class="w-8 h-8" />
             </div>
             <div>
               <p class="text-sm text-gray-600">{{ display[key].label }}</p>
               <a class="text-2xl font-semibold hover-link text-gray-800" :href="display[key].link">{{
-                  value
-                }}<span>{{ display[key]?.postfix }}</span></a>
+                value
+              }}<span>{{ display[key]?.postfix }}</span></a>
             </div>
           </div>
         </div>
@@ -234,6 +232,4 @@ onMounted(() => {
 
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
