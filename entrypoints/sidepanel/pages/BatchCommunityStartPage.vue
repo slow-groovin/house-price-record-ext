@@ -17,6 +17,8 @@ import { CommunityUpdatePreview } from "@/types/LjUpdatePreview";
 import { CommunityTask } from "@/types/lj";
 import { browser } from "wxt/browser";
 import { removeRepeat } from "@/utils/array";
+import InfoHover from "@/components/information/InfoHover.vue";
+import { EyeIcon } from "lucide-vue-next";
 
 
 const { query: { id } } = useRoute()
@@ -144,6 +146,14 @@ async function startBathCommunity() {
       class="min-h-64 flex flex-col items-center gap-4 justify-center border rounded ">
       <div>
         本次任务, 共需打开 {{ communityList.length }} 个小区页面
+        <InfoHover>
+          <template #trigger>
+            <EyeIcon class="inline size-6 hover:bg-gray-200 text-gray-400" />
+          </template>
+          <div>
+            <div v-for="{ name } in communityList">{{ name }}</div>
+          </div>
+        </InfoHover>
       </div>
 
       <div class="w-full flex flex-col items-center">

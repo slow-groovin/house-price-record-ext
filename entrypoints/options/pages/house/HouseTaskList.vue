@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import {db} from "@/utils/client/Dexie";
-import {HouseTask, HouseTaskStatus} from "@/types/lj";
-import {calcOffset} from "@/utils/table-utils";
+import { db } from "@/utils/client/Dexie";
+import { HouseTask, HouseTaskStatus } from "@/types/lj";
+import { calcOffset } from "@/utils/table-utils";
 import HouseTasksTable from "@/entrypoints/options/components/HouseTasksTable.vue";
-import {computed, onMounted, ref} from "vue";
-import {RowSelectionState} from "@tanstack/vue-table";
-import {Button} from "@/components/ui/button";
-import {browser} from "wxt/browser";
+import { computed, onMounted, ref } from "vue";
+import { RowSelectionState } from "@tanstack/vue-table";
+import { Button } from "@/components/ui/button";
+import { browser } from "wxt/browser";
 import HouseTaskTableQueryDock from "@/entrypoints/options/components/HouseTaskTableQueryDock.vue";
 import {
   frequentFieldZhMap,
@@ -14,11 +14,11 @@ import {
   HouseTaskQueryCondition,
   SortState
 } from "@/types/query-condition";
-import {ArgCache} from "@/utils/lib/ArgCache";
+import { ArgCache } from "@/utils/lib/ArgCache";
 import GenericSortDock from "@/entrypoints/options/components/GenericSortDock.vue";
-import {Collection, InsertType} from "dexie";
-import {isNumber} from "radash";
-import {useRoute} from "vue-router";
+import { Collection, InsertType } from "dexie";
+import { isNumber } from "radash";
+import { useRoute } from "vue-router";
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
 import {
   Dialog,
@@ -31,24 +31,25 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
-import {toast} from "vue-sonner";
-import {sendMessage} from "@/messaging";
-import {useRouterQuery} from "@/composables/useRouterQuery";
-import {newQueryConditionFromQueryParam} from "@/entrypoints/reuse/query-condition";
-import {useExtTitle} from "@/composables/useExtInfo";
-import {useDevSetting} from "@/entrypoints/reuse/global-variables";
-import {mergeParams} from "@/utils/variable";
-const {isDebug}=useDevSetting()
+import { toast } from "vue-sonner";
+import { sendMessage } from "@/messaging";
+import { useRouterQuery } from "@/composables/useRouterQuery";
+import { newQueryConditionFromQueryParam } from "@/entrypoints/reuse/query-condition";
+import { useExtTitle } from "@/composables/useExtInfo";
+import { useDevSetting } from "@/entrypoints/reuse/global-variables";
+import { mergeParams } from "@/utils/variable";
+import { goRunHouseTasksStartPage } from "@/entrypoints/reuse/house-control2";
+const { isDebug } = useDevSetting()
 
 useExtTitle('房源任务列表')
 
 /*
 route handle BEGIN
  */
-const {pushQuery, removeQuery, pushQueries, removeQueries} = useRouterQuery()
-const {query} = useRoute()
-const {_pageIndex, queryPageSize} = query
-const _pageSize=mergeParams(queryPageSize,localStorage.getItem('house-list-page-size'))
+const { pushQuery, removeQuery, pushQueries, removeQueries } = useRouterQuery()
+const { query } = useRoute()
+const { _pageIndex, queryPageSize } = query
+const _pageSize = mergeParams(queryPageSize, localStorage.getItem('house-list-page-size'))
 
 const queryScopeLabel = ref('')
 
@@ -118,7 +119,7 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
     totalPriceMin,
     groupId
   } = queryCondition.value
-  const {field, order} = sortCondition.value
+  const { field, order } = sortCondition.value
   const filters: ((task: HouseTask) => boolean)[] = []
 
   let groupIdList: string[] = []
@@ -244,7 +245,7 @@ data END
 async function onPaginationUpdate(pageIndex: number, pageSize: number) {
   await pushQuery('_pageIndex', pageIndex)
   await pushQuery('_pageSize', pageSize)
-  localStorage.setItem('house-list-page-size', pageSize+'')
+  localStorage.setItem('house-list-page-size', pageSize + '')
   await queryData(pageIndex, pageSize)
 }
 
@@ -269,12 +270,7 @@ async function goBeginBatchSelectedTasks() {
   const hidList = Object.keys(rowSelection.value)
     .map(s => Number(s))
     .map(i => data.value[i].hid)
-  const id = await db.tempBatchHouse.add({hidList})
-
-  const window = await browser.windows.getCurrent({})
-  const newWindow = await browser.windows.create({url: "/options.html#/h/running/notice",state: 'maximized'})
-  await chrome.sidePanel.open({windowId: newWindow.id as number})
-  await chrome.sidePanel.setOptions({path: '/sidepanel.html#/h/batch?id=' + id})
+  goRunHouseTasksStartPage(hidList)
 }
 
 /**开始查询的所有的任务运行*/
@@ -282,12 +278,12 @@ async function goBeginAllSelectedTasks() {
   const hidList = Object.keys(rowSelection.value)
     .map(s => Number(s))
     .map(i => data.value[i].hid)
-  const id = await db.tempBatchHouse.add({hidList})
+  const id = await db.tempBatchHouse.add({ hidList })
 
   const window = await browser.windows.getCurrent({})
-  const newWindow = await browser.windows.create({state: 'maximized'})
-  await chrome.sidePanel.open({windowId: newWindow.id as number})
-  await chrome.sidePanel.setOptions({path: '/sidepanel.html#/h/batch?id=' + id})
+  const newWindow = await browser.windows.create({ state: 'maximized' })
+  await chrome.sidePanel.open({ windowId: newWindow.id as number })
+  await chrome.sidePanel.setOptions({ path: '/sidepanel.html#/h/batch?id=' + id })
 }
 
 async function deleteSelectedTasks() {
@@ -314,12 +310,12 @@ async function addToGroup() {
 
   await db.houseTaskGroups.update(groupForAdd.value.groupId, group)
   toast.success('添加成功', {
-      action: {
-        label: '去查看', onClick: () => {
-          sendMessage('openOptionPage', '/options.html#/h/group/list')
-        }
+    action: {
+      label: '去查看', onClick: () => {
+        sendMessage('openOptionPage', '/options.html#/h/group/list')
       }
     }
+  }
   )
 }
 
@@ -332,11 +328,12 @@ onMounted(() => {
   <h1 class="text-2xl mx-2 my-4 font-bold">房源任务<span v-if="queryScopeLabel">({{ queryScopeLabel }})</span></h1>
   <div class="border rounded-lg p-2">
     <h2 class="mb-3 mx-2">查询条件:</h2>
-    <HouseTaskTableQueryDock v-if="queryCondition" v-model="queryCondition" @update="onUpdateQueryCondition"/>
+    <HouseTaskTableQueryDock v-if="queryCondition" v-model="queryCondition" @update="onUpdateQueryCondition" />
   </div>
   <div class="flex items-center p-2 gap-4 border rounded my-2">
     <span>排序:</span>
-    <GenericSortDock :fields="sortFields" v-model="sortCondition" :field-text-map="frequentFieldZhMap" @update="onUpdateQueryCondition"/>
+    <GenericSortDock :fields="sortFields" v-model="sortCondition" :field-text-map="frequentFieldZhMap"
+      @update="onUpdateQueryCondition" />
   </div>
 
 
@@ -378,7 +375,7 @@ onMounted(() => {
           </DialogDescription>
         </DialogHeader>
 
-        <TaskGroupQueryBox v-model="groupForAdd" type="house"/>
+        <TaskGroupQueryBox v-model="groupForAdd" type="house" />
 
         <DialogFooter class="sm:justify-start">
           <DialogClose as-child>
@@ -397,16 +394,10 @@ onMounted(() => {
 
   </div>
 
-  <HouseTasksTable :data="data"
-                   :row-count="rowCount"
-                   :init-page-index="_pageIndex?Number(_pageIndex):undefined"
-                   :init-page-size="_pageSize?Number(_pageSize):undefined"
-                   @on-pagination-change="onPaginationUpdate"
-                   class="overflow-x-hidden"
-                   v-model:row-selection="rowSelection"/>
+  <HouseTasksTable :data="data" :row-count="rowCount" :init-page-index="_pageIndex ? Number(_pageIndex) : undefined"
+    :init-page-size="_pageSize ? Number(_pageSize) : undefined" @on-pagination-change="onPaginationUpdate"
+    class="overflow-x-hidden" v-model:row-selection="rowSelection" />
 
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

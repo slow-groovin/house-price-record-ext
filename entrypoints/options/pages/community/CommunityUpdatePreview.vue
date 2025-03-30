@@ -1,22 +1,33 @@
 <template>
   <div class="relative">
     <div v-if="!isUpdateDone"
-         class="flex flex-col items-center justify-center shadow-inner  my-4 p-3 rounded-lg border">
+      class="flex flex-col items-center justify-center shadow-inner  my-4 p-3 rounded-lg border">
       <h1 class="inline">
         批量任务运行任务(小区)完成.
-        <Icon icon="icon-park-outline:success" class="inline-block w-16 h-16 text-green-500"/>
+        <Icon icon="icon-park-outline:list-success" class="inline-block size-12 text-blue-500" mode="svg" />
       </h1>
     </div>
 
     <!--  更新完毕后的提示-->
-    <div v-else class=" flex flex-col items-center justify-center shadow-inner  my-4 p-3 rounded-lg border">
+    <div v-else class=" flex flex-col items-center justify-center shadow-inner  my-4 p-3 rounded-lg border gap-4">
       <h1 class="inline">
-        本次任务数据库更新完成! 去
-        <a :href="'options.html#/c/task/list'" class="underline text-green-500 cursor-pointer">详情页</a>
-        看看吧!
-        <Icon icon="icon-park-outline:success" class="inline-block w-16 h-16 text-green-500"/>
+        本次任务数据库更新完成!
+        <Icon icon="icon-park-outline:success" class="inline-block size-12 text-green-500" />
       </h1>
-      <Button variant="destructive" @click="closeWindow()">关闭窗口</Button>
+      <div class="flex flex-row items-center justify-between gap-4">
+
+        <a :href="'options.html#/c/task/list'" class="underline text-green-500 cursor-pointer">
+          <Button variant="outline">
+            返回列表
+          </Button>
+        </a>
+        <div v-if="addedItem.length">
+          <Button @click="goRunAddedHouseTasks">对本次新增房源运行房源任务(共 {{ addedItem.length }} 个)</Button>
+          <HouseFieldsLackDesc />
+        </div>
+        <Button variant="destructive" @click="closeWindow()">关闭窗口</Button>
+
+      </div>
     </div>
 
 
@@ -43,39 +54,38 @@
       <h2 v-else class="text-xl font-semibold">已更新</h2>
 
 
-      <template v-if="failedList.length>0">
+      <template v-if="failedList.length > 0">
         <ul>
-          <li v-for="(item,index) in failedList" :key="item.cid"
-              class="text-sm  flex flex-row items-center gap-3  w-fit  border"
-              :class="{'line-through': listDelete[index]}"
-          >
+          <li v-for="(item, index) in failedList" :key="item.cid"
+            class="text-sm  flex flex-row items-center gap-3  w-fit  border"
+            :class="{ 'line-through': listDelete[index] }">
             <div class="text-center flex items-center text-red-600 ">
               <InfoHover>该项任务在本次批量运行中,运行失败,没有结果数据, 确认数据时不会处理此项</InfoHover>
               运行失败
             </div>
-            <a class="link" :href="`options.html#/c/task/detail?id=${item.cid}`">{{item.cid}}</a>
-            <a class="link flex items-center" :href="genCommunityPageUrl(item.city??'',item.cid,1)">{{item.name}}<Icon icon="tdesign:jump"/></a>
+            <a class="link" :href="`options.html#/c/task/detail?id=${item.cid}`">{{ item.cid }}</a>
+            <a class="link flex items-center" :href="genCommunityPageUrl(item.city ?? '', item.cid, 1)">{{ item.name }}
+              <Icon icon="tdesign:jump" />
+            </a>
           </li>
         </ul>
       </template>
-      <template v-if="data.records.length > 0" >
+      <template v-if="data.records.length > 0">
         <ul class="flex flex-col gap-3">
-          <li v-for="(item,index) in data.records" :key="item.cid"
-              class="text-sm  flex flex-row items-start gap-3"
-              :class="{'line-through': listDelete[index]}"
-          >
-            <CommunityRecordCard :record="item"/>
-            <Component :is="DeleteResumeBtn(listDelete,index)"/>
+          <li v-for="(item, index) in data.records" :key="item.cid" class="text-sm  flex flex-row items-start gap-3"
+            :class="{ 'line-through': listDelete[index] }">
+            <CommunityRecordCard :record="item" />
+            <Component :is="DeleteResumeBtn(listDelete, index)" />
 
           </li>
         </ul>
       </template>
 
     </div>
-    <Button v-if="!isUpdateDone && data?.records?.length " @click="mutate" :disabled="status!=='idle'"
-            class="my-4 sticky bottom-12 ">
-      <div v-if="status==='pending'"
-           class="w-4 h-4 rounded-full animate-spin  border-2 border-t-transparent border-green-500"></div>
+    <Button v-if="!isUpdateDone && data?.records?.length" @click="mutate" :disabled="status !== 'idle'"
+      class="my-4 sticky bottom-12 ">
+      <div v-if="status === 'pending'"
+        class="w-4 h-4 rounded-full animate-spin  border-2 border-t-transparent border-green-500"></div>
       确认数据
     </Button>
     <div v-else-if="!data?.records?.length">
@@ -89,22 +99,25 @@
 </template>
 
 <script setup lang="tsx">
-import {HTMLAttributes, onMounted, ref, toRaw} from 'vue'
-import {cn} from "@/utils/shadcn-utils";
-import {Icon} from "@iconify/vue";
-import {useRoute} from "vue-router";
-import {db} from "@/utils/client/Dexie";
-import {CommunityUpdatePreview} from "@/types/LjUpdatePreview";
-import {Button} from "@/components/ui/button";
-import {useMutation} from "@tanstack/vue-query";
-import CommunityRecordCard from "@/entrypoints/options/components/CommunityRecordCard.vue";
-import {updateBatchCommunityWithPreview} from "@/entrypoints/reuse/community-update";
-import {browser} from "wxt/browser";
-import {useExtTitle} from "@/composables/useExtInfo";
 import InfoHover from "@/components/information/InfoHover.vue";
-import {CommunityTask} from "@/types/lj";
-import {genCommunityPageUrl} from "@/utils/lj-url";
+import { Button } from "@/components/ui/button";
+import { useExtTitle } from "@/composables/useExtInfo";
+import CommunityRecordCard from "@/entrypoints/options/components/CommunityRecordCard.vue";
+import { updateBatchCommunityWithPreview } from "@/entrypoints/reuse/community-update";
+import { goRunHouseTasksStartPage } from '@/entrypoints/reuse/house-control2';
+import { CommunityTask } from "@/types/lj";
+import { CommunityUpdatePreview } from "@/types/LjUpdatePreview";
 import { usePreventUnload } from '@/utils/browser';
+import { db } from "@/utils/client/Dexie";
+import { genCommunityPageUrl } from "@/utils/lj-url";
+import { cn } from "@/utils/shadcn-utils";
+import { Icon } from "@iconify/vue";
+import { useMutation } from "@tanstack/vue-query";
+import { HTMLAttributes, onMounted, ref, toRaw } from 'vue';
+import { useRoute } from "vue-router";
+import { browser } from "wxt/browser";
+import { HousePriceItem } from '../../../../types/lj';
+import HouseFieldsLackDesc from '../../components/description/HouseFieldsLackDesc.vue';
 
 interface Props {
   class?: HTMLAttributes['class']
@@ -112,23 +125,28 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const {query: {id}} = useRoute()
+const { query: { id } } = useRoute()
 useExtTitle('小区任务运行结果确认预览' + id)
 
 const data = ref<CommunityUpdatePreview>()
 const initialBatchList = ref<CommunityTask[]>([])
 const failedList = ref<CommunityTask[]>([])
+/**
+ * 本次更新结果中, 所有新增的房源
+ */
+const addedItem = ref<HousePriceItem[]>([])
 async function queryData() {
   if (id) {
     await db.tempCommunityUpdatePreview.get(id as string).then(rs => data.value = rs)
   }
+  console.log('data.value', data.value)
   if (data.value) {
     initialBatchList.value = (await db.tempBatchCommunity.get(data.value.tempListId))?.communityList ?? []
-    let sucIds = data.value.records.map(r=>r.cid);
+    let sucIds = data.value.records.map(r => r.cid);
 
-    const allIds=new Set(initialBatchList.value.map(r=>r.cid))
-    const failedIds=allIds.difference(new Set(sucIds))
-    failedList.value=initialBatchList.value.filter(r=>failedIds.has(r.cid))
+    const allIds = new Set(initialBatchList.value.map(r => r.cid))
+    const failedIds = allIds.difference(new Set(sucIds))
+    failedList.value = initialBatchList.value.filter(r => failedIds.has(r.cid))
   }
 }
 
@@ -142,16 +160,16 @@ const DeleteResumeBtn = (deleteMap: Record<number, boolean>, index: number) =>
   <div class="hover:bg-gray-200 hover:outline outline-1 hover:cursor-pointer">
 
     {deleteMap[index] &&
-      <button onClick={() => delete deleteMap[index]}><Icon icon="material-symbols:undo" class="text-blue-400 w-5 h-5"/>
+      <button onClick={() => delete deleteMap[index]}><Icon icon="material-symbols:undo" class="text-blue-400 w-5 h-5" />
       </button>
     }
     {!deleteMap[index] &&
-      <button onClick={() => deleteMap[index] = true}><Icon icon="gg:remove" class="text-red-400 w-5 h-5"/></button>
+      <button onClick={() => deleteMap[index] = true}><Icon icon="gg:remove" class="text-red-400 w-5 h-5" /></button>
     }
 
   </div>
 
-const {mutate, status, isError, error} = useMutation({
+const { mutate, status, isError, error } = useMutation({
   mutationKey: ['update-preview'],
   mutationFn: doUpdate,
 })
@@ -175,11 +193,18 @@ async function doUpdate() {
   // console.log(previewData)
 
 
-  await updateBatchCommunityWithPreview(previewData)
+  const { addedItem: _addedItem } = await updateBatchCommunityWithPreview(previewData)
+  addedItem.value = _addedItem
+
   isUpdateDone.value = true
   // 滚动到页面顶部
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   cancelPreventUnload()
+}
+
+async function goRunAddedHouseTasks() {
+  const addedHids = addedItem.value.map(item => item.hid)
+  goRunHouseTasksStartPage(addedHids)
 }
 
 async function closeWindow() {

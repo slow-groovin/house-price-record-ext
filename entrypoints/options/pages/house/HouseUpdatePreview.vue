@@ -69,7 +69,7 @@
             {{ item.hid }}
           </a>
           <div class="text-center">
-            已成交成交
+            已成交
             <Icon icon="bi:cart-check-fill" class="inline-block" />
           </div>
           <Component :is="DeleteResumeBtn(soldDelete, index)" />

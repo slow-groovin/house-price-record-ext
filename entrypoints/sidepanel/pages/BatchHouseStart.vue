@@ -15,6 +15,8 @@ import BatchJobRunningStatusBar from "@/components/lj/BatchJobRunningStatusBar.v
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { HouseSold, HousesUpdatePreview } from "@/types/LjUpdatePreview";
 import { browser } from "wxt/browser";
+import InfoHover from "@/components/information/InfoHover.vue";
+import { EyeIcon } from "lucide-vue-next";
 
 
 const { query: { id } } = useRoute()
@@ -141,7 +143,15 @@ async function startBathHouse() {
     <!--  init hint-->
     <div v-if="isInit && hidList" class="min-h-64 flex flex-col items-center gap-4 justify-center border rounded ">
       <div>
-        本次任务, 共需打开 {{ hidList.length }} 个房源网页
+        本次任务, 共需打开 {{ hidList.length }}个房源网页
+        <InfoHover>
+          <template #trigger>
+            <EyeIcon class="inline size-6 hover:bg-gray-200 text-gray-400" />
+          </template>
+          <div>
+            <div v-for="hid in hidList">{{ hid }}</div>
+          </div>
+        </InfoHover>
       </div>
 
       <div class="w-full flex flex-col items-center">
@@ -153,7 +163,8 @@ async function startBathHouse() {
     <div id="setting-area" class="flex flex-col w-fit gap-1 p-2 border rounded">
       <div class="line">
         <span>⚙️任务设置:</span>
-        <Icon v-if="isInit" icon="material-symbols:refresh" class="w-4 h-4 active:outline hover:bg-gray-300 border rounded" @click="resetSetting"></Icon>
+        <Icon v-if="isInit" icon="material-symbols:refresh"
+          class="w-4 h-4 active:outline hover:bg-gray-300 border rounded" @click="resetSetting"></Icon>
 
       </div>
       <div class="line">
@@ -176,7 +187,7 @@ async function startBathHouse() {
 
 
     <!--  running ids-->
-    <div v-if="batchExecutor?.runningIds && batchExecutor?.runningIds.length!==0" class="border rounded p-2">
+    <div v-if="batchExecutor?.runningIds && batchExecutor?.runningIds.length !== 0" class="border rounded p-2">
       正在运行中的任务:
       <TransitionGroup name="list" tag="ul" class="list-disc pl-10">
         <li v-for="id in batchExecutor.runningIds" :key="id">

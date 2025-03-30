@@ -2,6 +2,7 @@ import { db } from "@/utils/client/Dexie";
 import { CommunityUpdatePreview } from "@/types/LjUpdatePreview";
 import {
   CommunityRecord,
+  HouseListDetailItem,
   HousePriceChangeItem,
   HousePriceItem,
   HouseSoldItem,
@@ -21,15 +22,19 @@ export async function updateBatchCommunityWithPreview(
 ) {
   if (!preview) {
     alert("没有数据!");
-    return;
+    return { addedItem: [] };
   }
+  let addedItem: HousePriceItem[] = [];
 
   for (let record of preview.records) {
     record.at = preview.at;
-    await updateOneCommunityWithRecord(record);
+    const result = await updateOneCommunityWithRecord(record);
+    const { addedItem: addedItemOfOne } = result;
+    addedItem.push(...addedItemOfOne);
   }
   await db.tempBatchCommunity.delete(preview.tempListId);
-  await db.tempCommunityUpdatePreview.delete(preview.batchId);
+  // await db.tempCommunityUpdatePreview.delete(preview.batchId);
+  return { addedItem };
 }
 
 /**
@@ -56,6 +61,9 @@ async function updateOneCommunityWithRecord(record: CommunityRecord) {
 
   const lastRecord = lastRecordBeforeThisWeek ?? lastRecordThisWeek;
 
+  //返回结果中的: 所有新增的item, 如果是第一次提交则为houseList中所有的内容
+  let returnAddedItem: HousePriceItem[] = [];
+
   //如果存在lastRecordBeforeThisWeek, 则计算priceUp,priceDown, added,removed,
   if (lastRecord?.houseList && lastRecord?.houseList.length > 0) {
     const { priceUpList, priceDownList, removedItem, addedItem } =
@@ -66,6 +74,9 @@ async function updateOneCommunityWithRecord(record: CommunityRecord) {
     record.priceDownList = priceDownList;
     record.removedItem = removedItem;
     record.addedItem = addedItem;
+    returnAddedItem = addedItem;
+  } else {
+    returnAddedItem = lastRecord?.houseList ?? [];
   }
 
   // 对removedItem,addedItem中的item更新状态, 如果存在lastRecordThisWeek则之更新相对于它的变更
@@ -142,6 +153,7 @@ async function updateOneCommunityWithRecord(record: CommunityRecord) {
       );
     }
   }
+  return { addedItem: returnAddedItem };
 }
 
 /**

@@ -27,7 +27,7 @@ import { computed, onMounted, ref, toRaw } from "vue";
 import { useLocalStorage } from "@vueuse/core";
 import { Button } from "@/components/ui/button";
 import { toInt } from "radash";
-import { startPageEntry } from "@/entrypoints/reuse/community-control2";
+import { goRunCommunityTasksStartPage } from "@/entrypoints/reuse/community-control2";
 import CommunityQueryDock from "@/entrypoints/options/components/CommunityQueryDock.vue";
 import {
   CommunityQueryCondition,
@@ -429,7 +429,7 @@ async function removeQueryConditionQueryParam() {
 
 async function beginCrawlCommunities() {
   const communityList = Object.keys(rowSelection.value).map(s => toInt(s)).map(i => toRaw(data.value[i]))
-  startPageEntry(communityList)
+  goRunCommunityTasksStartPage(communityList)
 }
 
 async function deleteSelectedTasks() {

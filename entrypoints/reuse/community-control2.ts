@@ -17,7 +17,9 @@ const PREFIX = "[oneCommunityEntry]";
 /**
  * 打开单独窗口和side panel的start page作为开始
  */
-export async function startPageEntry(communityList: CommunityTask[]) {
+export async function goRunCommunityTasksStartPage(
+  communityList: CommunityTask[]
+) {
   let item = { communityList };
   const id = await db.tempBatchCommunity.add(item);
   const newWindow = await browser.windows.create({
