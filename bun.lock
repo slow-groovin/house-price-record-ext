@@ -4,6 +4,7 @@
     "": {
       "name": "house-price-record-ext",
       "dependencies": {
+        "@subframe7536/sqlite-wasm": "^0.5.3",
         "@tanstack/vue-query": "^5.62.0",
         "@tanstack/vue-table": "^8.20.5",
         "@unovis/ts": "1.4.4",
@@ -21,6 +22,8 @@
         "lucide-vue-next": "^0.454.0",
         "radash": "^12.1.0",
         "radix-vue": "^1.9.8",
+        "sql-bricks": "^3.0.1",
+        "sql-template-tag": "^5.2.1",
         "tailwind-merge": "^2.5.4",
         "tailwindcss-animate": "^1.0.7",
         "vue": "^3.5.11",
@@ -283,6 +286,8 @@
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.38.0", "", { "os": "win32", "cpu": "x64" }, "sha512-jjqy3uWlecfB98Psxb5cD6Fny9Fupv9LrDSPTQZUROqjvZmcCqNu4UMl7qqhlUUGpwiAkotj6GYu4SZdcr/nLw=="],
 
     "@sindresorhus/is": ["@sindresorhus/is@5.6.0", "", {}, "sha512-TV7t8GKYaJWsn00tFDqBw8+Uqmr8A0fRU1tvTQhyZzGv0sJCGRQL3JGMI3ucuKo3XIZdUP+Lx7/gh2t3lewy7g=="],
+
+    "@subframe7536/sqlite-wasm": ["@subframe7536/sqlite-wasm@0.5.3", "", {}, "sha512-YJzu9TkYjWFakMGdtRx7Q369szv3oT8WgWXnpf1maJYIBznwLWjdClSzdivjgvjDbnG+eI5osRDoGXue9oa2KA=="],
 
     "@swc/helpers": ["@swc/helpers@0.5.15", "", { "dependencies": { "tslib": "^2.8.0" } }, "sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g=="],
 
@@ -1321,6 +1326,10 @@
     "spawn-sync": ["spawn-sync@1.0.15", "", { "dependencies": { "concat-stream": "^1.4.7", "os-shim": "^0.1.2" } }, "sha512-9DWBgrgYZzNghseho0JOuh+5fg9u6QWhAWa51QC7+U5rCheZ/j1DrEZnyE0RBBRqZ9uEXGPgSSM0nky6burpVw=="],
 
     "split": ["split@1.0.1", "", { "dependencies": { "through": "2" } }, "sha512-mTyOoPbrivtXnwnIxZRFYRrPNtEFKlpB2fvjSnCQUiAA6qAZzqwna5envK4uk6OIeP17CsdF3rSBGYVBsU0Tkg=="],
+
+    "sql-bricks": ["sql-bricks@3.0.1", "", {}, "sha512-ZkU/R+bwf7d9FxlwMJp/31P5bluVCjUuftutkqJjQKH1QMCE1iaEc0xeY0aVepc38fxC+ljUrqausGCzzcHzHQ=="],
+
+    "sql-template-tag": ["sql-template-tag@5.2.1", "", {}, "sha512-lFdvXCOqWhV40A7w4oQVDyuaNFb5yO+dhsHStZzOdtDJWCBWYv4+hhATK5nPpY5v/T1OMVcLMPeN4519qIyb9Q=="],
 
     "stdin-discarder": ["stdin-discarder@0.2.2", "", {}, "sha512-UhDfHmA92YAlNnCfhmq0VeNL5bDbiZGg7sZ2IvPsXubGkiNa9EC+tUTsjBRsYUAz87btI6/1wf4XoVvQ3uRnmQ=="],
 

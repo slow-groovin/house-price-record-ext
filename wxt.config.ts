@@ -1,10 +1,11 @@
 import { defineConfig, defineWebExtConfig } from "wxt";
 import vueJsx from "@vitejs/plugin-vue-jsx";
-import customStrToUtf8 from "./scripts/vite-plugin-to-utf8";
+import customStrToUtf8 from "./src/scripts/vite-plugin-to-utf8";
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ["@wxt-dev/module-vue"],
   imports: false, // disable auto-import
+  srcDir: "src",
   zip: {
     name: "house-price-ext",
   },
@@ -35,7 +36,20 @@ export default defineConfig({
 
   // @ts-ignore
   vite: (configEnv) => ({
-    plugins: [customStrToUtf8(), vueJsx()],
+    plugins: [
+      // customStrToUtf8(),
+      // vueJsx()
+    ],
+    assetsInclude: ["**/node_modules/@subframe7536/sqlite-wasm/dist/*.wasm"],
+    server: {
+      headers: {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "require-corp",
+      },
+    },
+    optimizeDeps: {
+      exclude: ["@sqlite.org/sqlite-wasm", "@subframe7536/sqlite-wasm"],
+    },
     build: {
       rollupOptions: {
         external: (id) => {

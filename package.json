@@ -16,6 +16,7 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@subframe7536/sqlite-wasm": "^0.5.3",
     "@tanstack/vue-query": "^5.62.0",
     "@tanstack/vue-table": "^8.20.5",
     "@unovis/ts": "1.4.4",
@@ -33,6 +34,8 @@
     "lucide-vue-next": "^0.454.0",
     "radash": "^12.1.0",
     "radix-vue": "^1.9.8",
+    "sql-bricks": "^3.0.1",
+    "sql-template-tag": "^5.2.1",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "vue": "^3.5.11",
