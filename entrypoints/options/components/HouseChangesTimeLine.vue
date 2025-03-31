@@ -1,34 +1,34 @@
 <script setup lang="ts">
 //
-import {HouseChange, HouseStatusChange, HouseTask} from "@/types/lj";
+import { HouseChange, HouseStatusChange, HouseTask } from "@/types/lj";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
-import {onMounted, ref, watch} from "vue";
+import { onMounted, ref, watch } from "vue";
 import TimelineItem from "@/components/TimelineItem.vue";
 import PriceChangeBudget from "@/components/lj/house/PriceChangeBudget.vue";
-import {scrollToId} from "@/utils/document";
+import { scrollToId } from "@/utils/document";
 import StatusChangeBudget from "@/components/lj/house/StatusChangeBudget.vue";
-import {formatDistanceToNowHoursOrDays} from "@/utils/date";
-import {cn} from "@/utils/shadcn-utils";
-import {db} from "@/utils/client/Dexie";
-import {Icon} from "@iconify/vue";
+import { formatDistanceToNowHoursOrDays } from "@/utils/date";
+import { cn } from "@/utils/shadcn-utils";
+import { db } from "@/utils/client/Dexie";
+import { Icon } from "@iconify/vue";
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
-import {storage} from "wxt/storage";
+import { storage } from "#imports";
 
 
 /*
 ref definition
  */
-const {data, rowCount, isShowDetail, type, class: classNames} = defineProps<{
+const { data, rowCount, isShowDetail, type, class: classNames } = defineProps<{
   data: (HouseChange | HouseStatusChange)[],
   rowCount: number,
   isShowDetail?: boolean,
   type: 'price' | 'status',
   class?: string,
 }>()
-const deletedIds = ref<(number|undefined)[]>([])
-const checkDisableConfirmDelete=ref(false)
+const deletedIds = ref<(number | undefined)[]>([])
+const checkDisableConfirmDelete = ref(false)
 // const {state:confirmDelete}=useWxtStorage('local:confirmDeleteChangeItem',true)
-const confirmDelete=true
+const confirmDelete = true
 /*
 ref definition DONE
  */
@@ -44,7 +44,7 @@ const emit = defineEmits({
   }
 })
 // const pagination = defineModel<PageState>('pagination')
-const pagination = ref({pageIndex: 1, pageSize: 10})
+const pagination = ref({ pageIndex: 1, pageSize: 10 })
 
 
 function updatePagination() {
@@ -105,8 +105,8 @@ console.log("[HouseChangesTimeLine.vue] init.")
 
 
 function deleteChange(index: number) {
-  if(checkDisableConfirmDelete.value){
-    storage.setItem('local:confirmDeleteChangeItem',false)
+  if (checkDisableConfirmDelete.value) {
+    storage.setItem('local:confirmDeleteChangeItem', false)
   }
   const change = data[index]
   db.houseChanges.delete(change.id).then(() => {
@@ -120,9 +120,9 @@ function deleteChange(index: number) {
 </script>
 
 <template>
-  <div id="change-timeline" :class="cn('flex flex-col flex-wrap  items-start justify-start ',classNames)">
+  <div id="change-timeline" :class="cn('flex flex-col flex-wrap  items-start justify-start ', classNames)">
     <TransitionGroup name="list" tag="div">
-      <template v-for="(change,index) in data" :key="change.id">
+      <template v-for="(change, index) in data" :key="change.id">
         <TimelineItem v-if="!deletedIds.includes(change.id)" class="max-w-full" :spacing="80" :color="'bg-green-300'">
           <div class="flex flex-col  gap-2  mb-6 overflow-x-hidden  ">
             <div class="flex flex-row gap-2 items-center ">
@@ -130,29 +130,30 @@ function deleteChange(index: number) {
                 ({{ formatDistanceToNowHoursOrDays(change.at) }}) {{ new Date(change.at).toLocaleString() }}
               </div>
 
-              <a :href="'/options.html#/h/task/detail?id='+change.hid" target="_blank"
-                 class="text-green-500 underline cursor-pointer">{{ change.hid }}</a>
+              <a :href="'/options.html#/h/task/detail?id=' + change.hid" target="_blank"
+                class="text-green-500 underline cursor-pointer">{{ change.hid }}</a>
               <div v-if="isShowDetail" class="text-nowrap overflow-hidden overflow-ellipsis"
-                   :title="hMap[change.hid]?.name">
+                :title="hMap[change.hid]?.name">
                 {{ hMap[change.hid]?.name }} {{ hMap[change.hid]?.area }}㎡
               </div>
 
-              <Icon v-if="!confirmDelete" @click="deleteChange(index)" icon="lets-icons:remove"  class="text-red-500 hover:bg-gray-200"/>
+              <Icon v-if="!confirmDelete" @click="deleteChange(index)" icon="lets-icons:remove"
+                class="text-red-500 hover:bg-gray-200" />
               <ConfirmDialog v-else @confirm="deleteChange(index)">
                 <template #trigger>
-                  <Icon icon="lets-icons:remove" class="text-red-500 hover:bg-gray-200"/>
+                  <Icon icon="lets-icons:remove" class="text-red-500 hover:bg-gray-200" />
                 </template>
                 删除这条任务?
-<!--                <label class="flex items-center text-sm font-light italic">-->
-<!--                  <Checkbox v-model:checked="checkDisableConfirmDelete"/>不再进行删除确认   (可以在'设置'页面中调整)-->
-<!--                </label>-->
+                <!--                <label class="flex items-center text-sm font-light italic">-->
+                <!--                  <Checkbox v-model:checked="checkDisableConfirmDelete"/>不再进行删除确认   (可以在'设置'页面中调整)-->
+                <!--                </label>-->
               </ConfirmDialog>
 
             </div>
             <div class="h-fit">
-              <PriceChangeBudget v-if="type==='price'" :old-value="change.oldValue" :new-value="change.newValue"
-                                 unit="万元"/>
-              <StatusChangeBudget v-if="type==='status'" :old-value="change.oldValue" :new-value="change.newValue"/>
+              <PriceChangeBudget v-if="type === 'price'" :old-value="change.oldValue" :new-value="change.newValue"
+                unit="万元" />
+              <StatusChangeBudget v-if="type === 'status'" :old-value="change.oldValue" :new-value="change.newValue" />
             </div>
           </div>
         </TimelineItem>
@@ -160,12 +161,10 @@ function deleteChange(index: number) {
     </TransitionGroup>
   </div>
 
-  <PaginationComponent
-    v-if="pagination"
-    :set-page-index="(index:number)=>{pagination.pageIndex=index; updatePagination()}"
-    :set-page-size="(size:number)=>{pagination.pageSize=size; updatePagination()}"
-    :pagination="pagination"
-    :row-count="rowCount"/>
+  <PaginationComponent v-if="pagination"
+    :set-page-index="(index: number) => { pagination.pageIndex = index; updatePagination() }"
+    :set-page-size="(size: number) => { pagination.pageSize = size; updatePagination() }" :pagination="pagination"
+    :row-count="rowCount" />
 
 
 </template>
@@ -182,5 +181,4 @@ function deleteChange(index: number) {
   opacity: 0;
   transform: translateX(30px);
 }
-
 </style>

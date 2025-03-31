@@ -29,7 +29,7 @@
       <span class="text-base font-medium">自动更新任务</span>
     </div>
     <div class="flex flex-col">
-      <Switch v-model:checked="settings.autoRunHouseTask" class="text-right"/>
+      <Switch v-model:checked="settings.autoRunHouseTask" class="text-right" />
       <span class="text-sm text-gray-500">每次打开房源页面时自动运行任务更新信息</span>
     </div>
 
@@ -41,7 +41,7 @@
       <span class="text-base font-medium">删除确认</span>
     </div>
     <div class="flex flex-col">
-      <Switch v-model:checked="settings.confirmDeleteChangeItem" class="text-right" disabled/>
+      <Switch v-model:checked="settings.confirmDeleteChangeItem" class="text-right" disabled />
       <span class="text-sm text-gray-500">删除变更记录前尽心确认</span>
     </div>
 
@@ -50,16 +50,12 @@
 
     <!-- 操作按钮 -->
     <div class="flex justify-start space-x-4 py-4 mb-12">
-      <button
-        @click="saveSettings"
-        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      >
+      <button @click="saveSettings"
+        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
         保存
       </button>
-      <button
-        @click="resetSettings"
-        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-      >
+      <button @click="resetSettings"
+        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
         重置设置
       </button>
     </div>
@@ -79,19 +75,19 @@
 </template>
 
 <script setup lang="ts">
-import type {HTMLAttributes} from 'vue'
-import {onMounted, ref} from 'vue'
+import type { HTMLAttributes } from 'vue'
+import { onMounted, ref } from 'vue'
 
-import {cn} from '@/utils/shadcn-utils'
-import {Switch} from "@/components/ui/switch";
-import {storage} from "wxt/storage";
-import {getIndexedDBUsage} from "@/utils/browser";
-import {useExtTitle} from "@/composables/useExtInfo";
-import {useDevSetting} from "@/entrypoints/reuse/global-variables";
-import {db} from "@/utils/client/Dexie";
-import {Button} from "@/components/ui/button";
+import { cn } from '@/utils/shadcn-utils'
+import { Switch } from "@/components/ui/switch";
+import { storage } from "#imports";
+import { getIndexedDBUsage } from "@/utils/browser";
+import { useExtTitle } from "@/composables/useExtInfo";
+import { useDevSetting } from "@/entrypoints/reuse/global-variables";
+import { db } from "@/utils/client/Dexie";
+import { Button } from "@/components/ui/button";
 
-const {isDebug}=useDevSetting()
+const { isDebug } = useDevSetting()
 
 /**
  * Prompt: 实现一个设置页面
@@ -115,8 +111,8 @@ const defaultSettings: Record<string, boolean> = {
 }
 
 // 设置状态
-const settings = ref<Record<string, boolean>>({...defaultSettings})
-const diskUsage = ref({usage: 0, quota: 0, percentage: 0})
+const settings = ref<Record<string, boolean>>({ ...defaultSettings })
+const diskUsage = ref({ usage: 0, quota: 0, percentage: 0 })
 
 function loadSettings() {
   // 从本地存储加载设置
@@ -141,14 +137,14 @@ function loadSettings() {
 const saveSettings = async () => {
 
   await storage.setItems([
-    {key: 'local:autoRunHouseTask', value: settings.value.autoRunHouseTask},
-    {key: 'local:confirmDeleteChangeItem', value: settings.value.confirmDeleteChangeItem},
+    { key: 'local:autoRunHouseTask', value: settings.value.autoRunHouseTask },
+    { key: 'local:confirmDeleteChangeItem', value: settings.value.confirmDeleteChangeItem },
   ]);
 }
 
 // 重置设置
 const resetSettings = () => {
-  settings.value = {...defaultSettings}
+  settings.value = { ...defaultSettings }
 }
 
 
@@ -158,7 +154,7 @@ onMounted(async () => {
   diskUsage.value = await getIndexedDBUsage()
 })
 
-async function clearTempData(){
+async function clearTempData() {
   await db.tempBatchCommunity.clear()
   await db.tempBatchHouse.clear()
   await db.tempCommunityUpdatePreview.clear()

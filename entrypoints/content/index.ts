@@ -7,12 +7,13 @@ import {
   isCommunitySoldListPage,
   isHousePage,
   isHouseSoldPage,
+  isKeRentCommunityListPage,
   isLoginPage,
 } from "@/utils/lj-url";
 import "~/assets/tailwind.css";
 import "~/assets/shacn.css";
 import { debugUIInject } from "@/entrypoints/content/ui/debug-ui-inject";
-import { defineContentScript } from "wxt/sandbox";
+import { defineContentScript } from "#imports";
 import {
   captchaPageOnMessage,
   loginPageOnMessage,
@@ -22,12 +23,13 @@ import { houseSoldPageOnMessages } from "./message/house-sold-msgs";
 import { housePageOnMessages } from "./message/house-page-msgs";
 import { communityListPageOnMessages } from "./message/community-list-page-msgs";
 import { communitySoldListPageOnMessage } from "./message/community-sold-list-page-msgs";
+import { keRentCommunityPageUIInject } from "./ui/ke-rent-community-ui-inject";
 
 const matches = () => {
   //this will be exec on build
   return import.meta.env.MODE === "development"
-    ? ["*://*.lianjia.com/*", "*://*.example.com/*"]
-    : ["*://*.lianjia.com/*"];
+    ? ["*://*.lianjia.com/*", "*://*.zu.ke.com/*", "*://*.example.com/*"]
+    : ["*://*.lianjia.com/*", "*://*.zu.ke.com/*"];
 };
 
 export default defineContentScript({
@@ -61,7 +63,22 @@ export default defineContentScript({
       loginPageOnMessage();
     } else if (isCaptchaPage(url)) {
       captchaPageOnMessage();
-    } else if (
+    }
+    // prettier-ignore
+    /**
+     * Zufang Rent
+     */
+    else if (
+      isKeRentCommunityListPage(url)
+    ) {
+      console.log("zufang", url);
+      await keRentCommunityPageUIInject(ctx);
+    }
+    // prettier-ignore
+    /**
+     * others
+     */
+    else if (
       import.meta.env.MODE === "development" &&
       url.includes("example.com")
     ) {

@@ -26,6 +26,7 @@ interface ProtocolMap {
   crawlHouseTask(data: { hid: string }): Promise<{ resp: string }>;
 
   parseOneCommunityListOnePage(): Promise<CommunityListPageItem>;
+  parseKeCommunityListOnePage(): Promise<any>;
 
   addCommunityTask(task: CommunityTask): Promise<{ resp: string }>;
   queryCommunityTask(data: { cid: string }): Promise<CommunityTask[]>;

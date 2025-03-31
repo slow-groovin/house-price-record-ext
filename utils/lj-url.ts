@@ -33,6 +33,14 @@ export function isCommunitySoldListPage(url?: string) {
   return /chengjiao\/(pg\d+)?(co\d+)?c\d+\//.test(url);
 }
 
+/**
+ * 是否是租房的小区列表url
+ */
+export function isKeRentCommunityListPage(url?: string) {
+  if (!url) return false;
+  return /zu.ke.com\/zufang\/(\w+)?c\d+\//.test(url);
+}
+
 export function extractCityAndHidFromHouseUrl(url: string | undefined | null): {
   city: string | undefined;
   hid: string | undefined;
@@ -151,6 +159,46 @@ export function extractCityFromUrl(urlStr: string) {
     console.error("Failed to extract segment from URL:", error);
     return null;
   }
+}
+
+/**
+ * 从如同 https://<city>.zu.ke.com/zufang* URL 中提取 <city> 内容, 即schema后的第一个字符串
+ * 如果成功解析到则返回第一个字符串，否则返回 null
+ */
+export function extractCityFromKeRentUrl(urlStr: string) {
+  try {
+    const url = new URL(urlStr);
+    const hostnameParts = url.hostname.split(".");
+
+    // 检查是否有足够的部分，提取第一个部分
+    return hostnameParts.length > 0 ? hostnameParts[0] : null;
+  } catch (error) {
+    console.error("Failed to extract segment from URL:", error);
+    return null;
+  }
+}
+
+export function extractPageNumberFromKeRentUrl(str: string): number {
+  const regex = /zufang\/\w*(pg\d+)\w*/;
+  const match = str.match(regex);
+  if (match) {
+    return Number(match[1].replace("pg", ""));
+  }
+
+  return 1;
+}
+
+/**
+ * 从  https://city.zu.ke.com/zufang/*****c<cid>.html 中提取cid
+ * @param url
+ */
+export function extractCidFromKeRentUrl(url?: string | null): string | null {
+  if (!url) {
+    return null;
+  }
+  const regex = /zufang\/\w*(c\d+)\//;
+  const match = url.match(regex);
+  return match ? match[1].replace("c", "") : null;
 }
 
 /**

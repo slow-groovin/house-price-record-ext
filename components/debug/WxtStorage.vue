@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {Button} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import useWxtStorage from "@/composables/useWxtStorage";
-import {useLocalStorage} from "@vueuse/core";
-import {onMounted, ref} from "vue";
-import {storage} from 'wxt/storage'
+import { useLocalStorage } from "@vueuse/core";
+import { onMounted, ref } from "vue";
+import { storage } from '#imports'
 
 const options = ["local:", "session:", "sync:", "managed:"];
 const selectedOption = ref<"local:" | "session:" | "sync:" | "managed:">("local:");
@@ -11,7 +11,7 @@ const selectedOption = ref<"local:" | "session:" | "sync:" | "managed:">("local:
 
 const testWxtStorageValue = ref('')
 const testLocalStorageValue = ref('')
-const {state: testReactiveWxtStorageValue, isReady, isLoading} = useWxtStorage('local:testReactiveWxtStorageValue')
+const { state: testReactiveWxtStorageValue, isReady, isLoading } = useWxtStorage('local:testReactiveWxtStorageValue')
 
 
 const testUseLocalStorageValue = useLocalStorage('testUseLocalStorageValue', 'not_exist')
@@ -23,7 +23,7 @@ function set() {
 
 function get() {
   // @ts-ignore
-  storage.getItem(selectedOption.value + 'testWxtStorage', {fallback: 'not_exist'}).then(n => testWxtStorageValue.value = n)
+  storage.getItem(selectedOption.value + 'testWxtStorage', { fallback: 'not_exist' }).then(n => testWxtStorageValue.value = n)
 }
 
 const allValue = ref<Record<string, any>>({})
@@ -45,7 +45,7 @@ function getLocalStorage() {
   testLocalStorageValue.value = localStorage.getItem('testWxtStorage1') ?? "not_exist"
 }
 
-onMounted(()=>{
+onMounted(() => {
   getAll()
 })
 </script>
@@ -55,16 +55,8 @@ onMounted(()=>{
   <div class="c-block">
     <h1>wxt-storage</h1>
     <div>
-      <label
-        v-for="option in options"
-        :key="option"
-        class="radio-label"
-      >
-        <input
-          type="radio"
-          :value="option"
-          v-model="selectedOption"
-        />
+      <label v-for="option in options" :key="option" class="radio-label">
+        <input type="radio" :value="option" v-model="selectedOption" />
         {{ option }}
       </label>
       <p>Selected: {{ selectedOption }}</p>
@@ -95,11 +87,11 @@ onMounted(()=>{
   <div class="c-block">
     <h1>reactive value</h1>
     <div>
-      <Button @click="testUseLocalStorageValue=new Date().toLocaleString()">set testUseLocalStorageValue</Button>
+      <Button @click="testUseLocalStorageValue = new Date().toLocaleString()">set testUseLocalStorageValue</Button>
       testUseLocalStorageValue: {{ testUseLocalStorageValue }}
     </div>
     <div>
-      <Button @click="testReactiveWxtStorageValue=new Date().toLocaleString()">set testReactiveWxtStorageValue</Button>
+      <Button @click="testReactiveWxtStorageValue = new Date().toLocaleString()">set testReactiveWxtStorageValue</Button>
       testReactiveWxtStorageValue: {{ testReactiveWxtStorageValue }}, isLoading: {{ isLoading }}, isReady:{{ isReady }}
     </div>
   </div>
@@ -107,6 +99,4 @@ onMounted(()=>{
 
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
