@@ -5,10 +5,8 @@
 <script lang="ts" setup>
 import { initSQLite, SQLiteDB } from '@subframe7536/sqlite-wasm'
 import { useIdbStorage } from '@subframe7536/sqlite-wasm/idb'
-import wasmUrl from '@subframe7536/sqlite-wasm/dist/wa-sqlite-async.wasm?url'
 import { ref, onMounted } from 'vue' // 确保导入 ref 和 onMounted
 import { like, select } from 'sql-bricks'
-console.log('wasmUrl', wasmUrl)
 // optional url
 // const url = 'https://cdn.jsdelivr.net/npm/@subframe7536/sqlite-wasm@0.5.3/dist/wa-sqlite-async.wasm'
 // const url1 = 'https://cdn.jsdelivr.net/gh/subframe7536/sqlite-wasm@v0.5.0/wa-sqlite-fts5/wa-sqlite-async.wasm'
@@ -33,7 +31,7 @@ async function init() {
   try {
     sqliteDb = await initSQLite(
       useIdbStorage('test.db', {
-        url: wasmUrl,
+        url: 'wa-sqlite-async.wasm',
       })
     )
     console.log('SQLite DB initialized successfully.')

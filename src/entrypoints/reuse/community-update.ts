@@ -1,4 +1,4 @@
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { CommunityUpdatePreview } from "@/types/LjUpdatePreview";
 import {
   CommunityRecord,

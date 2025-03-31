@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   AccessorKeyColumnDef,
   ColumnDef,
@@ -15,27 +15,27 @@ import {
   useVueTable,
   VisibilityState,
 } from '@tanstack/vue-table'
-import {db} from "@/utils/client/Dexie";
-import {CommunityTask, HouseStatusChange, HouseTask, HouseTaskStatus} from "@/types/lj";
+import { db } from "@/entrypoints/db/Dexie";
+import { CommunityTask, HouseStatusChange, HouseTask, HouseTaskStatus } from "@/types/lj";
 import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
-import {valueUpdater} from "@/utils/shadcn-utils";
-import {QueryCache} from "@/utils/lib/QueryCache";
-import {h, onMounted, ref, watch} from "vue";
-import {useLocalStorage} from "@vueuse/core";
+import { valueUpdater } from "@/utils/shadcn-utils";
+import { QueryCache } from "@/utils/lib/QueryCache";
+import { h, onMounted, ref, watch } from "vue";
+import { useLocalStorage } from "@vueuse/core";
 
 // type CrossKey=Extract<keyof HouseTask,keyof CommunityTask>
 type CrossKey = "lastRunningAt" | "name" | "id" | "cid" | "status" | "accessRecord" | "createdAt" | 'markAccess'
 type HouseStatusChangeWithDetail = HouseStatusChange &
   Omit<HouseTask, CrossKey> &
   Omit<CommunityTask, CrossKey> &
-  {
-    houseName?: string,
-    communityName?: string
-  } &
-  {
-    [other: string]: any
-  }
+{
+  houseName?: string,
+  communityName?: string
+} &
+{
+  [other: string]: any
+}
 
 
 /*
@@ -45,7 +45,7 @@ const sorting = ref<SortingState>([])
 const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = useLocalStorage<VisibilityState>('house-changes-column-visibility', {})
 const rowSelection = ref({})
-const {data, rowCount} = defineProps<{
+const { data, rowCount } = defineProps<{
   data: HouseStatusChange[],
   rowCount: number
 }>()
@@ -64,7 +64,7 @@ const emit = defineEmits({
   }
 })
 // const pagination = defineModel<PageState>('pagination')
-const pagination = ref({pageIndex: 1, pageSize: 10})
+const pagination = ref({ pageIndex: 1, pageSize: 10 })
 
 //初始化默认查询
 emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
@@ -123,7 +123,7 @@ const columnDef: (ColumnDef<HouseStatusChangeWithDetail> | AccessorKeyColumnDef<
       columnHelper.accessor('id', {}),
       columnHelper.accessor('hid', {
         header: 'id',
-        cell: ({cell}) => h('a', {
+        cell: ({ cell }) => h('a', {
           'class': 'text-green-500',
           'href': '#/h/task/detail?id=' + cell.getValue()
         }, cell.getValue())
@@ -131,7 +131,7 @@ const columnDef: (ColumnDef<HouseStatusChangeWithDetail> | AccessorKeyColumnDef<
       columnHelper.accessor('oldValue', {}),
       columnHelper.accessor('newValue', {}),
       columnHelper.accessor('at', {
-        cell: ({cell}) => new Date(cell.getValue()).toLocaleString()
+        cell: ({ cell }) => new Date(cell.getValue()).toLocaleString()
       }),
     ]
   }),
@@ -143,7 +143,7 @@ const columnDef: (ColumnDef<HouseStatusChangeWithDetail> | AccessorKeyColumnDef<
         accessorKey: 'cid',
         id: 'cid',
         header: 'cid header',
-        cell: ({cell}) => h('a', {href: '#' + cell.getValue()}, cell.getValue() as string)
+        cell: ({ cell }) => h('a', { href: '#' + cell.getValue() }, cell.getValue() as string)
       } as ColumnDef<HouseStatusChangeWithDetail>,
 
 
@@ -239,43 +239,43 @@ onMounted(() => {
 })
 
 
-function isColVisible(col:string){
+function isColVisible(col: string) {
   return table.getColumn(col).getIsVisible()
 }
 </script>
 
 <template>
   <h1>H status Changes</h1>
-  <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility"/>
+  <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility" />
   <div v-for="row in table.getRowModel().rows" class="flex  gap-2">
     <div>
-      {{new Date(row.getValue('at')).toLocaleString()}}
+      {{ new Date(row.getValue('at')).toLocaleString() }}
     </div>
 
     <div class="text-green-500 underline hover:cursor-pointer">
-      <a :href="'/options.html#/h/task/detail?id='+row.getValue('hid')" >{{row.getValue('hid')}}</a>
+      <a :href="'/options.html#/h/task/detail?id=' + row.getValue('hid')">{{ row.getValue('hid') }}</a>
     </div>
 
 
     <div>
-      {{HouseTaskStatus[row.getValue('oldValue')]}}
+      {{ HouseTaskStatus[row.getValue('oldValue')] }}
     </div>
     ->
     <div>
-      {{HouseTaskStatus[row.getValue('newValue')]}}
+      {{ HouseTaskStatus[row.getValue('newValue')] }}
     </div>
 
 
     <div v-if="isColVisible('communityName')">
-      {{row.getValue('communityName')}}
+      {{ row.getValue('communityName') }}
     </div>
 
     <div class="font-light italic" v-if="isColVisible('houseName')">
-      {{row.getValue('houseName')}}
+      {{ row.getValue('houseName') }}
     </div>
 
     <div class="font-bold " v-if="isColVisible('totalPrice')">
-      {{row.getValue('totalPrice')}}万
+      {{ row.getValue('totalPrice') }}万
     </div>
 
 
@@ -283,16 +283,10 @@ function isColVisible(col:string){
 
   </div>
 
-  <PaginationComponent
-    v-if="pagination"
-    :set-page-index="table.setPageIndex"
-    :set-page-size="table.setPageSize"
-    :pagination="pagination"
-    :row-count="rowCount"/>
+  <PaginationComponent v-if="pagination" :set-page-index="table.setPageIndex" :set-page-size="table.setPageSize"
+    :pagination="pagination" :row-count="rowCount" />
 
 
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

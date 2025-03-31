@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { HouseTask, HouseTaskStatus } from "@/types/lj";
 import { calcOffset } from "@/utils/table-utils";
 import HouseTasksTable from "@/entrypoints/options/components/HouseTasksTable.vue";

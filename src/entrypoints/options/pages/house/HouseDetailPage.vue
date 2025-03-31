@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { CommonFieldChange, CommunityTask, HouseChange, HouseStatusChange, HouseTask, HouseTaskStatus } from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
 import { AccessRecord } from "@/utils/lib/AcessRecord";
@@ -129,8 +129,8 @@ onMounted(() => {
         </div>
       </div>
       <div class="grow"></div>
-      <Button class="py-0.5 pl-1 [&_svg]:size-6 gap-x-0 bg-green-600" size="sm" :disable="beginCrawlStatus !== 'pending'"
-        @click="beginCrawlMutate()">
+      <Button class="py-0.5 pl-1 [&_svg]:size-6 gap-x-0 bg-green-600" size="sm"
+        :disable="beginCrawlStatus !== 'pending'" @click="beginCrawlMutate()">
 
         <Icon icon="solar:refresh-circle-linear" class="h-8 w-8" width="20px" height="20px" />
         <div class="text-base">运行任务</div>
@@ -152,8 +152,8 @@ onMounted(() => {
           </a>
         </div>
         <div v-else>
-          <a class="hover-link text-xl" target="_blank"
-            :href="`/options.html#/c/task/detail?id=${task.cid}`">{{ communityTask.name }}</a>
+          <a class="hover-link text-xl" target="_blank" :href="`/options.html#/c/task/detail?id=${task.cid}`">{{
+            communityTask.name }}</a>
         </div>
       </InfoItemCard>
       <InfoItemCard name="任务创建时间" :value="new Date(task?.createdAt).toLocaleString()" type="date" />

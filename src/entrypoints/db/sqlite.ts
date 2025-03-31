@@ -1,7 +1,6 @@
-import wasmUrl from "@subframe7536/sqlite-wasm/dist/wa-sqlite-async.wasm?url";
+// import wasmUrl from "@subframe7536/sqlite-wasm/dist/wa-sqlite-async.wasm?url";  //这样导入使用会导致wasm以字节码嵌入到background.js/content.js中, 导致wasm的内容重复打包多次
 import { initSQLite, SQLiteDB } from "@subframe7536/sqlite-wasm";
 import { useIdbStorage } from "@subframe7536/sqlite-wasm/idb";
-
 const schemas = `
 CREATE TABLE IF NOT EXISTS ke_rent_community (
       cid TEXT PRIMARY KEY NOT NULL,
@@ -76,7 +75,7 @@ export async function getDb() {
   }
   sqliteDb = await initSQLite(
     useIdbStorage("main.db", {
-      url: wasmUrl,
+      url: "/wa-sqlite-async.wasm",
     })
   );
   const rs = await sqliteDb.run(schemas);

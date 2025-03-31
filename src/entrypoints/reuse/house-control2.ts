@@ -6,7 +6,7 @@ import {
   isHouseSoldPage,
   isLoginPage,
 } from "@/utils/lj-url";
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { NoRetryError, PauseError } from "@/utils/lib/BatchQueueExecutor";
 import { openTabAndRun } from "@/utils/tab-utils";
 import type {

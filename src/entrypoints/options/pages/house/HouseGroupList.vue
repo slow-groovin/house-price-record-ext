@@ -2,7 +2,7 @@
 import { TaskGroup } from '@/types/group'
 import TaskGroupTable from "@/entrypoints/options/components/TaskGroupTable.vue";
 import { onMounted, ref, toRaw } from "vue";
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@iconify/vue";
 import {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
 import { onMounted, ref } from "vue"
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
 import { getIndexedDBUsage, usePreventUnload } from "@/utils/browser";
 import { useExtTitle } from "@/composables/useExtInfo";
@@ -16,7 +16,7 @@ const extName = import.meta.env.VITE_EXT_NAME ?? ''
 const compatibilityVersion = 1
 const usedMb = ref(0)
 const isPending = ref(false)
-const importResult=ref<ImportResult>()
+const importResult = ref<ImportResult>()
 type ExportDataStructure = {
   version: string,
   compatibilityVersion: number,
@@ -130,7 +130,7 @@ async function importJson() {
     const houses = importObj.lj.ershoufang.houses as HouseTask[]
     _importResult['房源任务'] = await insertRecords(houses, db.houseTasks)
 
-    const records=importObj.lj.ershoufang.records as CommunityRecord[]
+    const records = importObj.lj.ershoufang.records as CommunityRecord[]
     _importResult['小区运行历史'] = await insertRecords(records, db.communityRecords)
 
     _importResult['价格变更'] = await insertRecords(importObj.lj.ershoufang.changes as HouseChange[], db.houseChanges)
@@ -142,7 +142,7 @@ async function importJson() {
     alert(`导入失败:` + e)
     cancelPreventUnload()
 
-  }finally{
+  } finally {
     cancelPreventUnload()
     isPending.value = false
 
@@ -157,7 +157,7 @@ const BATCH_SIZE = 10
  * @param records 
  * @param entityTable 
  */
-async function insertRecords<T extends { id?: string|number }>(records: T[], entityTable: EntityTable<T, "id">) {
+async function insertRecords<T extends { id?: string | number }>(records: T[], entityTable: EntityTable<T, "id">) {
   //尝试转换特殊字段
   if ('accessRecord' in records[0]) {
     records.forEach(_c => {
@@ -177,7 +177,7 @@ async function insertRecords<T extends { id?: string|number }>(records: T[], ent
     } catch (_e: any) {
       if (_e.name !== 'BulkError') throw _e
       const e = _e as BulkError
-      fail+= e.failures.length
+      fail += e.failures.length
     }
   }
 
@@ -203,8 +203,11 @@ async function insertRecords<T extends { id?: string|number }>(records: T[], ent
     <div class="text-lg font-semibold text-green-600 dark:text-green-400">导入完毕!</div>
     <template v-for="(item, key) in importResult" :key="index">
       <div class="flex items-center space-x-2">
-        <span class="inline-block bg-blue-100 text-blue-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">{{ key }}</span>
-        <span class="font-semibold text-green-700 mr-8">成功 <span class="font-bold text-green-600">{{ item.suc }}</span> 条</span>
+        <span
+          class="inline-block bg-blue-100 text-blue-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">{{
+          key }}</span>
+        <span class="font-semibold text-green-700 mr-8">成功 <span class="font-bold text-green-600">{{ item.suc }}</span>
+          条</span>
         <span class="font-semibold text-gray-500">失败 <span class="font-bold text-black">{{ item.fail }}</span> 条</span>
       </div>
     </template>

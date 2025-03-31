@@ -1,4 +1,4 @@
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { HouseNormal } from "@/types/LjUpdatePreview";
 import { HouseTask, HouseTaskStatus } from "@/types/lj";
 import { updateOneNormal } from "@/entrypoints/reuse/house-update";

@@ -1,6 +1,7 @@
 import { defineConfig, defineWebExtConfig } from "wxt";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import customStrToUtf8 from "./src/scripts/vite-plugin-to-utf8";
+import { visualizer } from "rollup-plugin-visualizer";
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ["@wxt-dev/module-vue"],
@@ -38,17 +39,20 @@ export default defineConfig({
   vite: (configEnv) => ({
     plugins: [
       // customStrToUtf8(),
-      // vueJsx()
+      // vueJsx(),
+      // visualizer({
+      //   open: true, // 构建完成后自动打开浏览器显示分析图表
+      //   filename: "stats.html", // 生成的分析文件名称
+      //   gzipSize: true, // 显示 gzip 压缩后的大小
+      //   brotliSize: true, // 显示 brotli 压缩后的大小
+      // }),
     ],
-    assetsInclude: ["**/node_modules/@subframe7536/sqlite-wasm/dist/*.wasm"],
+    // assetsInclude: ["**/node_modules/@subframe7536/sqlite-wasm/dist/*.wasm"],
     server: {
       headers: {
         "Cross-Origin-Opener-Policy": "same-origin",
         "Cross-Origin-Embedder-Policy": "require-corp",
       },
-    },
-    optimizeDeps: {
-      exclude: ["@sqlite.org/sqlite-wasm", "@subframe7536/sqlite-wasm"],
     },
     build: {
       rollupOptions: {

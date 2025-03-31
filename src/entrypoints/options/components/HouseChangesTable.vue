@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   AccessorKeyColumnDef,
   ColumnDef,
@@ -15,27 +15,27 @@ import {
   useVueTable,
   VisibilityState,
 } from '@tanstack/vue-table'
-import {db} from "@/utils/client/Dexie";
-import {CommunityTask, HouseChange, HouseTask} from "@/types/lj";
+import { db } from "@/entrypoints/db/Dexie";
+import { CommunityTask, HouseChange, HouseTask } from "@/types/lj";
 import ColumnFilterCheckbox from "@/entrypoints/options/components/ColumnFilterCheckbox.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
-import {valueUpdater} from "@/utils/shadcn-utils";
-import {QueryCache} from "@/utils/lib/QueryCache";
-import {h, onMounted, ref, watch} from "vue";
-import {useLocalStorage} from "@vueuse/core";
+import { valueUpdater } from "@/utils/shadcn-utils";
+import { QueryCache } from "@/utils/lib/QueryCache";
+import { h, onMounted, ref, watch } from "vue";
+import { useLocalStorage } from "@vueuse/core";
 
 // type CrossKey=Extract<keyof HouseTask,keyof CommunityTask>
 type CrossKey = "lastRunningAt" | "name" | "id" | "cid" | "status" | "accessRecord" | "createdAt" | 'markAccess'
 type HouseChangeWithDetail = HouseChange &
   Omit<HouseTask, CrossKey> &
   Omit<CommunityTask, CrossKey> &
-  {
-    houseName?: string,
-    communityName?: string
-  } &
-  {
-    [other: string]: any
-  }
+{
+  houseName?: string,
+  communityName?: string
+} &
+{
+  [other: string]: any
+}
 
 
 /*
@@ -45,7 +45,7 @@ const sorting = ref<SortingState>([])
 const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = useLocalStorage<VisibilityState>('house-changes-column-visibility', {})
 const rowSelection = ref({})
-const {data, rowCount} = defineProps<{
+const { data, rowCount } = defineProps<{
   data: HouseChange[],
   rowCount: number
 }>()
@@ -64,7 +64,7 @@ const emit = defineEmits({
   }
 })
 // const pagination = defineModel<PageState>('pagination')
-const pagination = ref({pageIndex: 1, pageSize: 10})
+const pagination = ref({ pageIndex: 1, pageSize: 10 })
 
 //初始化默认查询
 emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
@@ -123,7 +123,7 @@ const columnDef: (ColumnDef<HouseChangeWithDetail> | AccessorKeyColumnDef<HouseC
       columnHelper.accessor('id', {}),
       columnHelper.accessor('hid', {
         header: 'id',
-        cell: ({cell}) => h('a', {
+        cell: ({ cell }) => h('a', {
           'class': 'text-green-500',
           'href': '#/h/task/detail?id=' + cell.getValue()
         }, cell.getValue())
@@ -131,7 +131,7 @@ const columnDef: (ColumnDef<HouseChangeWithDetail> | AccessorKeyColumnDef<HouseC
       columnHelper.accessor('oldValue', {}),
       columnHelper.accessor('newValue', {}),
       columnHelper.accessor('at', {
-        cell: ({cell}) => new Date(cell.getValue()).toLocaleString()
+        cell: ({ cell }) => new Date(cell.getValue()).toLocaleString()
       }),
     ]
   }),
@@ -143,7 +143,7 @@ const columnDef: (ColumnDef<HouseChangeWithDetail> | AccessorKeyColumnDef<HouseC
         accessorKey: 'cid',
         id: 'cid',
         header: 'cid header',
-        cell: ({cell}) => h('a', {href: '#' + cell.getValue()}, cell.getValue() as string)
+        cell: ({ cell }) => h('a', { href: '#' + cell.getValue() }, cell.getValue() as string)
       } as ColumnDef<HouseChangeWithDetail>,
 
 
@@ -243,15 +243,13 @@ onMounted(() => {
 
 <template>
   <h1>H Changes</h1>
-  <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility"/>
+  <ColumnFilterCheckbox :table="table" v-model:visibility="columnVisibility" />
   <Table>
     <TableHeader>
       <TableRow v-for="headerGroup in table.getHeaderGroups()">
         <TableHead v-for="header in headerGroup.headers" :colspan="header.colSpan" class="text-center">
-          <FlexRender
-            v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
-            :props="header.getContext()"
-          />
+          <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+            :props="header.getContext()" />
         </TableHead>
       </TableRow>
 
@@ -259,22 +257,16 @@ onMounted(() => {
     <TableBody>
       <TableRow v-for="row in table.getRowModel().rows">
         <TableCell v-for="cell in row.getVisibleCells()">
-          <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()"/>
+          <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
         </TableCell>
       </TableRow>
     </TableBody>
   </Table>
 
-  <PaginationComponent
-    v-if="pagination"
-    :set-page-index="table.setPageIndex"
-    :set-page-size="table.setPageSize"
-    :pagination="pagination"
-    :row-count="rowCount"/>
+  <PaginationComponent v-if="pagination" :set-page-index="table.setPageIndex" :set-page-size="table.setPageSize"
+    :pagination="pagination" :row-count="rowCount" />
 
 
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

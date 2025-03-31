@@ -21,7 +21,7 @@ import { cn, valueUpdater } from "@/utils/shadcn-utils";
 import { HTMLAttributes, onMounted, ref, watch } from "vue";
 import { useLocalStorage } from "@vueuse/core";
 import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { Icon } from '@iconify/vue'
 import { genHousePageUrl } from "@/utils/lj-url";
 import RealAreaDesc from "@/entrypoints/options/components/description/RealAreaDesc.vue";

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { sendMessage } from "@@/messaging";
 import { TaskGroup } from "@/types/group";
 import { onMounted, ref, toRaw } from 'vue'
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { browser } from "wxt/browser";
 import { Icon } from "@iconify/vue";
 import SimpleTabsContainer from "@/components/layout/SimpleTabsContainer.vue";

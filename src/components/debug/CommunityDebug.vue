@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { CommunityRecord } from "@/types/lj";
 import ObjectTable from "@/components/table/ObjectTable.vue";
 import { list, random, uid } from "radash";

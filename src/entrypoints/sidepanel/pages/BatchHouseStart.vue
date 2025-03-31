@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import { Button } from "@/components/ui/button";
 import { useRoute } from "vue-router";
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { toInt, uid } from "radash";
 import { goSidePanelHome, openUrlForHid } from "@/entrypoints/sidepanel/pages/reuse";
 import { BatchQueueExecutor, Job, JobContext, PauseError } from "@/utils/lib/BatchQueueExecutor";

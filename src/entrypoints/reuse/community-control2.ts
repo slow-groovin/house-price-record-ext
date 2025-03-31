@@ -5,7 +5,7 @@ import {
   HouseSoldItem,
 } from "@/types/lj";
 import { sendMessage } from "@@/messaging";
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { stabilizeFields } from "@/utils/variable";
 import { removeRepeat } from "@/utils/array";
 import { list, retry } from "radash";

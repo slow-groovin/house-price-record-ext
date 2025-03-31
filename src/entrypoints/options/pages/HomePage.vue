@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { computed, onMounted, reactive, ref } from "vue";
 import { formatDistanceToNow, startOfWeek } from 'date-fns'
 import { getIndexedDBUsage } from "@/utils/browser";

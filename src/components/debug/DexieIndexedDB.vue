@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {db} from '@/utils/client/Dexie'
-import {random} from "radash";
-import {DexieSampleItem} from "@/types/sample-models";
-import {ref, toRaw} from "vue";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
+import { db } from '@/entrypoints/db/Dexie'
+import { random } from "radash";
+import { DexieSampleItem } from "@/types/sample-models";
+import { ref, toRaw } from "vue";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 
 const genNewItem = () => ({
@@ -94,7 +94,7 @@ const queryItemsByName = async () => {
  */
 async function queryByEqualAndBetween(name: string, begin: number, end: number) {
   items.value = await db.items
-    .where({'name': name})
+    .where({ 'name': name })
     .and(x => x.createdAt > begin && x.createdAt < end)
     .limit(10)
     .toArray()
@@ -157,7 +157,7 @@ async function queryCostTest() {
     return db.items
       .where('price')
       .between(begin, begin + 10)
-      .filter(x=>x.id<50000)
+      .filter(x => x.id < 50000)
       .limit(100)
       .reverse()
       .sortBy('createdAt')
@@ -176,52 +176,52 @@ loadItems();
 
     <!-- Add Item -->
     <div>
-      <input v-model="newItem.name" placeholder="Name"/>
-      <input v-model.number="newItem.price" placeholder="Price" type="number"/>
-      <input v-model="newItem.createdAt" placeholder="Created At (timestamp)" type="number"/>
+      <input v-model="newItem.name" placeholder="Name" />
+      <input v-model.number="newItem.price" placeholder="Price" type="number" />
+      <input v-model="newItem.createdAt" placeholder="Created At (timestamp)" type="number" />
       <button @click="addItem">Add Item</button>
     </div>
 
-    <hr/>
+    <hr />
 
     <!-- Query Item -->
     <div class="flex flex-col gap-y-4">
       <div>
         <h2>Query Items</h2>
 
-        <input v-model="query.id" placeholder="ID (exact)" type="number"/>
+        <input v-model="query.id" placeholder="ID (exact)" type="number" />
         <button @click="queryItemsById">Query by ID</button>
       </div>
 
       <div>
-        <input v-model.number="query.priceMin" placeholder="Price Min" type="number"/>
-        <input v-model.number="query.priceMax" placeholder="Price Max" type="number"/>
+        <input v-model.number="query.priceMin" placeholder="Price Min" type="number" />
+        <input v-model.number="query.priceMax" placeholder="Price Max" type="number" />
         <button @click="queryItemsByPrice">Query by Price</button>
       </div>
 
       <div>
-        <input v-model="query.createdAtMin" placeholder="Created At Min" type="number"/>
-        <input v-model="query.createdAtMax" placeholder="Created At Max" type="number"/>
+        <input v-model="query.createdAtMin" placeholder="Created At Min" type="number" />
+        <input v-model="query.createdAtMax" placeholder="Created At Max" type="number" />
         <button @click="queryItemsByCreatedAt">Query by Created At</button>
       </div>
 
       <div>
-        <input v-model="query.name" placeholder="Name (fuzzy)"/>
+        <input v-model="query.name" placeholder="Name (fuzzy)" />
         <button @click="queryItemsByName">Query by Name</button>
       </div>
 
 
       <div>
-        <input v-model="query.name" placeholder="Name (fuzzy)"/>
-        <input v-model="query.createdAtMin" placeholder="Created At Min" type="number"/>
-        <input v-model="query.createdAtMax" placeholder="Created At Max" type="number"/>
-        <button @click="queryByEqualAndBetween(query.name,query.createdAtMin,query.createdAtMax)">Query as "select from
+        <input v-model="query.name" placeholder="Name (fuzzy)" />
+        <input v-model="query.createdAtMin" placeholder="Created At Min" type="number" />
+        <input v-model="query.createdAtMax" placeholder="Created At Max" type="number" />
+        <button @click="queryByEqualAndBetween(query.name, query.createdAtMin, query.createdAtMax)">Query as "select from
           TABLE where name={name} and createdAt between {begin} and {end}
         </button>
       </div>
     </div>
 
-    <hr/>
+    <hr />
 
     <!-- Items List -->
     <div>
@@ -248,6 +248,4 @@ loadItems();
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

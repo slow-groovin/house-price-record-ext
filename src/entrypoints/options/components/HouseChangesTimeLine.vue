@@ -9,7 +9,7 @@ import { scrollToId } from "@/utils/document";
 import StatusChangeBudget from "@/components/lj/house/StatusChangeBudget.vue";
 import { formatDistanceToNowHoursOrDays } from "@/utils/date";
 import { cn } from "@/utils/shadcn-utils";
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { Icon } from "@iconify/vue";
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
 import { storage } from "#imports";

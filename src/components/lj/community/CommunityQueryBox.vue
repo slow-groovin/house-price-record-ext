@@ -1,56 +1,56 @@
 <script setup lang="ts">
-import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from '@/components/ui/command'
-import {Button} from '@/components/ui/button'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Button } from '@/components/ui/button'
 
-import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
-import {Check} from 'lucide-vue-next'
-import {onMounted, ref} from 'vue'
-import {db} from "@/utils/client/Dexie";
-import {cn} from "@/utils/shadcn-utils";
-import {useInfiniteQuery} from '@tanstack/vue-query'
-import {debounce} from "radash";
-import {Icon} from "@iconify/vue";
+import { Check } from 'lucide-vue-next'
+import { onMounted, ref } from 'vue'
+import { db } from "@/entrypoints/db/Dexie";
+import { cn } from "@/utils/shadcn-utils";
+import { useInfiniteQuery } from '@tanstack/vue-query'
+import { debounce } from "radash";
+import { Icon } from "@iconify/vue";
 
-const {initialCid}=defineProps<{
-  initialCid?:string
+const { initialCid } = defineProps<{
+  initialCid?: string
 }>()
 
 
-const value=defineModel<{cid:string,name:string}>( )
+const value = defineModel<{ cid: string, name: string }>()
 
-const open=ref(false)
-const searchNameStr=ref('')
+const open = ref(false)
+const searchNameStr = ref('')
 
-async function queryInitData(){
-  if(initialCid){
-    const task=await db.communityTasks.where({cid:initialCid}).first()
-    if(task){
-      value.value={cid:task?.cid,name:task!.name??''}
+async function queryInitData() {
+  if (initialCid) {
+    const task = await db.communityTasks.where({ cid: initialCid }).first()
+    if (task) {
+      value.value = { cid: task?.cid, name: task!.name ?? '' }
     }
   }
 }
 
-const queryData = async ( {pageParam=0}) => {
-  if(searchNameStr.value){
-    const res=await db.communityTasks
+const queryData = async ({ pageParam = 0 }) => {
+  if (searchNameStr.value) {
+    const res = await db.communityTasks
       .where('name')
       .startsWith(searchNameStr.value)
       .offset(pageParam * 10)
       .limit(10)
       .toArray()
-    return res.map(c=>({
-      name:c.name,
-      cid:c.cid,
+    return res.map(c => ({
+      name: c.name,
+      cid: c.cid,
     }))
-  }else{
+  } else {
     const res = await db.communityTasks.toCollection()
       .offset(pageParam * 10)
       .limit(10)
       .toArray()
-    return res.map(c=>({
-      name:c.name,
-      cid:c.cid,
+    return res.map(c => ({
+      name: c.name,
+      cid: c.cid,
     }))
   }
 
@@ -68,68 +68,60 @@ const {
 
   isError,
 } = useInfiniteQuery({
-  queryKey: ['queryByCName',searchNameStr],
+  queryKey: ['queryByCName', searchNameStr],
   queryFn: queryData,
   getNextPageParam: (lastPage, pages) => {
-    if(lastPage.length && lastPage.length>=10)
+    if (lastPage.length && lastPage.length >= 10)
       return pages.length
   },
 })
 
 
 
-onMounted(async ()=>{
+onMounted(async () => {
   await queryInitData()
 })
 
 
 
 
-function resetScroll(){
+function resetScroll() {
 
 }
 
-const onSearchTermChange=debounce({delay:1000},(v)=>searchNameStr.value=v)
+const onSearchTermChange = debounce({ delay: 1000 }, (v) => searchNameStr.value = v)
 </script>
 
 <template>
-  <Popover v-model:open="open"   @update:open="resetScroll()">
+  <Popover v-model:open="open" @update:open="resetScroll()">
     <PopoverTrigger as-child>
       <div class="flex items-center ">
-        <Button
-          variant="outline"
-          role="combobox"
-          class="min-w-28 justify-between rounded-none "
-          :class="value?.name?'':'font-light text-gray-300 '"
-        >
-          {{ value? value.name: '输入名称前缀查询...' }}
+        <Button variant="outline" role="combobox" class="min-w-28 justify-between rounded-none "
+          :class="value?.name ? '' : 'font-light text-gray-300 '">
+          {{ value ? value.name : '输入名称前缀查询...' }}
 
 
         </Button>
-        <Icon v-if="value?.name" @click="value=undefined" icon="carbon:close-outline" class=" text-red-500 hover:bg-gray-100"></Icon>
+        <Icon v-if="value?.name" @click="value = undefined" icon="carbon:close-outline"
+          class=" text-red-500 hover:bg-gray-100"></Icon>
 
       </div>
 
     </PopoverTrigger>
     <PopoverContent class="w-[200px] p-0">
-      <Command v-model="value" @update:search-term.lazy="onSearchTermChange" :search-term="searchNameStr" :reset-search-term-on-blur="false">
-        <CommandInput placeholder="输入名字前缀..." class=""/>
+      <Command v-model="value" @update:search-term.lazy="onSearchTermChange" :search-term="searchNameStr"
+        :reset-search-term-on-blur="false">
+        <CommandInput placeholder="输入名字前缀..." class="" />
 
-        <CommandEmpty>没有名字. {{searchNameStr}} </CommandEmpty>
+        <CommandEmpty>没有名字. {{ searchNameStr }} </CommandEmpty>
         <CommandList ref="scrollContainer" id="scrollContainer" class="scrollContainer">
           <CommandGroup>
-            <template v-if="data?.pages" v-for="(page,index) in data.pages" :key="index">
-              <CommandItem
-                v-for="item in page"
-                :value="item"
-                @select="open=false"
-              >
-                <Check
-                  :class="cn(
+            <template v-if="data?.pages" v-for="(page, index) in data.pages" :key="index">
+              <CommandItem v-for="item in page" :value="item" @select="open = false">
+                <Check :class="cn(
                   'mr-2 h-4 w-4',
                   value?.name === item?.name ? 'opacity-100' : 'opacity-0',
-                )"
-                />
+                )" />
                 {{ item?.name }}
               </CommandItem>
             </template>
@@ -141,6 +133,4 @@ const onSearchTermChange=debounce({delay:1000},(v)=>searchNameStr.value=v)
   </Popover>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

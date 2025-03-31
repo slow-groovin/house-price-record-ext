@@ -2,12 +2,12 @@ import { defineBackground } from "#imports";
 import {
   registerBrowserStorageLocalMessage,
   registerDaoMessage,
-} from "@/entrypoints/background/dao";
+} from "@/entrypoints/background/lj-dao-msgs";
 import { addRules, clearRules } from "@/entrypoints/reuse/block";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import { onMessage } from "@@/messaging";
 import { browser } from "wxt/browser";
-import { registerKeRentDaoMessage } from "./ke-rent-dao";
+import { registerKeRentDaoMessage } from "./ke-rent-dao-msgs";
 
 export default defineBackground(() => {
   console.log(`[${new Date().toLocaleString()}]`, "Load background!", {

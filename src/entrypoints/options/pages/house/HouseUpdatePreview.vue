@@ -126,7 +126,7 @@ import { HTMLAttributes, onMounted, ref } from 'vue'
 import { cn } from "@/utils/shadcn-utils";
 import { Icon } from "@iconify/vue";
 import { useRoute } from "vue-router";
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { HousesUpdatePreview } from "@/types/LjUpdatePreview";
 import { Button } from "@/components/ui/button";
 import { updateBatchHouseWithPreview } from "@/entrypoints/reuse/house-update";

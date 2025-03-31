@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import {Button} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import houseTaskJson from './data/mongo-h-task-output.json'
 import houseChangesJson from './data/mongo-h-changes-output.json'
 import communityTaskJson from './data/mongo-c-task-output.json'
@@ -16,14 +16,14 @@ import {
   HouseTaskStatus,
   TaskAddedType
 } from "@/types/lj";
-import {db} from "@/utils/client/Dexie";
-import {AccessRecord} from "@/utils/lib/AcessRecord";
-import {list, random, toInt, uid} from "radash";
-import {extractAndRemove, extractElements, randArray} from "@/utils/array";
-import {ref, toRef} from "vue";
-import {batchProcess} from "@/utils/batch";
-import {useMutation} from "@tanstack/vue-query";
-import {TaskGroup} from "@/types/group";
+import { db } from "@/entrypoints/db/Dexie";
+import { AccessRecord } from "@/utils/lib/AcessRecord";
+import { list, random, toInt, uid } from "radash";
+import { extractAndRemove, extractElements, randArray } from "@/utils/array";
+import { ref, toRef } from "vue";
+import { batchProcess } from "@/utils/batch";
+import { useMutation } from "@tanstack/vue-query";
+import { TaskGroup } from "@/types/group";
 
 const houseData = () => houseTaskJson.map(item => {
   return {
@@ -147,7 +147,7 @@ async function logSingleCommunityAll() {
   const changes = await db.houseChanges.where('cid').equals(task?.cid!).toArray()
   const statusChanges = await db.houseStatusChanges.where('cid').equals(task?.cid!).toArray()
   const records = await db.communityRecords.where('cid').equals(task?.cid!).toArray()
-  console.log({task, records, houses, changes, statusChanges})
+  console.log({ task, records, houses, changes, statusChanges })
 }
 
 const randAccessRecord = () => new AccessRecord(new Date("2023-02-01T16:00:00.000Z"), new Uint32Array(list(random(1, 12)).map(() => random(1, 0xffffffffffffffff))))
@@ -214,7 +214,7 @@ async function genSingleCommunityAll() {
   const changes: HouseChange[] = []
   const statusChanges: HouseStatusChange[] = []
   let at = beginAt
-  let once=true
+  let once = true
   while (at < lastAt) {
     const removed: HousePriceItem[] = []
     const added: HousePriceItem[] = []
@@ -224,11 +224,11 @@ async function genSingleCommunityAll() {
     //随机下架若干h
     const outIndex = randArray(random(0, 3), 0, houses.length)
     const outHouses = extractAndRemove(houses, outIndex)
-    removed.push(...outHouses.map(h => ({hid: h.hid, price: h.totalPrice} as HousePriceItem)))
+    removed.push(...outHouses.map(h => ({ hid: h.hid, price: h.totalPrice } as HousePriceItem)))
     //更新task和changes
     outHouses.forEach(h => {
       h.status = HouseTaskStatus.sold
-      h.soldDate =new Date(at).toLocaleDateString()
+      h.soldDate = new Date(at).toLocaleDateString()
       h.accessRecord.setAccessStatus(new Date(at), true)
       statusChanges.push({
         cid,
@@ -260,9 +260,9 @@ async function genSingleCommunityAll() {
         })
       }
       h.totalPrice = newVal
-      h.unitPrice=newVal*10000/h.area!
+      h.unitPrice = newVal * 10000 / h.area!
       //changes
-      changes.push({at: at, cid: cid, hid: h.hid, newValue: newVal, oldValue: oldVal} as HouseChange)
+      changes.push({ at: at, cid: cid, hid: h.hid, newValue: newVal, oldValue: oldVal } as HouseChange)
     }
     //随机上架若干h
     const upCount = random(0, 3)
@@ -294,10 +294,10 @@ async function genSingleCommunityAll() {
       priceUpList: priceUpList,
       removedItem: removed,
       at: at,
-      avgTotalPrice: toInt(houses.reduce((acc, cur) => acc + cur.totalPrice!, 0) / houses.length)??undefined,
-      avgUnitPrice: toInt(houses.reduce((acc, cur) => acc + cur.unitPrice!, 0) / houses.length)??undefined,
+      avgTotalPrice: toInt(houses.reduce((acc, cur) => acc + cur.totalPrice!, 0) / houses.length) ?? undefined,
+      avgUnitPrice: toInt(houses.reduce((acc, cur) => acc + cur.unitPrice!, 0) / houses.length) ?? undefined,
       calcOnSellCount: houses.length,
-      houseList: houses.map(h=>( {...h,price:h.totalPrice} as HousePriceItem)),
+      houseList: houses.map(h => ({ ...h, price: h.totalPrice } as HousePriceItem)),
       name: "t001_NAME",
       onSellCount: houses.length,
       pageNo: 0,
@@ -308,31 +308,31 @@ async function genSingleCommunityAll() {
 
     //随机生成多条不变动记录
     if (random(0, 10) < 3) {
-      record.priceDownList=[]
-      record.priceUpList=[]
-      record.removedItem=[]
-      record.addedItem=[]
+      record.priceDownList = []
+      record.priceUpList = []
+      record.removedItem = []
+      record.addedItem = []
       for (let i = 0; i < random(1, 5); i++) {
         at = at + random(1, 72) * 60 * 60 * 1000 //随机1~72小时
-        record.at=at
-        records.push({...record})
+        record.at = at
+        records.push({ ...record })
       }
     }
 
     at = at + random(1, 4) * 7 * 24 * 60 * 60 * 1000 //随机1~4周
-    if(at > lastAt && once){ //最后一次, 用最新的时间
-      at=lastAt-1
-      once=false
+    if (at > lastAt && once) { //最后一次, 用最新的时间
+      at = lastAt - 1
+      once = false
     }
   }
 
-  return {task, allHouses, records, changes, statusChanges}
+  return { task, allHouses, records, changes, statusChanges }
 }
 
 async function addMockData() {
   const rs = await genSingleCommunityAll()
   singleCommunityMockData.value = rs
-  const {task, allHouses, records, changes, statusChanges} = rs
+  const { task, allHouses, records, changes, statusChanges } = rs
   //delete by cid
   await db.communityTasks.where('cid').equals(task.cid).delete()
   await db.communityRecords.where('cid').equals(task.cid).delete()
@@ -347,55 +347,55 @@ async function addMockData() {
   await db.houseStatusChanges.bulkAdd(statusChanges)
 }
 
-const SIZE=100000
-const genId=()=>list(2500,5000+SIZE)
-async function genManyCommunityTasks(){
-  await batchProcess(genId(),10000,async (ids)=>{
-    await db.communityTasks.bulkAdd(ids.map(id=>({
+const SIZE = 100000
+const genId = () => list(2500, 5000 + SIZE)
+async function genManyCommunityTasks() {
+  await batchProcess(genId(), 10000, async (ids) => {
+    await db.communityTasks.bulkAdd(ids.map(id => ({
       id,
-      cid:'gen_c_'+id,
-      avgTotalPrice: random(1,1500),
-      avgUnitPrice: random(10000,200000),
+      cid: 'gen_c_' + id,
+      avgTotalPrice: random(1, 1500),
+      avgUnitPrice: random(10000, 200000),
       city: "gen",
-      createdAt: new Date().getTime()+random(-600*24*60*60*1000,0),
-      doneCountIn90Days: random(0,100),
-      lastRunningAt: new Date().getTime()+random(-15*24*60*60*1000,0),
-      name: "name_gen_c"+id+uid(16),
-      onSellCount: random(0,150),
-      runningCount: random(0,100),
+      createdAt: new Date().getTime() + random(-600 * 24 * 60 * 60 * 1000, 0),
+      doneCountIn90Days: random(0, 100),
+      lastRunningAt: new Date().getTime() + random(-15 * 24 * 60 * 60 * 1000, 0),
+      name: "name_gen_c" + id + uid(16),
+      onSellCount: random(0, 150),
+      runningCount: random(0, 100),
       status: CommunityTaskStatus.running,
-      visitCountIn90Days: random(0,100)
+      visitCountIn90Days: random(0, 100)
     } as CommunityTask)))
   })
 }
-async function deleteGenManyCommunityTasks(){
-  await batchProcess(genId(),10000,async (ids)=>{
-    await  db.communityTasks.bulkDelete(ids)
+async function deleteGenManyCommunityTasks() {
+  await batchProcess(genId(), 10000, async (ids) => {
+    await db.communityTasks.bulkDelete(ids)
   })
 }
-const genMut=useMutation({
+const genMut = useMutation({
   mutationFn: genManyCommunityTasks,
-  onSuccess(){alert('插入完毕')}
+  onSuccess() { alert('插入完毕') }
 })
-const isGenPending=toRef(genMut.isPending)
+const isGenPending = toRef(genMut.isPending)
 
-const delGenMut=useMutation({
+const delGenMut = useMutation({
   mutationFn: deleteGenManyCommunityTasks,
-  onSuccess(){alert('删除完毕')}
+  onSuccess() { alert('删除完毕') }
 })
-const isDelGenPending=toRef(delGenMut.isPending)
+const isDelGenPending = toRef(delGenMut.isPending)
 
 
-const GROUP_START=100
-async function  genGroups(){
+const GROUP_START = 100
+async function genGroups() {
   const groupList: TaskGroup[] = []
   for (let i = 0; i < 100; i++) {
     groupList.push({
-      id: i+GROUP_START,
-      name: "group_"+i,
-      idList: list(2500,2500+random(0,30)).map(i=>'gen_c_'+i),
-      createdAt: Date.now()-random(0,99999999),
-      lastRunningAt: Date.now()-random(0,19999999),
+      id: i + GROUP_START,
+      name: "group_" + i,
+      idList: list(2500, 2500 + random(0, 30)).map(i => 'gen_c_' + i),
+      createdAt: Date.now() - random(0, 99999999),
+      lastRunningAt: Date.now() - random(0, 19999999),
       notification: false,
       notifyInterval: 24
     })
@@ -403,9 +403,9 @@ async function  genGroups(){
   await db.communityTaskGroups.bulkAdd(groupList)
   alert('gen c groups suc')
 }
-async function delGroups(){
-  await db.communityTaskGroups.where('id').between(GROUP_START,GROUP_START+100).delete()
-  await db.communityTasks.where('id').between(GROUP_START,GROUP_START+100).delete()
+async function delGroups() {
+  await db.communityTaskGroups.where('id').between(GROUP_START, GROUP_START + 100).delete()
+  await db.communityTasks.where('id').between(GROUP_START, GROUP_START + 100).delete()
   alert('del c groups suc')
 }
 </script>
@@ -435,7 +435,7 @@ async function delGroups(){
       <Button @click="logSingleCommunityAll">log all</Button>
       <Button @click="addMockData">gen Single community mock data</Button>
       <div v-if="singleCommunityMockData?.task">
-        <a :href="'options.html#/c/task/detail?id='+singleCommunityMockData.task.cid" target="_blank">go detail </a>
+        <a :href="'options.html#/c/task/detail?id=' + singleCommunityMockData.task.cid" target="_blank">go detail </a>
         <details>
           <summary>single community mock data</summary>
           <pre>{{ singleCommunityMockData }}</pre>
@@ -446,12 +446,13 @@ async function delGroups(){
     <div>
       <h2>batch insert for query performance test</h2>
 
-      <Button @click="genMut.mutate" :disabled="isGenPending">[{{genMut.status}}]gen a lot of Community Tasks</Button>
-      {{delGenMut.status}}
+      <Button @click="genMut.mutate" :disabled="isGenPending">[{{ genMut.status }}]gen a lot of Community Tasks</Button>
+      {{ delGenMut.status }}
 
-      <Button @click="delGenMut.mutate" :disabled="isDelGenPending">[{{delGenMut.status}}]delete Community Tasks  generated 👆 </Button>
-      <pre v-if="genMut.error">{{genMut.error}}</pre>
-      <pre v-if="delGenMut.error">{{delGenMut.error}}</pre>
+      <Button @click="delGenMut.mutate" :disabled="isDelGenPending">[{{ delGenMut.status }}]delete Community Tasks
+        generated 👆 </Button>
+      <pre v-if="genMut.error">{{ genMut.error }}</pre>
+      <pre v-if="delGenMut.error">{{ delGenMut.error }}</pre>
 
     </div>
 
@@ -468,12 +469,10 @@ async function delGroups(){
   <div class="c-block">
     <h1> data select/purge</h1>
     <div class="flex flex-row flex-wrap gap-4">
-      <Button @click="logCidUndefined" >log cid is undefined</Button>
-      <Button @click="findDuplicateHid().then(rs=>console.log(rs))">log duplicate hids</Button>
+      <Button @click="logCidUndefined">log cid is undefined</Button>
+      <Button @click="findDuplicateHid().then(rs => console.log(rs))">log duplicate hids</Button>
     </div>
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
 import { sendMessage } from "@@/messaging";
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { HouseChange, HouseItem, HouseTask } from "@/types/lj";
 import CalendarGraph from "@/components/lj/CalendarGraph.vue";
 import { handleNormalPage } from '@/entrypoints/reuse/house-control2'

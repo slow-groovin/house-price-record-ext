@@ -1,31 +1,31 @@
 <script setup lang="ts">
 //
-import {db} from "@/utils/client/Dexie";
-import {HouseStatusChange} from "@/types/lj";
-import {calcOffset} from "@/utils/table-utils";
-import {onMounted, ref} from "vue";
+import { db } from "@/entrypoints/db/Dexie";
+import { HouseStatusChange } from "@/types/lj";
+import { calcOffset } from "@/utils/table-utils";
+import { onMounted, ref } from "vue";
 import HouseChangesTimeLine from "@/entrypoints/options/components/HouseChangesTimeLine.vue";
-import {frequentFieldZhMap, HouseStatusChangeQueryCondition, SortState} from "@/types/query-condition";
-import {ArgCache} from "@/utils/lib/ArgCache";
-import {Collection, InsertType} from "dexie";
-import {isNumber} from "radash";
+import { frequentFieldZhMap, HouseStatusChangeQueryCondition, SortState } from "@/types/query-condition";
+import { ArgCache } from "@/utils/lib/ArgCache";
+import { Collection, InsertType } from "dexie";
+import { isNumber } from "radash";
 import GenericSortDock from "@/entrypoints/options/components/GenericSortDock.vue";
 import SelectSwitchButton from "@/components/custom/SelectSwitchButton.vue";
 import HouseStatusChangeQueryDock from "@/entrypoints/options/components/HouseStatusChangeQueryDock.vue";
-import {useExtTitle} from "@/composables/useExtInfo";
-import {useDevSetting} from "@/entrypoints/reuse/global-variables";
+import { useExtTitle } from "@/composables/useExtInfo";
+import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 
-const {isDebug}=useDevSetting()
+const { isDebug } = useDevSetting()
 
 useExtTitle('状态变更')
 
 
 const queryCondition = ref<HouseStatusChangeQueryCondition>({})
-const sortCondition=ref<SortState<HouseStatusChange>>({})
+const sortCondition = ref<SortState<HouseStatusChange>>({})
 const queryCost = ref(0)
 const argCache = new ArgCache()
-const isShowMultiColumn=ref(false)
-const isShowDetail=ref(false)
+const isShowMultiColumn = ref(false)
+const isShowDetail = ref(false)
 /*
 data
  */
@@ -42,12 +42,12 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   /**
    * index match
    */
-  const {atMax, atMin, cidInclude, hidInclude, oldValue,newValue} = queryCondition.value
-  const {field, order} = sortCondition.value
+  const { atMax, atMin, cidInclude, hidInclude, oldValue, newValue } = queryCondition.value
+  const { field, order } = sortCondition.value
 
-  if(order && field){
-    query=db.houseStatusChanges.orderBy(field)
-  }else  if (atMin || atMax) {
+  if (order && field) {
+    query = db.houseStatusChanges.orderBy(field)
+  } else if (atMin || atMax) {
     if (atMin && atMax) {
       query = db.houseStatusChanges.where('at').between(new Date(atMin).getTime(), new Date(atMax).getTime(), true, true)
     } else if (atMin) {
@@ -58,33 +58,33 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   } else if (isNumber(oldValue)) {
     query = db.houseStatusChanges.where('oldValue').equals(oldValue)
 
-  } else if(isNumber(newValue)){
+  } else if (isNumber(newValue)) {
     query = db.houseStatusChanges.where('newValue').equals(newValue)
-  } else{
-    query=db.houseStatusChanges.toCollection()
+  } else {
+    query = db.houseStatusChanges.toCollection()
   }
 
 
   /**
    * filter
    */
-  const filters:((item:HouseStatusChange)=>boolean)[]=[]
-  if(hidInclude){
-    filters.push(item=>item.hid.includes(hidInclude))
+  const filters: ((item: HouseStatusChange) => boolean)[] = []
+  if (hidInclude) {
+    filters.push(item => item.hid.includes(hidInclude))
   }
-  if(cidInclude){
-    filters.push(item=>item.cid.includes(cidInclude))
+  if (cidInclude) {
+    filters.push(item => item.cid.includes(cidInclude))
   }
-  if(oldValue){
-    filters.push(item=>item.oldValue===oldValue)
+  if (oldValue) {
+    filters.push(item => item.oldValue === oldValue)
   }
-  if(newValue){
-    filters.push(item=>item.newValue===newValue)
+  if (newValue) {
+    filters.push(item => item.newValue === newValue)
   }
 
   //应用filter
-  if(filters.length){
-    query = query.filter(item=>filters.every(f=>f(item)))
+  if (filters.length) {
+    query = query.filter(item => filters.every(f => f(item)))
   }
 
 
@@ -92,8 +92,8 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
 
   rowCount.value = await query.count()
 
-  if(order!=='asc'){
-    query=query.reverse()
+  if (order !== 'asc') {
+    query = query.reverse()
   }
 
   data.value = await query
@@ -127,35 +127,31 @@ onMounted(async () => {
 
   <div class="mb-5 rounded p-2 border">
     查询条件:
-    <HouseStatusChangeQueryDock v-model="queryCondition" @update="onApplyQueryCondition"/>
+    <HouseStatusChangeQueryDock v-model="queryCondition" @update="onApplyQueryCondition" />
   </div>
 
   <div class="mb-5 rounded p-2 border">
     排序:
-    <GenericSortDock v-model="sortCondition"  :fields="['at']" :field-text-map="frequentFieldZhMap" @update="onApplyQueryCondition"/>
+    <GenericSortDock v-model="sortCondition" :fields="['at']" :field-text-map="frequentFieldZhMap"
+      @update="onApplyQueryCondition" />
   </div>
 
 
-  <div v-if="isDebug">{{ queryCondition }} {{sortCondition}}</div>
+  <div v-if="isDebug">{{ queryCondition }} {{ sortCondition }}</div>
 
   <div class="flex items-center p-1 my-2 gap-4">
-    <div>      共 {{rowCount}} 条    </div>
-    <div>      查询耗时: {{ queryCost / 1000 }} 秒    </div>
+    <div> 共 {{ rowCount }} 条 </div>
+    <div> 查询耗时: {{ queryCost / 1000 }} 秒 </div>
     <SelectSwitchButton v-model="isShowMultiColumn">多行显示</SelectSwitchButton>
     <SelectSwitchButton v-model="isShowDetail">显示详细内容</SelectSwitchButton>
   </div>
 
 
-  <HouseChangesTimeLine :data="data"
-                        :row-count="rowCount"
-                        :is-show-detail="isShowDetail"
-                        @on-pagination-change="queryData"
-                        :class="isShowMultiColumn?'flex-none grid grid-cols-3 grid-flow-row':''"
-                        type="status"/>
+  <HouseChangesTimeLine :data="data" :row-count="rowCount" :is-show-detail="isShowDetail"
+    @on-pagination-change="queryData" :class="isShowMultiColumn ? 'flex-none grid grid-cols-3 grid-flow-row' : ''"
+    type="status" />
 
 
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

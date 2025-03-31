@@ -84,7 +84,7 @@ import { storage } from "#imports";
 import { getIndexedDBUsage } from "@/utils/browser";
 import { useExtTitle } from "@/composables/useExtInfo";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
-import { db } from "@/utils/client/Dexie";
+import { db } from "@/entrypoints/db/Dexie";
 import { Button } from "@/components/ui/button";
 
 const { isDebug } = useDevSetting()
