@@ -8,7 +8,7 @@ import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import { sendMessage } from '@@/messaging';
 import { Icon } from "@iconify/vue";
 import { onMounted, ref } from "vue";
-import { KeRentCommunityTask, KeRentModelUtils } from '../../../types/lj-rent';
+import { RentCommunityTask, RentModelUtils } from '@/types/rent';
 import { parseAllOfKeRentCommunity } from "../util/ke-rent-community-dom-parse";
 
 const { isDebug } = useDevSetting()
@@ -16,7 +16,7 @@ const { isDebug } = useDevSetting()
 
 const parsedResult = ref<Awaited<ReturnType<typeof parseAllOfKeRentCommunity>>>()
 const cid = ref<string | undefined>()
-const taskInDb = ref<KeRentCommunityTask>()
+const taskInDb = ref<RentCommunityTask>()
 onMounted(async () => {
   await initParseAndQuery()
   console.log('parsedRs', parsedResult.value)
@@ -44,7 +44,7 @@ async function createTask() {
   if (!parsedResult.value?.cid) {
     throw new Error('item not exist')
   }
-  const newTask = KeRentModelUtils.newCommunityTaskFromItem(parsedResult.value)
+  const newTask = RentModelUtils.newCommunityTaskFromItem(parsedResult.value)
   const resp = await sendMessage('addKeRentCommunityTask', newTask)
   console.log('addTask suc.', resp)
   // await db.communityTasks.add(newTask)
@@ -73,7 +73,7 @@ async function queryTask(cid: string) {
     <div class="flex flex-col gap-2">
       <h2 class="text-blue-500 font-extrabold">
         租房小区列表页面
-        <span class="ml-4 text-primary">{{ parsedResult?.name ?? '' }}</span>
+        <span class="ml-4 text-blue-500">{{ parsedResult?.name ?? '' }}</span>
       </h2>
 
       <details v-if="isDebug">
@@ -118,7 +118,7 @@ async function queryTask(cid: string) {
         </table>
 
         <Button v-if="cid && parsedResult && parsedResult.city" @click="openOption()"
-          class="w-fit [&_svg]:size-4 p-1 self-center">
+          class="w-fit [&_svg]:size-4 p-1 self-center bg-blue-500">
           <Icon icon="solar:play-bold" />
           去手动运行
         </Button>

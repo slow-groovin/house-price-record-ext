@@ -1,7 +1,8 @@
 export interface PageState {
-	pageIndex: number
-	pageSize: number
+  pageIndex: number;
+  pageSize: number;
 }
 export function calcOffset(pageIndex: number, pageSize: number): number {
-	return (pageIndex - 1) * pageSize
+  if (!pageIndex) return 0;
+  return (pageIndex - 1) * pageSize;
 }

@@ -7,6 +7,8 @@ import { initSQLite, SQLiteDB } from '@subframe7536/sqlite-wasm'
 import { useIdbStorage } from '@subframe7536/sqlite-wasm/idb'
 import { ref, onMounted } from 'vue' // 确保导入 ref 和 onMounted
 import { like, select } from 'sql-bricks'
+import { KeRentDao } from '@/entrypoints/db/rent-dao'
+import { getDb } from '@/entrypoints/db/sqlite'
 // optional url
 // const url = 'https://cdn.jsdelivr.net/npm/@subframe7536/sqlite-wasm@0.5.3/dist/wa-sqlite-async.wasm'
 // const url1 = 'https://cdn.jsdelivr.net/gh/subframe7536/sqlite-wasm@v0.5.0/wa-sqlite-fts5/wa-sqlite-async.wasm'
@@ -349,6 +351,45 @@ async function describeAllTables() {
   }
 }
 
+async function describeAllTablesOfProduction() {
+  const db = await getDb()
+  try {
+    // 首先获取所有表名
+    const tablesResult = await db.run("SELECT name FROM sqlite_master WHERE type='table';")
+    const tableNames = tablesResult.map(t => t.name)
+
+    if (tableNames.length === 0) {
+      console.log('No tables found in the database.')
+      alert('No tables found in the database.')
+      return
+    }
+
+    console.log(`Found tables: ${tableNames.join(', ')}. Describing structure...`)
+    const results: any[] = []
+    // 遍历每个表并获取其结构
+    for (const tableName of tableNames) {
+      // 使用 PRAGMA table_info 获取表结构
+      const tableInfo = await db.run(`PRAGMA table_info(${tableName});`)
+      const rs = await db.run(`SELECT count(*) as count FROM ${tableName}`)
+
+      let result = `${tableName} ${rs[0]['count']}`
+      tableInfo.forEach(item => {
+        const { name, type, pk, not_null } = item
+        result += `\n  ${name} ${type} not_null: ${not_null} pk: ${pk}`
+      })
+      result += '\n'
+      results.push(result)
+
+      console.log(tableInfo)
+    }
+    dataStr.value = results.join('\n')
+
+  } catch (error) {
+    console.error('Failed to describe tables:', error)
+    alert(`Failed to describe tables: ${error}`)
+  }
+}
+
 async function requestPersistentStorage() {
   if (navigator.storage && navigator.storage.persist) {
     const isPersisted = await navigator.storage.persisted();
@@ -400,7 +441,7 @@ async function requestPersistentStorage() {
       <button @click="dropIndex" :disabled="!ready">DROP INDEX</button>
       <!-- 批量插入测试 -->
       <div>
-        <button @click="testBatchInsertAbility(10000)" :disabled="!ready || isInserting">
+        <button @click="testBatchInsertAbility(1000000)" :disabled="!ready || isInserting">
           Test Batch Insert (10k rows)
         </button>
         <button @click="stopTestBatchInsertAbility" :disabled="!isInserting">
@@ -419,6 +460,11 @@ async function requestPersistentStorage() {
       <pre
         v-if="allTypesData.length">All Types Data (showing first 100):\n{{ JSON.stringify(allTypesData, null, 2) }}</pre>
       <p v-else-if="sqliteDb">No data in all_types_table yet or query failed.</p>
+    </section>
+
+    <section>
+      <button @click="describeAllTablesOfProduction">describe all tables(prod)</button>
+
     </section>
 
   </div>

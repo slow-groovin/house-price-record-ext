@@ -233,6 +233,17 @@ export function genCommunityPageUrl(
   return `https://${city}.lianjia.com/ershoufang/${pageFlag}${orderFlag}c${cid}/`;
 }
 
+//https://bj.zu.ke.com/zufang/pg2rco11c1111027378998/#contentList
+export function genKeRentCommunityPageUrl(
+  city: string,
+  cid: string,
+  page: number,
+  order: "time" | "default" = "time"
+): string {
+  const orderFlag = order === "default" ? "" : "rco11";
+  const pageFlag = page === 1 ? "" : `pg${page}`;
+  return `https://${city}.zu.ke.com/zufang/${pageFlag}${orderFlag}c${cid}/#contentList`;
+}
 /**
  * 生成成交页的url
  */
@@ -248,7 +259,13 @@ export function genCommunitySoldPageUrl(
 export function genHousePageUrl(city: string, hid: string): string {
   return `https://${city}.lianjia.com/ershoufang/${hid}.html`;
 }
+export function genKeRentHousePageUrl(city: string, rid: string): string {
+  return `https://${city}.zu.ke.com/zufang/${rid}`;
+}
 
 export function genOptionCommunityUrl(cid: string): string {
   return "#/c/task/detail?id=" + cid;
+}
+export function genOptionKeRentCommunityUrl(cid: string): string {
+  return "#/rent/c/task/detail?id=" + cid;
 }

@@ -1,4 +1,4 @@
-<template >
+<template>
   <!--
   Prompt: 创建一个QuerySortDock组件，实现单字段排序功能，使用Vue 3组合式API、TypeScript、
   Tailwind CSS和flex布局。组件应该是headless的，通过prop接收样式类。使用defineModel
@@ -10,30 +10,26 @@
   -->
   <div :class="cn('flex flex-wrap gap-2', props.class)">
     <!-- 遍历字段并创建排序按钮 -->
-    <button
-      v-for="field in fields"
-      :key="field"
-      @click="toggleSort(field)"
+    <button v-for="field in fields" :key="field" @click="toggleSort(field)"
       class="flex items-center gap-1 px-2 py-1 rounded border  bg-neutral-200 hover:bg-amber-50"
-      :class="{'ring-2 ring-amber-500 bg-amber-50':modelValue?.field === field}"
-    >
-      <span>{{ fieldTextMap[field]??field }}</span>
+      :class="{ 'ring-2 ring-amber-500 bg-amber-50': modelValue?.field === field }">
+      <span>{{ fieldTextMap?.[field] ?? field }}</span>
       <!-- 显示排序图标 -->
-      <Icon  :icon="modelValue?.field === field?getSortIcon(modelValue?.order):'bx:sort'" />
+      <Icon :icon="modelValue?.field === field ? getSortIcon(modelValue?.order) : 'bx:sort'" />
     </button>
   </div>
 </template>
 
 <script setup lang="ts" generic="T">
-import {computed, HTMLAttributes} from 'vue'
+import { computed, HTMLAttributes } from 'vue'
 import { Icon } from '@iconify/vue'
 import { cn } from "@/utils/shadcn-utils"
-import {SortState} from "@/types/query-condition";
+import { SortState } from "@/types/query-condition";
 
 // 定义组件的props
 interface Props<T> {
   fields: (keyof T)[],
-  fieldTextMap?:Record<string,string>,
+  fieldTextMap?: Record<keyof T, string>,
   class?: HTMLAttributes['class']
 }
 
@@ -50,15 +46,15 @@ const emit = defineEmits<{
 
 // 切换排序状态
 const toggleSort = (field: keyof T) => {
-  if(!modelValue.value){
+  if (!modelValue.value) {
     return
   }
   let newOrder: 'asc' | 'desc' | undefined = 'desc'
-  let newField: keyof T|undefined=field
+  let newField: keyof T | undefined = field
   if (modelValue.value?.field === field) {
     if (modelValue.value?.order === 'desc') newOrder = 'asc'
     else if (modelValue.value?.order === 'asc') {
-      newField=undefined
+      newField = undefined
       newOrder = undefined
     }
   }

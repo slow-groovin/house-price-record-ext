@@ -4,33 +4,33 @@ import "~/assets/shacn.css";
 import App from "./App.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 import OptionDebugEntry from "@/entrypoints/options/pages/OptionDebugEntry.vue";
-import MainLayout from "@/entrypoints/options/pages/layout/MainLayout.vue";
+import MainLayout from "@/entrypoints/options/components/layout/MainLayout.vue";
 import HomePage from "@/entrypoints/options/pages/HomePage.vue";
 
 import { VueQueryPlugin } from "@tanstack/vue-query";
-import CommunityUpdatePreview from "@/entrypoints/options/pages/community/CommunityUpdatePreview.vue";
-import CommunityDetailPage from "@/entrypoints/options/pages/community/CommunityDetailPage.vue";
-import CommunityRecordPage from "@/entrypoints/options/pages/community/CommunityRecordPage.vue";
-import CommunityTaskList from "@/entrypoints/options/pages/community/CommunityTaskList.vue";
-import BatchRunningNotice from "@/entrypoints/options/pages/community/BatchRunningNotice.vue";
+import CommunityUpdatePreview from "@/entrypoints/options/pages/sell/community/CommunityUpdatePreview.vue";
+import CommunityDetailPage from "@/entrypoints/options/pages/sell/community/CommunityDetailPage.vue";
+import CommunityRecordPage from "@/entrypoints/options/pages/sell/community/CommunityRecordPage.vue";
+import CommunityTaskList from "@/entrypoints/options/pages/sell/community/CommunityTaskList.vue";
+import BatchRunningNotice from "@/entrypoints/options/pages/sell/community/BatchRunningNotice.vue";
 
-import KeRentCommunityUpdatePreview from "@/entrypoints/options/pages/community/ke-rent/KeRentCommunityUpdatePreview.vue";
-import KeRentCommunityDetailPage from "@/entrypoints/options/pages/community/ke-rent/KeRentCommunityDetailPage.vue";
-import KeRentCommunityRecordPage from "@/entrypoints/options/pages/community/ke-rent/KeRentCommunityRecordPage.vue";
-import KeRentCommunityTaskList from "@/entrypoints/options/pages/community/ke-rent/KeRentCommunityTaskList.vue";
-import KeRentBatchRunningNotice from "@/entrypoints/options/pages/community/ke-rent/KeRentBatchRunningNotice.vue";
+import RentCommunityUpdatePreview from "@/entrypoints/options/pages/rent/community/RentCommunityUpdatePreview.vue";
+import RentCommunityDetailPage from "@/entrypoints/options/pages/rent/community/RentCommunityDetailPage.vue";
+import RentCommunityRecordPage from "@/entrypoints/options/pages/rent/community/RentCommunityRecordPage.vue";
+import RentCommunityTaskList from "@/entrypoints/options/pages/rent/community/RentCommunityTaskList.vue";
+import RentBatchRunningNotice from "@/entrypoints/options/pages/rent/community/RentBatchRunningNotice.vue";
 
-import CommunityGroupList from "@/entrypoints/options/pages/community/CommunityGroupList.vue";
+import CommunityGroupList from "@/entrypoints/options/pages/sell/community/CommunityGroupList.vue";
 
 import SettingsPage from "@/entrypoints/options/pages/SettingsPage.vue";
-import HouseTaskList from "@/entrypoints/options/pages/house/HouseTaskList.vue";
-import HouseChangeList from "@/entrypoints/options/pages/house/HouseChangeList.vue";
-import HouseStatusChangeList from "@/entrypoints/options/pages/house/HouseStatusChangeList.vue";
-import HouseDetailPage from "@/entrypoints/options/pages/house/HouseDetailPage.vue";
-import HouseUpdatePreview from "@/entrypoints/options/pages/house/HouseUpdatePreview.vue";
+import HouseTaskList from "@/entrypoints/options/pages/sell/house/HouseTaskList.vue";
+import HouseChangeList from "@/entrypoints/options/pages/sell/house/HouseChangeList.vue";
+import HouseStatusChangeList from "@/entrypoints/options/pages/sell/house/HouseStatusChangeList.vue";
+import HouseDetailPage from "@/entrypoints/options/pages/sell/house/HouseDetailPage.vue";
+import HouseUpdatePreview from "@/entrypoints/options/pages/sell/house/HouseUpdatePreview.vue";
 import TaskGroupDetail from "@/entrypoints/options/pages/TaskGroupDetail.vue";
-import HouseGroupList from "@/entrypoints/options/pages/house/HouseGroupList.vue";
-import HouseBatchRunningNotice from "@/entrypoints/options/pages/house/BatchRunningNotice.vue";
+import HouseGroupList from "@/entrypoints/options/pages/sell/house/HouseGroupList.vue";
+import HouseBatchRunningNotice from "@/entrypoints/options/pages/sell/house/BatchRunningNotice.vue";
 import BlocksPage from "@/entrypoints/options/pages/BlocksPage.vue";
 import IFrameDocSite from "@/entrypoints/options/pages/IFrameDocSite.vue";
 import StartupIntro from "@/entrypoints/options/pages/docs/StartupIntro.vue";
@@ -39,7 +39,9 @@ import ExportImport from "@/entrypoints/options/pages/ExportImport.vue";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import StartupIntroDetail from "./pages/docs/StartupIntroDetail.vue";
 import NotSupport from "./pages/docs/NotSupport.vue";
-
+import RentHousePriceChangeList from "@/entrypoints/options/pages/rent/house/RentHousePriceChangeList.vue";
+import RentHouseStatusChangeList from "@/entrypoints/options/pages/rent/house/RentHouseStatusChangeList.vue";
+import RentHouseTaskList from "@/entrypoints/options/pages/rent/house/RentHouseTaskList.vue";
 const { isDisguise } = useDevSetting();
 
 const router = createRouter({
@@ -79,21 +81,27 @@ const router = createRouter({
         /**
          * ke rent
          */
-        { path: "/ke/rent/c/task/list", component: KeRentCommunityTaskList },
+        { path: "/rent/c/task/list", component: RentCommunityTaskList },
+        { path: "/rent/c/task/detail", component: RentCommunityDetailPage },
+        { path: "/rent/c/record", component: RentCommunityRecordPage },
         {
-          path: "/ke/rent/c/task/detail",
-          component: KeRentCommunityDetailPage,
+          path: "/rent/c/update/preview",
+          component: RentCommunityUpdatePreview,
         },
-        { path: "/ke/rent/c/record", component: KeRentCommunityRecordPage },
+        { path: "/rent/h/task/list", component: RentHouseTaskList },
         {
-          path: "/ke/rent/c/update/preview",
-          component: KeRentCommunityUpdatePreview,
+          path: "/rent/h/task/price/change",
+          component: RentHousePriceChangeList,
+        },
+        {
+          path: "/rent/h/task/status/change",
+          component: RentHouseStatusChangeList,
         },
       ],
     },
     { path: "/h/running/notice", component: HouseBatchRunningNotice },
     { path: "/c/running/notice", component: BatchRunningNotice },
-    { path: "/ke/rent/c/running/notice", component: KeRentBatchRunningNotice },
+    { path: "/ke/rent/c/running/notice", component: RentBatchRunningNotice },
   ],
 });
 console.log("init options vue");

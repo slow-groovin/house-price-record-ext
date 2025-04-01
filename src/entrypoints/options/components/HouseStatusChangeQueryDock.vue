@@ -21,7 +21,8 @@
         <SelectButton :value="undefined" v-model="queryCondition.oldValue">全部</SelectButton>
         <SelectButton :value="HouseTaskStatus.void" v-model="queryCondition.oldValue">未创建</SelectButton>
         <SelectButton :value="HouseTaskStatus.running" v-model="queryCondition.oldValue">正常</SelectButton>
-        <SelectButton :value="HouseTaskStatus.sold" v-model="queryCondition.oldValue">成交</SelectButton>
+        <SelectButton :value="HouseTaskStatus.sold" v-model="queryCondition.oldValue" v-if="type === 'sell'">成交
+        </SelectButton>
         <SelectButton :value="HouseTaskStatus.miss" v-model="queryCondition.oldValue">下架</SelectButton>
       </div>
     </div>
@@ -32,7 +33,8 @@
         <SelectButton :value="undefined" v-model="queryCondition.newValue">全部</SelectButton>
         <SelectButton :value="HouseTaskStatus.void" v-model="queryCondition.newValue">未创建</SelectButton>
         <SelectButton :value="HouseTaskStatus.running" v-model="queryCondition.newValue">正常</SelectButton>
-        <SelectButton :value="HouseTaskStatus.sold" v-model="queryCondition.newValue">成交</SelectButton>
+        <SelectButton :value="HouseTaskStatus.sold" v-model="queryCondition.newValue" v-if="type === 'sell'">成交
+        </SelectButton>
         <SelectButton :value="HouseTaskStatus.miss" v-model="queryCondition.newValue">下架</SelectButton>
       </div>
     </div>
@@ -83,10 +85,12 @@ import { Button } from '@/components/ui/button';
 
 // Props定义
 interface Props {
-  class?: HTMLAttributes['class']
+  class?: HTMLAttributes['class'],
+  type?: 'sell' | 'rent'
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'sell',
   class: undefined
 })
 

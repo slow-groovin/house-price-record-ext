@@ -39,7 +39,7 @@ export default defineConfig({
   vite: (configEnv) => ({
     plugins: [
       // customStrToUtf8(),
-      // vueJsx(),
+      vueJsx(),
       // visualizer({
       //   open: true, // 构建完成后自动打开浏览器显示分析图表
       //   filename: "stats.html", // 生成的分析文件名称

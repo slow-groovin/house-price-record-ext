@@ -16,6 +16,7 @@ import VueSonnerToast from "@/components/debug/VueSonnerToast.vue";
 import MessageTest from "@/components/debug/MessageTest.vue";
 import DialogSample from "@/components/debug/DialogSample.vue";
 import SqliteWasm3rd from "./SqliteWasm3rd.vue";
+import RentDataTest from "./RentDataTest.vue";
 
 /**
  * 非数据, 不用background的storage, 仅用页面的localStorage即可
@@ -35,7 +36,7 @@ const title = useTitle()
 
 const components = [UncategorizedDebugFunctions, TabsManage, NetRuleTest, DexieIndexedDB, UnovisSamples, WxtStorage,
   CalendarGraphSample, CommunityDebug, FakeDataInsert, TanstackTable, DialogSample,
-  VueSonnerToast, MessageTest, SqliteWasm3rd
+  VueSonnerToast, MessageTest, SqliteWasm3rd, RentDataTest,
 ]
 </script>
 

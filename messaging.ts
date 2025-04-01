@@ -8,7 +8,7 @@ import {
   HouseTask,
 } from "@/types/lj";
 import { HouseNormal } from "@/types/LjUpdatePreview";
-import { KeRentCommunityTask } from "@/types/lj-rent";
+import { RentCommunityTask } from "@/types/rent";
 
 interface ProtocolMap {
   houseItem(houseItem: HouseItem): Promise<{ resp: string }>;
@@ -39,10 +39,8 @@ interface ProtocolMap {
   /**
    * ke rent
    */
-  addKeRentCommunityTask(task: KeRentCommunityTask): Promise<{ resp: string }>;
-  queryKeRentCommunityTask(data: {
-    cid: string;
-  }): Promise<KeRentCommunityTask[]>;
+  addKeRentCommunityTask(task: RentCommunityTask): Promise<{ resp: string }>;
+  queryKeRentCommunityTask(data: { cid: string }): Promise<RentCommunityTask[]>;
 }
 
 export type UpdateHouseParam = {
