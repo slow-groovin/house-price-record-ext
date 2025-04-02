@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { doubleRand, ratioRand } from "@/utils/rand";
 import { onMounted, ref, toRaw } from "vue";
 import { useLocalStorage } from "@vueuse/core";
-import { crawlOneCommunitySoldListPages } from "@/entrypoints/reuse/community-control2";
+import { crawlOneCommunitySoldListPages } from "@/entrypoints/reuse/community-control"
 
 
 const recordIdOfToChange = ref<number | undefined>(-1)

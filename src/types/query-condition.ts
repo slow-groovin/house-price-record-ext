@@ -99,6 +99,10 @@ export const frequentFieldZhMap: Record<string, string> = {
   newValue: "新的数值",
   totalPrice: "总价",
   city: "城市",
+  rid: "租房ID",
+  cid: "小区ID",
+  price: "价格",
+  releasedAt: "发布时间",
   runningCount: "运行次数",
 };
 

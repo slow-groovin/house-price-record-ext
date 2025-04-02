@@ -4,6 +4,8 @@ import {
   RentHouse,
   RentHousePriceChange,
   RentHouseStatusChange,
+  RentModelUtils,
+  RentPriceChangeItem,
 } from "@/types/rent";
 import {
   and,
@@ -18,6 +20,8 @@ import {
   eq,
   lte,
   gte,
+  update,
+  deleteFrom,
 } from "sql-bricks";
 import { getDb, TableNames } from "./sqlite";
 import {
@@ -28,6 +32,7 @@ import {
   SortState,
 } from "@/types/query-condition";
 import { calcOffset } from "@/utils/table-utils";
+import { logger } from "@/utils/log";
 export function KeRentDao() {
   return RentDao.from("ke");
 }
@@ -59,7 +64,7 @@ export class RentDao {
     return new RentDao(platform);
   }
 
-  async findCommunityById(cid: string) {
+  async findCommunityByCid(cid: string) {
     const sql = select()
       .from(this.#tableName.community)
       .where({ cid: cid })
@@ -67,6 +72,16 @@ export class RentDao {
     const sqliteDb = await getDb();
     const results = (await sqliteDb.run(sql)) as RentCommunityTask[];
     return results;
+  }
+
+  async findFirstCommunityByCid(cid: string) {
+    const sql = select()
+      .from(this.#tableName.community)
+      .where({ cid: cid })
+      .toString();
+    const sqliteDb = await getDb();
+    const results = (await sqliteDb.run(sql)) as RentCommunityTask[];
+    return results[0];
   }
 
   async findCommunitiesByCids(cidList: string[]) {
@@ -112,7 +127,7 @@ export class RentDao {
     const whereCond =
       whereConditions.length === 0 ? {} : and(...whereConditions);
 
-    console.log("query", query, whereConditions, whereCond);
+    logger.log("query", query, whereConditions, whereCond);
     let builder = select().from(this.#tableName.community).where(whereCond);
 
     let countBuilder = select("count(*) count")
@@ -122,11 +137,12 @@ export class RentDao {
     if (sort && sort.field && sort.order) {
       builder = builder.order(sort.field + " " + sort.order);
     }
+    builder = builder.orderBy("createdAt desc");
 
     let sql = builder.toString();
     let offset = calcOffset(pagination.pageIndex, pagination.pageSize);
     sql += ` LIMIT ${pagination.pageSize} OFFSET ${offset}`;
-    console.log("sql", sql);
+    logger.log("sql", sql);
 
     const sqliteDb = await getDb();
     const results = (await sqliteDb.run(sql)) as RentCommunityTask[];
@@ -148,32 +164,35 @@ export class RentDao {
         .order("id desc")
         .toString() + " LIMIT 2";
 
-    console.log("sql", sql);
+    logger.log("sql", sql);
     const sqliteDb = await getDb();
 
     let results = await sqliteDb.run(sql);
     return results.map((item) => {
-      return {
-        ...(item as RentCommunityRecord),
-        list: JSON.parse(item.list) as RentHouse[],
-        added: JSON.parse(item.added) as RentHouse[],
-        removed: JSON.parse(item.removed) as RentHouse[],
-        priceUpList: JSON.parse(item.priceUpList) as RentHouse[],
-        priceDownList: JSON.parse(item.priceDownList) as RentHouse[],
-      } as RentCommunityRecord;
+      return RentModelUtils.unserializeRentCommunityRecord(item);
     });
   }
 
-  async deleteTasks(idList: number[]) {
-    const sql = `DELETE FROM ${this.#tableName.community} WHERE id IN (${idList
-      .map((id) => `'${id}'`)
-      .join(",")})`;
+  async deleteTasks(cidList: string[]) {
+    const sql = deleteFrom(this.#tableName.community)
+      .where(_in("cid", cidList))
+      .toString();
     const sqliteDb = await getDb();
     const rs = await sqliteDb.run(sql);
-    console.log("deleteTasks result:", rs);
+    logger.log("deleteTasks result:", rs);
     return;
   }
 
+  async incRunningCount(cid: string, at: number) {
+    const sqliteDb = await getDb();
+    //同时更新lastRunningAt
+    const sql = `UPDATE ${
+      this.#tableName.community
+    } SET runningCount = runningCount + 1, lastRunningAt = ${at} WHERE cid = '${cid}'`;
+    logger.log("sql", sql);
+    const rs = await sqliteDb.run(sql);
+    return rs;
+  }
   /*
   Houses
   */
@@ -183,6 +202,17 @@ export class RentDao {
     const sqliteDb = await getDb();
     await sqliteDb.run(sql);
     return;
+  }
+
+  async findHouseByRid(rid: string) {
+    const sql = select()
+      .from(this.#tableName.house)
+      .where(eq("rid", rid))
+      .toString();
+    const sqliteDb = await getDb();
+    const rs = (await sqliteDb.run(sql)) as RentHouse[];
+
+    return rs[0];
   }
 
   async findHousesByRid(ridList: string[]) {
@@ -226,7 +256,7 @@ export class RentDao {
     const whereCond =
       whereConditions.length === 0 ? {} : and(...whereConditions);
 
-    console.log("query", query, whereConditions, whereCond);
+    logger.log("query", query, whereConditions, whereCond);
     let builder = select().from(this.#tableName.house).where(whereCond);
 
     let countBuilder = select("count(*) count")
@@ -236,11 +266,12 @@ export class RentDao {
     if (sort && sort.field && sort.order) {
       builder = builder.order(sort.field + " " + sort.order);
     }
+    builder = builder.orderBy("createdAt desc");
 
     let sql = builder.toString();
     let offset = calcOffset(pagination.pageIndex, pagination.pageSize);
     sql += ` LIMIT ${pagination.pageSize} OFFSET ${offset}`;
-    console.log("sql", sql);
+    logger.log("sql", sql);
 
     const sqliteDb = await getDb();
     const results = (await sqliteDb.run(sql)) as RentHouse[];
@@ -253,7 +284,23 @@ export class RentDao {
       data: results,
     };
   }
+  async updateHouse(rid: string, fields: any) {
+    const sqliteDb = await getDb();
+    const sql = update(this.#tableName.house, fields)
+      .where({ rid: rid })
+      .toString();
+    return await sqliteDb.run(sql);
+  }
 
+  async deleteHouses(ridList: string[]) {
+    const sql = deleteFrom(this.#tableName.house)
+      .where(_in("rid", ridList))
+      .toString();
+    const sqliteDb = await getDb();
+    const rs = await sqliteDb.run(sql);
+    logger.log("deleteTasks result:", rs);
+    return;
+  }
   /*
    * Records
    */
@@ -271,6 +318,127 @@ export class RentDao {
     await sqliteDb.run(sql);
     return;
   }
+
+  async findManyRecords(
+    pagination: {
+      pageIndex: number; //start from 1
+      pageSize: number;
+    },
+    query: {
+      cidEqual?: string;
+      atMin?: number;
+      atMax?: number;
+    }
+  ) {
+    const whereConditions: WhereExpression[] = [];
+    if (query?.cidEqual) {
+      whereConditions.push({ cid: query.cidEqual });
+    }
+    if (query?.atMin) {
+      whereConditions.push(gte("at", query.atMin));
+    }
+    if (query?.atMax) {
+      whereConditions.push(lte("at", query.atMax));
+    }
+
+    const whereCond =
+      whereConditions.length === 0 ? {} : and(...whereConditions);
+
+    let builder = select().from(this.#tableName.record).where(whereCond);
+
+    let countBuilder = select("count(*) count")
+      .from(this.#tableName.record)
+      .where(whereCond);
+
+    builder = builder.order("id desc");
+
+    let sql = builder.toString();
+    let offset = calcOffset(pagination.pageIndex, pagination.pageSize);
+    sql += ` LIMIT ${pagination.pageSize} OFFSET ${offset}`;
+    logger.log("sql", sql);
+
+    const sqliteDb = await getDb();
+    const results = (await sqliteDb.run(sql)).map(
+      RentModelUtils.unserializeRentCommunityRecord
+    );
+    const countResult = (await sqliteDb.run(countBuilder.toString())) as [
+      { count: number }
+    ];
+
+    return {
+      count: countResult[0].count,
+      data: results,
+    };
+  }
+  async findFirstRecordByCidAndBefore(cid: string, at: number) {
+    const sql = select()
+      .from(this.#tableName.record)
+      .where({ cid: cid })
+      .where(lte("at", at))
+      .order("id desc")
+      .toString();
+    const sqliteDb = await getDb();
+    const results = await sqliteDb.run(sql + " LIMIT 1");
+    return results.map((item) =>
+      RentModelUtils.unserializeRentCommunityRecord(item)
+    )[0];
+  }
+  async findFirstRecordByCidAndAfter(cid: string, at: number) {
+    const sql = select()
+      .from(this.#tableName.record)
+      .where({ cid: cid })
+      .where(gte("at", at))
+      .order("id desc")
+      .toString();
+    const sqliteDb = await getDb();
+    const results = await sqliteDb.run(sql + " LIMIT 1");
+    return results.map((item) =>
+      RentModelUtils.unserializeRentCommunityRecord(item)
+    )[0];
+  }
+
+  async findRecordsByCid(cid: string) {
+    const sql = select()
+      .from(this.#tableName.record)
+      .where({ cid: cid })
+      .order("id desc")
+      .toString();
+    const sqliteDb = await getDb();
+    const results = await sqliteDb.run(sql);
+    return results.map((item) =>
+      RentModelUtils.unserializeRentCommunityRecord(item)
+    );
+  }
+  async findRecordsById(id: number) {
+    const sql = select()
+      .from(this.#tableName.record)
+      .where({ id: id })
+      .order("id desc")
+      .toString();
+    const sqliteDb = await getDb();
+    const results = await sqliteDb.run(sql);
+    return results.map((item) =>
+      RentModelUtils.unserializeRentCommunityRecord(item)
+    )[0];
+  }
+
+  async deleteRecordById(id: number) {
+    const sql = `DELETE FROM ${this.#tableName.record} WHERE id = ${id}`;
+    const sqliteDb = await getDb();
+    await sqliteDb.run(sql);
+    return;
+  }
+
+  async countRecordByCid(cid: string) {
+    const sql = select("count(*) count")
+      .from(this.#tableName.record)
+      .where({ cid: cid })
+      .toString();
+    const sqliteDb = await getDb();
+    const results = (await sqliteDb.run(sql)) as [{ count: number }];
+    return results[0].count;
+  }
+
   /*
    * Changes
    */
@@ -288,14 +456,25 @@ export class RentDao {
     return;
   }
 
-  async findPriceChangesByRids(ridList: string[]) {
+  async findChangesByRidsAndType<T extends "price" | "status">(
+    ridList: string[],
+    type: T
+  ): Promise<
+    T extends "price" ? RentHousePriceChange[] : RentHouseStatusChange[]
+  > {
     const sql = select()
-      .from(this.#tableName.price_change)
+      .from(
+        type === "price"
+          ? this.#tableName.price_change
+          : this.#tableName.status_change
+      )
       .where(_in("rid", ridList))
       .toString();
-    console.log("sql", sql);
+    logger.log("sql", sql);
     const sqliteDb = await getDb();
-    return (await sqliteDb.run(sql)) as RentHousePriceChange[];
+    if (type === "price")
+      return (await sqliteDb.run(sql)) as RentHousePriceChange[];
+    else return (await sqliteDb.run(sql)) as RentHouseStatusChange[];
   }
 
   /**
@@ -317,7 +496,8 @@ export class RentDao {
       pageIndex: number;
       pageSize: number;
     },
-    query?: HouseChangeQueryCondition & HouseStatusChangeQueryCondition,
+    query?: HouseChangeQueryCondition &
+      HouseStatusChangeQueryCondition & { cidEqual?: string },
     sort?: SortState<RentHousePriceChange>
   ): Promise<{
     count: number;
@@ -337,6 +517,10 @@ export class RentDao {
     if (query?.cidInclude) {
       whereConditions.push(like("cid", `%${query.cidInclude}%`));
       whereConditions.push(like("cid", `%${query.cidInclude}%`));
+    }
+    if (query?.cidEqual) {
+      whereConditions.push(eq("cid", query.cidEqual));
+      whereConditions.push(eq("cid", query.cidEqual));
     }
     if (query?.hidInclude)
       whereConditions.push(like("rid", `%${query.hidInclude}%`));
@@ -392,7 +576,7 @@ export class RentDao {
       sql = sql.replace(PLACE_HOLDER, "1=1");
       countSql = countSql.replace(PLACE_HOLDER, "1=1");
     }
-    console.log("sql", sql);
+    logger.log("sql", sql);
 
     const sqliteDb = await getDb();
     const results = await sqliteDb.run(sql);

@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { CommunityRecord } from "@/types/lj";
+import { RentCommunityRecord } from "@/types/rent";
 import { computed, onMounted, ref } from "vue";
-import { db } from "@/entrypoints/db/Dexie";
-import { HouseDetailUrl } from "@/utils/url-component";
+import { RentHouseDetailUrl } from "@/utils/url-component";
 import DataEmptyState from "@/components/DataEmptyState.vue";
 import TwoLineAt from "@/components/lj/column/TwoLineAt.vue";
 import TotalPriceItem from "@/entrypoints/options/components/TotalPriceItem.vue";
@@ -12,27 +11,30 @@ import { Button } from '@/components/ui/button'
 import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
 import { toast } from "vue-sonner";
 import { useExtTitle } from '@/composables/useExtInfo'
+import { KeRentDao } from "@/entrypoints/db/rent-dao";
+import { genKeRentHousePageUrl, genOptionKeRentHouseUrl } from "@/utils/lj-url";
 
 const { query } = useRoute()
 const id = Number.parseInt(query['id'] as string)
 useExtTitle('记录详情' + id)
 
-const detailData = ref<CommunityRecord>()
+const detailData = ref<RentCommunityRecord>()
 
 async function queryData() {
-  detailData.value = await db.communityRecords.get(id)
+  detailData.value = await KeRentDao().findRecordsById(id)
+  console.log('detailData.value', detailData.value)
 }
 
 const normalItems = computed(() => {
   console.log(detailData.value)
-  return detailData.value?.houseList.filter(item => {
-    return !(detailData.value?.priceUpList?.some(i => i.hid === item.hid) || detailData.value?.priceDownList?.some(i => i.hid === item.hid)
-      || detailData.value?.addedItem?.some(i => i.hid === item.hid) || detailData.value?.removedItem?.some(i => i.hid === item.hid))
+  return detailData.value?.list?.filter(item => {
+    return !(detailData.value?.priceUpList?.some(i => i.rid === item.rid) || detailData.value?.priceDownList?.some(i => i.rid === item.rid)
+      || detailData.value?.added?.some(i => i.rid === item.rid) || detailData.value?.removed?.some(i => i.rid === item.rid))
   })
 })
 
 async function deleteRecord() {
-  await db.communityRecords.delete(id)
+  await KeRentDao().deleteRecordById(id)
   toast.success('删除成功! 3s后关闭页面.')
   setTimeout(() => {
     window.location.reload()
@@ -51,8 +53,9 @@ onMounted(() => {
   </div>
   <div v-else>
     <h1 class="text-2xl font-bold">
-      小区任务运行记录
-      [<span class="text-green-500">{{ id }}</span>]
+      (租房)小区任务运行记录
+      <span class="text-blue-500">{{ detailData.name }}</span>
+      [<span class="text-blue-500">{{ id }}</span>]
     </h1>
 
     <div class="flex gap-4">
@@ -76,17 +79,14 @@ onMounted(() => {
     <table class="">
       <tbody>
         <tr>
-          <th>平均总价</th>
-          <th class="text-green-500 font-bold italic">{{ detailData.avgTotalPrice }}万元</th>
+          <th>平均价格</th>
+          <th class="text-blue-500 font-bold italic">{{ detailData.avgPrice }}元/月</th>
         </tr>
-        <tr>
-          <th>平均单价</th>
-          <th class="text-green-500  ">{{ detailData.avgUnitPrice }} 元/㎡</th>
-        </tr>
+
 
         <tr>
           <th>在售数量</th>
-          <th class="">{{ detailData.onSellCount }}</th>
+          <th class="">{{ detailData.count }}</th>
         </tr>
         <tr>
           <th>降价数量📉</th>
@@ -98,58 +98,51 @@ onMounted(() => {
         </tr>
         <tr>
           <th>新上架数量🆕</th>
-          <th class="">{{ detailData.addedItem?.length }}</th>
+          <th class="">{{ detailData.added?.length }}</th>
         </tr>
         <tr>
           <th class="line-through">下架数量🛒</th>
-          <th class="">{{ detailData.removedItem?.length }}</th>
+          <th class="">{{ detailData.removed?.length }}</th>
         </tr>
         <tr>
           <th>未变化数量</th>
           <th class="">{{
-            (detailData.onSellCount ?? 0) - (detailData?.priceDownList?.length ?? 0) - (detailData?.priceUpList?.length
+            (detailData.count ?? 0) - (detailData?.priceDownList?.length ?? 0) - (detailData?.priceUpList?.length
               ??
               0)
-            - (detailData?.addedItem?.length ?? 0) - (detailData?.removedItem?.length ?? 0)
-            }}
+            - (detailData?.added?.length ?? 0) - (detailData?.removed?.length ?? 0)
+          }}
           </th>
         </tr>
-        <tr>
-          <th>过去90天访问量</th>
-          <th class="">{{ detailData.visitCountIn90Days }}</th>
-        </tr>
-        <tr>
-          <th>过去90天成交量</th>
-          <th class="">{{ detailData.doneCountIn90Days }}</th>
-        </tr>
+
       </tbody>
     </table>
 
 
     <h2 class="my-4 border-b font-bold text-2xl">房源详情</h2>
     <div class="flex flex-col gap-2 ">
-      <template v-for="item in detailData.removedItem">
+      <template v-for="item in detailData.removed">
         <div class="flex flex-row gap-4 border bg-neutral-100">
-          <div class="min-w-20 text-sm">下架或成交</div>
-          <div class="line-through italic decoration-red-500">
-            <Component :is="HouseDetailUrl(item.hid)" />
-          </div>
-          <TotalPriceItem :price="item.price" :hid="item.hid" />
+          <div class="min-w-20 text-sm">下架</div>
+          <Component :is="RentHouseDetailUrl(item.rid)" />
+
+          <TotalPriceItem :price="item.price" :id="item.rid" :link-func="genOptionKeRentHouseUrl" unit="元/月" />
         </div>
       </template>
-      <template v-for="item in detailData.addedItem">
+      <template v-for="item in detailData.added">
         <div class="flex flex-row gap-4 border bg-blue-100">
           <div class="min-w-20">🆕新上架</div>
-          <Component :is="HouseDetailUrl(item.hid)" />
-          <TotalPriceItem :price="item.price" :hid="item.hid" />
+          <Component :is="RentHouseDetailUrl(item.rid)" />
+
+          <TotalPriceItem :price="item.price" :id="item.rid" :link-func="genOptionKeRentHouseUrl" unit="元/月" />
         </div>
       </template>
 
       <template v-for="item in detailData.priceDownList">
         <div class="flex flex-row items-center gap-4 border bg-green-100">
           <div class="min-w-20">📉降价</div>
-          <Component :is="HouseDetailUrl(item.hid)" />
-          <NewPriceChangeBudget :new-value="item.price" :old-value="item.oldPrice" unit="万" />
+          <Component :is="RentHouseDetailUrl(item.rid)" />
+          <NewPriceChangeBudget :new-value="item.price" :old-value="item.oldPrice" unit="元/月" />
 
         </div>
       </template>
@@ -157,8 +150,9 @@ onMounted(() => {
       <template v-for="item in detailData.priceUpList">
         <div class="flex flex-row items-center gap-4 border bg-red-100">
           <div class="min-w-20">📈涨价</div>
-          <Component :is="HouseDetailUrl(item.hid)" />
-          <NewPriceChangeBudget :new-value="item.price" :old-value="item.oldPrice" unit="万" />
+          <Component :is="RentHouseDetailUrl(item.rid)" />
+
+          <NewPriceChangeBudget :new-value="item.price" :old-value="item.oldPrice" unit="元/月" />
 
         </div>
       </template>
@@ -167,8 +161,9 @@ onMounted(() => {
         <div class="flex flex-row flex-nowrap gap-4 border">
           <div class="min-w-20">
           </div>
-          <Component :is="HouseDetailUrl(item.hid)" />
-          <TotalPriceItem :price="item.price" :hid="item.hid" />
+          <Component :is="RentHouseDetailUrl(item.rid)" />
+
+          <TotalPriceItem :price="item.price" :id="item.rid" :link-func="genOptionKeRentHouseUrl" unit="元/月" />
         </div>
 
       </template>

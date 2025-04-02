@@ -20,7 +20,8 @@ export function useExtTitle(
     return useTitle("Github");
   }
   return useTitle(
-    newTitle ?? "",
+    //@ts-ignore
+    newTitle,
     options ?? {
       titleTemplate: (title) =>
         `${title ? title + " | " : ""}${import.meta.env.VITE_EXT_NAME}`,

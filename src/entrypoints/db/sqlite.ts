@@ -1,8 +1,8 @@
 // import wasmUrl from "@subframe7536/sqlite-wasm/dist/wa-sqlite-async.wasm?url";  //这样导入使用会导致wasm以字节码嵌入到background.js/content.js中, 导致wasm的内容重复打包多次
-import { AsyncLock } from "@/utils/lib/AsyncLock";
+import { AsyncLock, wrapAsyncFunction } from "@/utils/lib/AsyncLock";
 import { initSQLite, SQLiteDB } from "@subframe7536/sqlite-wasm";
 import { useIdbStorage } from "@subframe7536/sqlite-wasm/idb";
-import { uid } from "radash";
+
 const schemas = `
 CREATE TABLE IF NOT EXISTS ke_rent_community (
       cid TEXT PRIMARY KEY NOT NULL,
@@ -12,6 +12,10 @@ CREATE TABLE IF NOT EXISTS ke_rent_community (
       lastRunningAt INTEGER NOT NULL,
       runningCount INTEGER NOT NULL
     );
+CREATE INDEX IF NOT EXISTS idx_created_at ON ke_rent_community(createdAt);
+CREATE INDEX IF NOT EXISTS idx_name ON ke_rent_community(name);
+
+
 
 CREATE TABLE IF NOT EXISTS ke_rent_house (
       rid TEXT PRIMARY KEY NOT NULL,
@@ -19,17 +23,25 @@ CREATE TABLE IF NOT EXISTS ke_rent_house (
       cid TEXT NOT NULL,
       desc TEXT,
       area REAL,
+      source TEXT,
       price INTEGER,
       status INTEGER,
       createdAt INTEGER NOT NULL,
-      released_date INTEGER,
+      releasedAt INTEGER,
       lastRunningAt INTEGER NOT NULL);
+
+CREATE INDEX IF NOT EXISTS idx_name ON ke_rent_house(name);
+CREATE INDEX IF NOT EXISTS idx_cid ON ke_rent_house(cid);
+CREATE INDEX IF NOT EXISTS idx_status ON ke_rent_house(status);
+CREATE INDEX IF NOT EXISTS idx_created_at ON ke_rent_house(createdAt);
+CREATE INDEX IF NOT EXISTS idx_released_at ON ke_rent_house(releasedAt);
 
 CREATE TABLE IF NOT EXISTS ke_rent_community_record ( 
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   
   cid TEXT NOT NULL,
   city TEXT NOT NULL,
+  name TEXT,
 
   avgPrice INTEGER,
   count INTEGER,
@@ -39,8 +51,14 @@ CREATE TABLE IF NOT EXISTS ke_rent_community_record (
   removed TEXT,
   priceUpList TEXT,
   priceDownList TEXT,
+
+  maxPageNo INTEGER,
   at INTEGER NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_cid ON ke_rent_community_record(cid);
+CREATE INDEX IF NOT EXISTS idx_name ON ke_rent_community_record(name);
+CREATE INDEX IF NOT EXISTS idx_at ON ke_rent_community_record(at);
+
 
 CREATE TABLE IF NOT EXISTS ke_rent_house_price_change (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,6 +69,10 @@ CREATE TABLE IF NOT EXISTS ke_rent_house_price_change (
   oldValue INTEGER,
   at INTEGER NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_rid ON ke_rent_house_price_change(rid);
+CREATE INDEX IF NOT EXISTS idx_cid ON ke_rent_house_price_change(cid);
+CREATE INDEX IF NOT EXISTS idx_at ON ke_rent_house_price_change(at);
+
 
 CREATE TABLE IF NOT EXISTS ke_rent_house_status_change (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,7 +82,9 @@ CREATE TABLE IF NOT EXISTS ke_rent_house_status_change (
   oldValue INTEGER,
   at INTEGER NOT NULL
 );
-
+CREATE INDEX IF NOT EXISTS idx_rid ON ke_rent_house_status_change(rid);
+CREATE INDEX IF NOT EXISTS idx_cid ON ke_rent_house_status_change(cid);
+CREATE INDEX IF NOT EXISTS idx_at ON ke_rent_house_status_change(at);
 `;
 
 export const TableNames = {
@@ -96,6 +120,15 @@ export async function getDb() {
       url: "/wa-sqlite-async.wasm",
       lockTimeout: 500,
     })
+  );
+  const seqLock = new AsyncLock();
+  wrapAsyncFunction(
+    sqliteDb,
+    "run",
+    async (...args: any[]) => {
+      await seqLock.acquire();
+    },
+    () => seqLock.release()
   );
 
   lock.release();

@@ -2,6 +2,7 @@
   <div class="p-4 space-y-4">
     <div class="flex space-x-2">
       <Button @click="deleteAll">deleteAll </Button>
+      <Button @click="createTables">createTables </Button>
       <Button @click="migrateFakeDataFromSell">gen from sell </Button>
     </div>
     <Separator />
@@ -27,7 +28,7 @@ import { RentDao } from "@/entrypoints/db/rent-dao";
 import { Separator } from '@/components/ui/separator'
 import { TableNames } from "@/entrypoints/db/sqlite";
 import { getDb, createTables } from "@/entrypoints/db/sqlite";
-import { RentHouse } from "@/types/rent";
+import { RentHouse, RentPriceChangeItem } from "@/types/rent";
 import { Button } from "../ui/button";
 
 const sqlInput = ref('');
@@ -76,10 +77,6 @@ async function deleteAll() {
   `)
   console.log('delete all done.')
 
-  await createTables()
-
-  const pragmaRs = await db.run(`PRAGMA table_info(${TableNames.keRent.house});`)
-  console.log('pragmaRs', pragmaRs)
 }
 async function migrateFakeDataFromSell() {
   const sqlite = await getDb()
@@ -184,11 +181,14 @@ async function migrateFakeDataFromSell() {
       priceDownList: r.priceDownList?.map(i => ({
         rid: i.hid,
         price: i.price,
-      }) as Partial<RentHouse>),
+        oldPrice: i.oldPrice
+      }) as RentPriceChangeItem),
       priceUpList: r.priceUpList?.map(i => ({
         rid: i.hid,
         price: i.price,
-      }) as Partial<RentHouse>),
+        oldPrice: i.oldPrice,
+
+      }) as RentPriceChangeItem),
       at: r.at,
       count: r.onSellCount ?? 0,
       avgPrice: r.avgTotalPrice ?? 0,

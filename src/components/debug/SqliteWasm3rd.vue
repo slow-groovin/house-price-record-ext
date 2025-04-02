@@ -9,6 +9,7 @@ import { ref, onMounted } from 'vue' // 确保导入 ref 和 onMounted
 import { like, select } from 'sql-bricks'
 import { KeRentDao } from '@/entrypoints/db/rent-dao'
 import { getDb } from '@/entrypoints/db/sqlite'
+import { AsyncLock, wrapAsyncFunction } from '@/utils/lib/AsyncLock'
 // optional url
 // const url = 'https://cdn.jsdelivr.net/npm/@subframe7536/sqlite-wasm@0.5.3/dist/wa-sqlite-async.wasm'
 // const url1 = 'https://cdn.jsdelivr.net/gh/subframe7536/sqlite-wasm@v0.5.0/wa-sqlite-fts5/wa-sqlite-async.wasm'
@@ -408,6 +409,47 @@ async function requestPersistentStorage() {
   }
 }
 
+/**
+ * 对于两张测试表: 创建多个promise, 同时SELECT * , 打印结果和异常
+ */
+async function parralelQueryTest() {
+  const SIZE = 5
+  const sqliteDb = await initSQLite(
+    useIdbStorage('test.db', {
+      url: 'wa-sqlite-async.wasm',
+      lockPolicy: 'shared'
+    })
+  )
+  /**
+   * 尝试进行锁
+   */
+  const lock = new AsyncLock(true);
+  wrapAsyncFunction(sqliteDb, 'run', () => lock.acquire(), () => lock.release())
+  const promises = Array.from({ length: SIZE }, async (_, index) => {
+    const i = index
+    try {
+      /*
+       * try singleton SQLiteDB or multi SQLiteDB
+       */
+      // const begin = Date.now()
+      // const sqliteDb = await initSQLite(
+      //   useIdbStorage('test.db', {
+      //     url: 'wa-sqlite-async.wasm',
+      //   })
+      // )
+
+      // console.log(`[${index}]init cost: ${Date.now() - begin}`)
+      const result = await sqliteDb.run(`SELECT * FROM ${i % 2 === 0 ? 'users' : 'all_types_table'} LIMIT 10;`);
+      console.log(`[${i}]Query result from table ${i % 2 === 0 ? 'users' : 'all_types_table'}:`, result);
+    } catch (error) {
+      console.error(`[${i}]Error querying table ${i % 2 === 0 ? 'users' : 'all_types_table'}:`, error);
+    }
+  });
+
+  await Promise.all(promises);
+
+}
+
 
 </script>
 
@@ -464,6 +506,7 @@ async function requestPersistentStorage() {
 
     <section>
       <button @click="describeAllTablesOfProduction">describe all tables(prod)</button>
+      <button @click="parralelQueryTest">parralelQueryTest</button>
 
     </section>
 

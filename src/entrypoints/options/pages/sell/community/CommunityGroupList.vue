@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "vue-sonner";
 import { browser } from "wxt/browser";
 import { useExtTitle } from "@/composables/useExtInfo";
-import { goRunCommunityTasksStartPage } from "@/entrypoints/reuse/community-control2";
+import { goRunCommunityTasksStartPage } from "@/entrypoints/reuse/community-control"
 useExtTitle('小区任务分组')
 
 const data = ref<TaskGroup[]>([])

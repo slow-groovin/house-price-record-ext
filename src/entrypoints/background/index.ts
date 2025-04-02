@@ -8,6 +8,7 @@ import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import { onMessage } from "@@/messaging";
 import { browser } from "wxt/browser";
 import { registerKeRentDaoMessage } from "./ke-rent-dao-msgs";
+import { onInstallHook } from "./onInstall";
 
 export default defineBackground(() => {
   console.log(`[${new Date().toLocaleString()}]`, "Load background!", {
@@ -27,14 +28,7 @@ export default defineBackground(() => {
   registerKeRentDaoMessage();
   registerBrowserStorageLocalMessage();
   // registerSimpleMessage()
-
-  browser.runtime.onInstalled.addListener(() => {
-    if (typeof chrome === "undefined" || !chrome.sidePanel) {
-      console.error("Side Panel API not supported in this browser.");
-      browser.tabs.create({ url: "/options.html#/not-support" });
-    }
-    if (!isDebug) {
-      browser.tabs.create({ url: "/options.html#/" });
-    }
+  browser.runtime.onInstalled.addListener((detail) => {
+    onInstallHook(detail);
   });
 });

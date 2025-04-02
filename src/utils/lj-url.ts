@@ -260,7 +260,7 @@ export function genHousePageUrl(city: string, hid: string): string {
   return `https://${city}.lianjia.com/ershoufang/${hid}.html`;
 }
 export function genKeRentHousePageUrl(city: string, rid: string): string {
-  return `https://${city}.zu.ke.com/zufang/${rid}`;
+  return `https://${city}.zu.ke.com/zufang/${rid}.html`;
 }
 
 export function genOptionCommunityUrl(cid: string): string {
@@ -268,4 +268,7 @@ export function genOptionCommunityUrl(cid: string): string {
 }
 export function genOptionKeRentCommunityUrl(cid: string): string {
   return "#/rent/c/task/detail?id=" + cid;
+}
+export function genOptionKeRentHouseUrl(rid: string): string {
+  return "#/rent/h/task/detail?id=" + rid;
 }

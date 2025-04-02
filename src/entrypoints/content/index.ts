@@ -24,6 +24,7 @@ import { housePageOnMessages } from "./message/house-page-msgs";
 import { communityListPageOnMessages } from "./message/community-list-page-msgs";
 import { communitySoldListPageOnMessage } from "./message/community-sold-list-page-msgs";
 import { keRentCommunityPageUIInject } from "./ui/ke-rent-community-ui-inject";
+import { keRentCommunityListPageOnMessages } from "./message/ke-rent-community-list-page-msgs";
 
 const matches = () => {
   //this will be exec on build
@@ -73,6 +74,7 @@ export default defineContentScript({
     ) {
       console.log("zufang", url);
       await keRentCommunityPageUIInject(ctx);
+      keRentCommunityListPageOnMessages();
     }
     // prettier-ignore
     /**

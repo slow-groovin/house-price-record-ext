@@ -42,6 +42,7 @@ import NotSupport from "./pages/docs/NotSupport.vue";
 import RentHousePriceChangeList from "@/entrypoints/options/pages/rent/house/RentHousePriceChangeList.vue";
 import RentHouseStatusChangeList from "@/entrypoints/options/pages/rent/house/RentHouseStatusChangeList.vue";
 import RentHouseTaskList from "@/entrypoints/options/pages/rent/house/RentHouseTaskList.vue";
+import RentHouseDetailPage from "./pages/rent/house/RentHouseDetailPage.vue";
 const { isDisguise } = useDevSetting();
 
 const router = createRouter({
@@ -89,6 +90,7 @@ const router = createRouter({
           component: RentCommunityUpdatePreview,
         },
         { path: "/rent/h/task/list", component: RentHouseTaskList },
+        { path: "/rent/h/task/detail", component: RentHouseDetailPage },
         {
           path: "/rent/h/task/price/change",
           component: RentHousePriceChangeList,

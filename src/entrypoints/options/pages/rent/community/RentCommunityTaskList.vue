@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useExtTitle } from "@/composables/useExtInfo";
 import { useRouterQuery } from "@/composables/useRouterQuery";
-import { RentDao } from '@/entrypoints/db/rent-dao';
+import { KeRentDao } from '@/entrypoints/db/rent-dao';
 import GenericSortDock from "@/entrypoints/options/components/GenericSortDock.vue";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import RentCommunityQueryDock from '@/entrypoints/options/components/rent/RentCommunityQueryDock.vue';
-import { goRunCommunityTasksStartPage } from "@/entrypoints/reuse/community-control2";
+import { goRunCommunityTasksStartPage } from "@/entrypoints/reuse/community-control"
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import { newQueryConditionFromQueryParam } from "@/entrypoints/reuse/query-condition";
 import {
@@ -49,6 +49,7 @@ import { computed, onMounted, ref, toRaw } from "vue";
 import { useRoute } from "vue-router";
 import { RentCommunityQueryCondition } from '../../../../../types/query-condition';
 import { RentCommunityTask } from '../../../../../types/rent';
+import { goRunRentCommunityTasksStartPage } from "@/entrypoints/reuse/rent-community-control";
 
 const { isDebug } = useDevSetting()
 useExtTitle('租房小区任务列表')
@@ -124,7 +125,7 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   isPending.value = true
 
 
-  let results = await RentDao.from('ke').findManyCommunities({
+  let results = await KeRentDao().findManyCommunities({
     pageIndex, pageSize
   }, queryCondition.value
     , sortCondition.value)
@@ -141,7 +142,7 @@ async function queryRelatedData(communityData: typeof data.value) {
   // relatedData.value = {}
   const cidList = communityData.map(item => item.cid)
   for (let cid of cidList) {
-    const lastTwoRecords = await RentDao.from('ke').findLastTwoRecordsByCid(cid)
+    const lastTwoRecords = await KeRentDao().findLastTwoRecordsByCid(cid)
     if (lastTwoRecords[0]) {
       relatedData.value[cid] = {}
       relatedData.value[cid].avgPrice = lastTwoRecords[0].avgPrice
@@ -214,7 +215,7 @@ const columnDef: (ColumnDef<RentCommunityTask>)[] = [
     header: '平均价格',
     id: '平均价格',
     cell: ({ cell }) => <AvgTotalPrice value={relatedData.value[cell.row.original.cid]?.avgPrice}
-      change={relatedData.value[cell.row.original.cid]?.avgPriceChange} />
+      change={relatedData.value[cell.row.original.cid]?.avgPriceChange} unit="元/月" />
 
   },
   {
@@ -353,15 +354,15 @@ async function removeQueryConditionQueryParam() {
 
 async function goRunTasks() {
   const communityList = Object.keys(rowSelection.value).map(s => toInt(s)).map(i => toRaw(data.value[i]))
-  goRunCommunityTasksStartPage(communityList)
+  goRunRentCommunityTasksStartPage(communityList)
 }
 
 async function deleteSelectedTasks() {
-  const ids = Object.keys(rowSelection.value).map(s => Number(s)).map(index => data.value[index].id).filter(id => isNumber(id))
-  await RentDao.from('ke').deleteTasks(ids)
+  const ids = Object.keys(rowSelection.value).map(s => Number(s)).map(index => data.value[index].cid)
+  await KeRentDao().deleteTasks(ids)
   alert(`删除成功!${ids.length}个任务`)
   rowSelection.value = {}
-  data.value = data.value.filter(item => !ids.includes(item.id!))
+  data.value = data.value.filter(item => !ids.includes(item.cid))
 }
 
 

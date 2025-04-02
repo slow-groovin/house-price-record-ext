@@ -8,7 +8,8 @@ import {
   HouseTask,
 } from "@/types/lj";
 import { HouseNormal } from "@/types/LjUpdatePreview";
-import { RentCommunityTask } from "@/types/rent";
+import { ParsedRentCommunity, RentCommunityTask } from "@/types/rent";
+import { parseAllOfKeRentCommunity } from "@/entrypoints/content/util/ke-rent-community-dom-parse";
 
 interface ProtocolMap {
   houseItem(houseItem: HouseItem): Promise<{ resp: string }>;
@@ -27,7 +28,7 @@ interface ProtocolMap {
   crawlHouseTask(data: { hid: string }): Promise<{ resp: string }>;
 
   parseOneCommunityListOnePage(): Promise<CommunityListPageItem>;
-  parseKeCommunityListOnePage(): Promise<any>;
+  parseKeCommunityListOnePage(): Promise<ParsedRentCommunity>;
 
   addCommunityTask(task: CommunityTask): Promise<{ resp: string }>;
   queryCommunityTask(data: { cid: string }): Promise<CommunityTask[]>;

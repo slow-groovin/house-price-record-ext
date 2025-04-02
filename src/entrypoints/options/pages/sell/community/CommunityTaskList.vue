@@ -27,7 +27,7 @@ import { computed, onMounted, ref, toRaw } from "vue";
 import { useLocalStorage } from "@vueuse/core";
 import { Button } from "@/components/ui/button";
 import { toInt } from "radash";
-import { goRunCommunityTasksStartPage } from "@/entrypoints/reuse/community-control2";
+import { goRunCommunityTasksStartPage } from "@/entrypoints/reuse/community-control"
 import CommunityQueryDock from "@/entrypoints/options/components/sell/CommunityQueryDock.vue";
 import {
   CommunityQueryCondition,

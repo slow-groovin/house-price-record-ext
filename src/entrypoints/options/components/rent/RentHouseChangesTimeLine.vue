@@ -132,7 +132,7 @@ function deleteChange(index: number) {
                 ({{ formatDistanceToNowHoursOrDays(change.at) }}) {{ new Date(change.at).toLocaleString() }}
               </div>
 
-              <a :href="'/options.html#/h/task/detail?id=' + change.rid" target="_blank"
+              <a :href="'/options.html#/rent/h/task/detail?id=' + change.rid" target="_blank"
                 class="text-green-500 underline cursor-pointer">{{ change.rid }}</a>
               <div v-if="isShowDetail" class="text-nowrap overflow-ridden overflow-ellipsis"
                 :title="hMap[change.rid]?.name">

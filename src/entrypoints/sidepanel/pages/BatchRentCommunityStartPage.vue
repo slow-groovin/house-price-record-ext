@@ -19,6 +19,8 @@ import { browser } from "wxt/browser";
 import { removeRepeat } from "@/utils/array";
 import InfoHover from "@/components/information/InfoHover.vue";
 import { EyeIcon } from "lucide-vue-next";
+import { RentCommunityTask, RentCommunityUpdatePreview } from "@/types/rent";
+import { oneRentCommunityEntry } from "@/entrypoints/reuse/rent-community-control";
 
 
 const { query: { id } } = useRoute()
@@ -30,19 +32,19 @@ if (!id || !tempId) {
 }
 
 
-const PREFIX = '[BatchCommunity]'
+const PREFIX = '[BatchRentCommunity]'
 console.log(PREFIX, 'tempId:', tempId)
 
-const communityList = ref<CommunityTask[]>()
+const communityList = ref<RentCommunityTask[]>()
 const batchExecutor = ref<BatchQueueExecutor>()
 const isInit = ref(true)
 const isFinished = ref(false)
 const pausedContext = ref<JobContext>()
 const pausedError = ref<PauseError>()
 
-const interval = useLocalStorage('batch-community-setting-interval', 500)
-const retryTime = useLocalStorage('batch-community-setting-retryTime', 5)
-const maxConcurrent = useLocalStorage('batch-community-setting-maxConcurrent', 5)
+const interval = useLocalStorage('batch-rent-community-setting-interval', 500)
+const retryTime = useLocalStorage('batch-rent-community-setting-retryTime', 5)
+const maxConcurrent = useLocalStorage('batch-rent-community-setting-maxConcurrent', 5)
 
 const DEFAULT_SETTING = {
   interval: 1000,
@@ -57,7 +59,7 @@ function resetSetting() {
 }
 
 onMounted(async () => {
-  communityList.value = (await db.tempBatchCommunity.get(tempId))?.communityList
+  communityList.value = (await db.tempBatchRentCommunity.get(tempId))?.communityList
   if (!communityList.value) {
     goSidePanelHome()
   }
@@ -65,7 +67,7 @@ onMounted(async () => {
 })
 
 
-let preview: CommunityUpdatePreview = {
+let preview: RentCommunityUpdatePreview = {
   at: Date.now(),
   batchId: '',
   tempListId: tempId,
@@ -75,10 +77,7 @@ let preview: CommunityUpdatePreview = {
 function* jobIter(): IterableIterator<Job> {
   for (let community of communityList.value as CommunityTask[]) {
     yield {
-      promiseGetter: () => oneCommunityEntry(community).then(rs => {
-        //idList去重
-        rs.houseList = removeRepeat(rs.houseList, item => item.hid)
-
+      promiseGetter: () => oneRentCommunityEntry(community).then(rs => {
         preview.records.push(rs)
       }),
       context: {
@@ -121,9 +120,9 @@ async function startBathCommunity() {
     console.log('preview', preview)
 
     //存储preview
-    await db.tempCommunityUpdatePreview.add(preview)
+    await db.tempRentCommunityUpdatePreview.add(preview)
     //弹出结算页
-    await browser.tabs.create({ url: "/options.html#/c/update/preview?id=" + batchId })
+    await browser.tabs.create({ url: "/options.html#/rent/c/update/preview?id=" + batchId })
   })
 
   setTimeout(() => {
@@ -139,7 +138,7 @@ async function startBathCommunity() {
 <template>
   <div class="flex flex-col gap-4 p-2">
 
-    <h1 class="mt-2 text-primary font-bold text-xl">▶︎ 批量小区任务运行</h1>
+    <h1 class="mt-2 text-primary font-bold text-xl">▶︎ (租房)批量小区任务运行</h1>
 
     <!--  init hint-->
     <div v-if="isInit && communityList"

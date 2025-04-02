@@ -132,7 +132,14 @@ onMounted(() => {
     <FieldCardGroup v-if="task" :community="task" :last-record="records[0]" :at-before-last="records[1]?.at"
       class="mb-8" />
 
-
+    <!-- house list -->
+    <div id="houses-nav" v-if="task?.cid && task?.name" class="my-8 border-b ">
+      <h2 class="border-b my-8">房源列表</h2>
+      <div class="p-8 mx-auto w-fit text-xl">
+        <a :href="`/options.html#/h/task/list?cidEqual=${task.cid}&name=${task.name}`" target="_blank"
+          class="link my-8 font-bold">去查看</a>
+      </div>
+    </div>
     <div class="relative  flex flex-col gap-4">
       <div class="border-b w-fit p-2 rounded-lg sticky top-0 z-10 bg-white shadow">
         <DateRangePicker v-model:start-date="startDate" v-model:end-date="endDate" @confirm="resetDateRange" />
@@ -167,12 +174,7 @@ onMounted(() => {
 
 
     <!-- graph -->
-    <!-- house list -->
-    <div id="houses-nav" v-if="task?.cid && task?.name" class="my-8 border-b ">
-      <h2 class="border-b my-8">房源列表</h2>
-      <a :href="`/options.html#/h/task/list?cidEqual=${task.cid}&name=${task.name}`" target="_blank"
-        class="link my-8 font-bold">去查看</a>
-    </div>
+
 
     <div id="calendar-nav" class=" w-fit border-b">
       <h2>历史运行日历</h2>

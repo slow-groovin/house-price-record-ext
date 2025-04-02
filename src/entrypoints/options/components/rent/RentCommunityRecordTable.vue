@@ -5,10 +5,10 @@ import ValueChangeBudget from "@/components/lj/house/ValueChangeBudget.vue";
 import ColumnVisibleOption from "@/components/table/ColumnVisibleOption.vue";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
-import { CommunityRecord } from "@/types/lj";
+import { RentCommunityRecord } from "@/types/rent";
 import { tryMinusOrUndefined } from "@/utils/operator";
 import { valueUpdater } from "@/utils/shadcn-utils";
-import { CommunityRecordUrl } from "@/utils/url-component";
+import { RentCommunityRecordUrl } from "@/utils/url-component";
 import {
   CellContext,
   ColumnDef,
@@ -34,7 +34,7 @@ const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = useLocalStorage<VisibilityState>('column-visibility-community-record', {})
 const rowSelection = ref({})
 
-type DATA_TYPE = CommunityRecord
+type DATA_TYPE = RentCommunityRecord
 type RENDER_DATA_TYPE = Record<keyof DATA_TYPE, ValueDiff>
 const { data, rowCount } = defineProps<{
   data: DATA_TYPE[],
@@ -45,46 +45,38 @@ type ValueDiff = { value: any, diff?: number }
 
 const renderData = computed(() => {
   const result: RENDER_DATA_TYPE[] = []
-  let lastData: CommunityRecord | undefined = undefined
+  let lastData: DATA_TYPE | undefined = undefined
   for (let i = data.length - 1; i >= 0; i--) {
-    const obj: any = {}
+    const obj: Partial<RENDER_DATA_TYPE> = {}
     const curData = data[i]
     const {
       id,
       at,
-      avgTotalPrice,
-      avgUnitPrice,
-      onSellCount,
-      visitCountIn90Days,
-      doneCountIn90Days,
+      avgPrice,
+      count,
       priceDownList,
       priceUpList,
-      removedItem,
-      addedItem,
-      houseList
+      removed,
+      added,
+      list
     } = curData
     obj.id = { value: id }
     obj.at = { value: at }
-    obj.avgTotalPrice = { value: avgTotalPrice }
-    obj.avgUnitPrice = { value: avgUnitPrice }
-    obj.onSellCount = { value: onSellCount }
-    obj.visitCountIn90Days = { value: visitCountIn90Days }
-    obj.doneCountIn90Days = { value: doneCountIn90Days }
+    obj.avgPrice = { value: avgPrice }
+    obj.count = { value: count }
     obj.priceDownList = { value: priceDownList?.length }
     obj.priceUpList = { value: priceUpList?.length }
-    obj.removedItem = { value: removedItem?.length }
-    obj.addedItem = { value: addedItem?.length }
-    obj.houseList = { value: houseList }
+    obj.removed = { value: removed?.length }
+    obj.added = { value: added?.length }
+    obj.list = { value: list?.length }
     if (lastData) {
-      obj.avgTotalPrice.diff = tryMinusOrUndefined(avgTotalPrice, lastData.avgTotalPrice)
-      obj.avgUnitPrice.diff = tryMinusOrUndefined(avgUnitPrice, lastData.avgUnitPrice)
-      obj.onSellCount.diff = tryMinusOrUndefined(onSellCount, lastData.onSellCount)
-      obj.visitCountIn90Days.diff = tryMinusOrUndefined(visitCountIn90Days, lastData.visitCountIn90Days)
-      obj.doneCountIn90Days.diff = tryMinusOrUndefined(doneCountIn90Days, lastData.doneCountIn90Days)
+      obj.avgPrice.diff = tryMinusOrUndefined(avgPrice, lastData.avgPrice)
+      obj.count.diff = tryMinusOrUndefined(count, lastData.count)
       obj.priceUpList.diff = tryMinusOrUndefined(priceUpList?.length, lastData.priceUpList?.length)
       obj.priceDownList.diff = tryMinusOrUndefined(priceDownList?.length, lastData.priceDownList?.length)
-      obj.removedItem.diff = tryMinusOrUndefined(removedItem?.length, lastData.removedItem?.length)
-      obj.addedItem.diff = tryMinusOrUndefined(addedItem?.length, lastData.addedItem?.length)
+      obj.removed.diff = tryMinusOrUndefined(removed?.length, lastData.removed?.length)
+      obj.added.diff = tryMinusOrUndefined(added?.length, lastData.added?.length)
+      obj.list.diff = tryMinusOrUndefined(list?.length, lastData.list?.length)
     }
     result.push(obj as RENDER_DATA_TYPE)
     lastData = data[i]
@@ -124,27 +116,23 @@ const cellRenderWithValueChange = ({ cell }: CellContext<RENDER_DATA_TYPE, any>)
 /*
 column BEGIN
  */
-const columnHelper = createColumnHelper<RENDER_DATA_TYPE>()
+
 
 const columnDef: (ColumnDef<RENDER_DATA_TYPE, ValueDiff>)[] = [
   {
     accessorKey: 'id', header: 'id', id: 'id',
-    cell: ({ cell }) => CommunityRecordUrl(cell.getValue()?.value)
+    cell: ({ cell }) => RentCommunityRecordUrl(cell.getValue()?.value)
   },
   {
     accessorKey: 'at', header: '运行时间', id: '运行时间',
     cell: ({ cell }) => <TwoLineAt at={cell.getValue()?.value} />
   },
   {
-    accessorKey: 'onSellCount', header: '在售数量', id: '在售数量',
+    accessorKey: 'count', header: '在租数量', id: '在租数量',
     cell: cellRenderWithValueChange
   },
   {
-    accessorKey: 'avgTotalPrice', header: '平均总价', id: '平均总价',
-    cell: cellRenderWithValueChange
-  },
-  {
-    accessorKey: 'avgUnitPrice', header: '平均单价', id: '平均单价',
+    accessorKey: 'avgPrice', header: '平均总价', id: '平均总价',
     cell: cellRenderWithValueChange
   },
   {
@@ -156,19 +144,11 @@ const columnDef: (ColumnDef<RENDER_DATA_TYPE, ValueDiff>)[] = [
     cell: cellRenderWithValueChange
   },
   {
-    accessorKey: 'addedItem', header: '新增上架', id: '新增上架',
+    accessorKey: 'added', header: '新增上架', id: '新增上架',
     cell: cellRenderWithValueChange
   },
   {
-    accessorKey: 'removedItem', header: '新增下架', id: '新增下架',
-    cell: cellRenderWithValueChange
-  },
-  {
-    accessorKey: 'visitCountIn90Days', header: '过去90天带看', id: '过去90天带看',
-    cell: cellRenderWithValueChange
-  },
-  {
-    accessorKey: 'doneCountIn90Days', header: '过去90天成交', id: '过去90天成交',
+    accessorKey: 'removed', header: '新增下架', id: '新增下架',
     cell: cellRenderWithValueChange
   },
 ]

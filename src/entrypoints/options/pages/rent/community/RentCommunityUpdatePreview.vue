@@ -3,7 +3,7 @@
     <div v-if="!isUpdateDone"
       class="flex flex-col items-center justify-center shadow-inner  my-4 p-3 rounded-lg border">
       <h1 class="inline">
-        批量任务运行任务(小区)完成.
+        批量任务运行任务(租房小区)完成.
         <Icon icon="icon-park-outline:list-success" class="inline-block size-12 text-blue-500" mode="svg" />
       </h1>
     </div>
@@ -16,7 +16,7 @@
       </h1>
       <div class="flex flex-row items-center justify-between gap-4">
 
-        <a :href="'options.html#/c/task/list'" class="underline text-green-500 cursor-pointer">
+        <a :href="'options.html#/rent/c/task/list'" class="underline text-green-500 cursor-pointer">
           <Button variant="outline">
             返回列表
           </Button>
@@ -74,7 +74,7 @@
         <ul class="flex flex-col gap-3">
           <li v-for="(item, index) in data.records" :key="item.cid" class="text-sm  flex flex-row items-start gap-3"
             :class="{ 'line-through': listDelete[index] }">
-            <CommunityRecordCard :record="item" />
+            <RentCommunityRecordCard :record="item" />
             <Component :is="DeleteResumeBtn(listDelete, index)" />
 
           </li>
@@ -118,6 +118,9 @@ import { useRoute } from "vue-router";
 import { browser } from "wxt/browser";
 import { HousePriceItem } from '@/types/lj';
 import HouseFieldsLackDesc from '@/entrypoints/options/components/description/HouseFieldsLackDesc.vue';
+import { RentCommunityTask, RentCommunityUpdatePreview } from "@/types/rent";
+import RentCommunityRecordCard from "@/entrypoints/options/components/rent/RentCommunityRecordCard.vue";
+import { updateBatchRentCommunityWithPreview } from "@/entrypoints/reuse/rent-community-update";
 
 interface Props {
   class?: HTMLAttributes['class']
@@ -128,16 +131,16 @@ const props = defineProps<Props>()
 const { query: { id } } = useRoute()
 useExtTitle('小区任务运行结果确认预览' + id)
 
-const data = ref<CommunityUpdatePreview>()
-const initialBatchList = ref<CommunityTask[]>([])
-const failedList = ref<CommunityTask[]>([])
+const data = ref<RentCommunityUpdatePreview>()
+const initialBatchList = ref<RentCommunityTask[]>([])
+const failedList = ref<RentCommunityTask[]>([])
 /**
  * 本次更新结果中, 所有新增的房源
  */
 const addedItem = ref<HousePriceItem[]>([])
 async function queryData() {
   if (id) {
-    await db.tempCommunityUpdatePreview.get(id as string).then(rs => data.value = rs)
+    await db.tempRentCommunityUpdatePreview.get(id as string).then(rs => data.value = rs)
   }
   console.log('data.value', data.value)
   if (data.value) {
@@ -169,9 +172,12 @@ const DeleteResumeBtn = (deleteMap: Record<number, boolean>, index: number) =>
 
   </div>
 
-const { mutate, status, isError, error } = useMutation({
+const { mutate, status, isError, error, } = useMutation({
   mutationKey: ['update-preview'],
   mutationFn: doUpdate,
+  onError(err) {
+    console.error(err)
+  }
 })
 
 
@@ -190,11 +196,7 @@ async function doUpdate() {
     records: data.value.records.filter((_, index) => !listDelete.value[index]).map(r => toRaw(r))
   }
 
-  // console.log(previewData)
-
-
-  const { addedItem: _addedItem } = await updateBatchCommunityWithPreview(previewData)
-  addedItem.value = _addedItem
+  await updateBatchRentCommunityWithPreview(previewData)
 
   isUpdateDone.value = true
   // 滚动到页面顶部

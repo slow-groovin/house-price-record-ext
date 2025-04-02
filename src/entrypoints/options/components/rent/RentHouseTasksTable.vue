@@ -29,8 +29,9 @@ import {
 } from '@tanstack/vue-table';
 import { useLocalStorage } from "@vueuse/core";
 import { boil, group } from "radash";
-import { HTMLAttributes, onMounted, ref, watch } from "vue";
+import { HTMLAttributes, onMounted, ref, watch, Component } from "vue";
 import PriceWithTime from "./PriceWithTime.vue";
+import { RentHouseDetailUrl } from "@/utils/url-component";
 
 
 type RelatedData = {
@@ -57,7 +58,7 @@ ref definition
  */
 const sorting = ref<SortingState>([])
 const columnFilters = ref<ColumnFiltersState>([])
-const columnVisibility = useLocalStorage<VisibilityState>('house-tasks-column-visibility', {})
+const columnVisibility = useLocalStorage<VisibilityState>('house-tasks-column-visibility', { '初始价格': false, '上次价格': false, '最高价': false, '最低价': false })
 const relatedCommunity = ref(new Map<string, RentCommunityTask>())
 const relatedData = ref(new Map<string, RelatedData>())
 const priceRelatedShowType = ref<undefined | 'last' | 'max' | 'min' | 'init' | 'count'>()
@@ -135,7 +136,8 @@ const columnDef: (ColumnDef<RentHouse>)[] = [
     cell: ({ cell }) => {
       const { name, rid, city } = cell.getValue() as { name?: string, rid?: string, city?: string }
       return <div class="text-xs">
-        <div>{rid}</div>
+        {RentHouseDetailUrl(rid)}
+
         <div class="text-nowrap flex flex-nowrap">
           {name}
           <a class="inline-block link text-base hover:bg-gray-200" href={genKeRentHousePageUrl(city!, rid!)} target="_blank"
@@ -184,25 +186,6 @@ const columnDef: (ColumnDef<RentHouse>)[] = [
     id: '最高价',
     cell: ({ cell, row }) => <PriceWithTime relatedData={relatedData.value.get(cell.getValue() as string)} type="max" price={row.original.price} />
   },
-
-  // {
-  //   accessorKey: 'rid',
-  //   header: '最低价',
-  //   id: '最低价',
-  //   cell: ({ cell, }) => relatedData.value.get(cell.getValue() as string)?.priceMin?.value
-  // },
-  // {
-  //   accessorKey: 'rid',
-  //   header: '最高价',
-  //   id: '最高价',
-  //   cell: ({ cell, }) => relatedData.value.get(cell.getValue() as string)?.priceMax?.value
-  // },
-  // {
-  //   accessorKey: 'rid',
-  //   header: '上次变更价格时间',
-  //   id: '上次变更价格时间',
-  //   cell: ({ cell, }) => relatedData.value.get(cell.getValue() as string)?.priceLastChange?.value
-  // },
   {
     accessorKey: 'rid',
     header: '价格变更次数',
@@ -327,7 +310,7 @@ async function queryRelatedData() {
   //query and calc changes
   const ridList = data.map(t => t.rid)
 
-  const changes = await KeRentDao().findPriceChangesByRids(ridList)
+  const changes = await KeRentDao().findChangesByRidsAndType(ridList, 'price')
   const changesGroup = group(changes, t => t.rid)
   for (let changesGroupKey in changesGroup) {
     const changes = changesGroup[changesGroupKey]

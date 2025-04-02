@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useExtTitle } from "@/composables/useExtInfo";
 import { useRouterQuery } from "@/composables/useRouterQuery";
 import { db } from "@/entrypoints/db/Dexie";
-import { RentDao } from "@/entrypoints/db/rent-dao";
+import { KeRentDao } from "@/entrypoints/db/rent-dao";
 import GenericSortDock from "@/entrypoints/options/components/GenericSortDock.vue";
 import RentHouseTasksTable from "@/entrypoints/options/components/rent/RentHouseTasksTable.vue";
 import HouseTaskTableQueryDock from "@/entrypoints/options/components/sell/HouseTaskTableQueryDock.vue";
@@ -94,8 +94,9 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   const pageIndex = queryCache.retrieve('pageIndex', _pageIndex, 1)
   const pageSize = queryCache.retrieve('pageSize', _pageSize, 10)
   const pagiCond = { pageIndex, pageSize }
-  const queryRs = await RentDao.from('ke').findManyHouses(pagiCond, queryCondition.value, sortCondition.value)
+  const queryRs = await KeRentDao().findManyHouses(pagiCond, queryCondition.value, sortCondition.value)
   data.value = queryRs.data
+
   rowCount.value = queryRs.count
 
   queryCost.value = Date.now() - beginAt
@@ -128,20 +129,12 @@ async function removeQueryConditionQueryParam() {
   await removeQueries(Object.keys(queryCondTemplate))
 }
 
-/**开始选中的任务运行*/
-async function goBeginBatchSelectedTasks() {
-  const hidList = Object.keys(rowSelection.value)
-    .map(s => Number(s))
-    .map(i => data.value[i].hid)
-  goRunHouseTasksStartPage(hidList)
-}
-
 
 async function deleteSelectedTasks() {
-  const ids = Object.keys(rowSelection.value).map(s => Number(s)).filter(index => data.value[index]?.id).map(index => data.value[index].id)
-  await db.houseTasks.bulkDelete(ids)
+  const ids = Object.keys(rowSelection.value).map(s => Number(s)).filter(index => data.value[index]?.rid).map(index => data.value[index].rid)
+  await KeRentDao().deleteHouses(ids)
   alert(`删除成功!${ids.length}个任务`)
-  data.value = data.value.filter(item => !ids.includes(item.id))
+  data.value = data.value.filter(item => !ids.includes(item.rid))
   rowSelection.value = {}
 }
 
@@ -174,12 +167,6 @@ onMounted(() => {
     <div>查询耗时: <span class="text-primary">{{ queryCost / 1000 }}</span> 秒</div>
     <div v-if="rowSelection">选中 <span class="text-primary"> {{ selectionCount }}</span> 个</div>
 
-    <ConfirmDialog @confirm="goBeginBatchSelectedTasks">
-      <template #trigger>
-        <Button class="p-1 h-fit" :disabled="!selectionCount">开始运行(选中)</Button>
-      </template>
-      开始运行 {{ selectionCount }} 个任务?
-    </ConfirmDialog>
 
 
     <ConfirmDialog @confirm="deleteSelectedTasks">

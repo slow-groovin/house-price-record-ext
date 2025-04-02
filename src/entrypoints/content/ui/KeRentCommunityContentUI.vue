@@ -10,6 +10,7 @@ import { Icon } from "@iconify/vue";
 import { onMounted, ref } from "vue";
 import { RentCommunityTask, RentModelUtils } from '@/types/rent';
 import { parseAllOfKeRentCommunity } from "../util/ke-rent-community-dom-parse";
+import { toRaw } from "#imports";
 
 const { isDebug } = useDevSetting()
 
@@ -19,12 +20,12 @@ const cid = ref<string | undefined>()
 const taskInDb = ref<RentCommunityTask>()
 onMounted(async () => {
   await initParseAndQuery()
-  console.log('parsedRs', parsedResult.value)
+  console.log('parsedRs', toRaw(parsedResult.value))
 
 })
 
 function openOption() {
-  sendMessage('openOptionPage', '/options.html#/c/task/detail?id=' + cid.value)
+  sendMessage('openOptionPage', '/options.html#/rent/c/task/detail?id=' + cid.value)
 }
 
 

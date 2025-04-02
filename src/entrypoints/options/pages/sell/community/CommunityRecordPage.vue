@@ -111,7 +111,7 @@ onMounted(() => {
               ??
               0)
             - (detailData?.addedItem?.length ?? 0) - (detailData?.removedItem?.length ?? 0)
-            }}
+          }}
           </th>
         </tr>
         <tr>
@@ -134,14 +134,14 @@ onMounted(() => {
           <div class="line-through italic decoration-red-500">
             <Component :is="HouseDetailUrl(item.hid)" />
           </div>
-          <TotalPriceItem :price="item.price" :hid="item.hid" />
+          <TotalPriceItem :price="item.price" :id="item.hid" />
         </div>
       </template>
       <template v-for="item in detailData.addedItem">
         <div class="flex flex-row gap-4 border bg-blue-100">
           <div class="min-w-20">🆕新上架</div>
           <Component :is="HouseDetailUrl(item.hid)" />
-          <TotalPriceItem :price="item.price" :hid="item.hid" />
+          <TotalPriceItem :price="item.price" :id="item.hid" />
         </div>
       </template>
 
@@ -168,7 +168,7 @@ onMounted(() => {
           <div class="min-w-20">
           </div>
           <Component :is="HouseDetailUrl(item.hid)" />
-          <TotalPriceItem :price="item.price" :hid="item.hid" />
+          <TotalPriceItem :price="item.price" :id="item.hid" />
         </div>
 
       </template>

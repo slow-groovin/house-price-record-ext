@@ -171,7 +171,7 @@ const columnDef: (ColumnDef<HouseTask>)[] = [
     accessorKey: "totalPrice",
     header: '总价',
     id: '总价',
-    cell: ({ cell, row }) => <TotalPriceItem hid={row.original.hid}
+    cell: ({ cell, row }) => <TotalPriceItem id={row.original.hid}
       price={cell.getValue() as number}
       relatedData={relatedData.value.get(row.original.hid)}
       relatedType={priceRelatedShowType.value} />
