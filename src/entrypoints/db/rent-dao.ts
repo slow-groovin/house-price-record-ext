@@ -1,29 +1,4 @@
-import {
-  RentCommunityRecord,
-  RentCommunityTask,
-  RentHouse,
-  RentHousePriceChange,
-  RentHouseStatusChange,
-  RentModelUtils,
-  RentPriceChangeItem,
-} from "@/types/rent";
-import {
-  and,
-  insert,
-  like,
-  select,
-  WhereExpression,
-  in as _in,
-  lt,
-  gt,
-  ltAll,
-  eq,
-  lte,
-  gte,
-  update,
-  deleteFrom,
-} from "sql-bricks";
-import { getDb, TableNames } from "./sqlite";
+import { HouseTaskStatus } from "@/types/lj";
 import {
   HouseChangeQueryCondition,
   HouseStatusChangeQueryCondition,
@@ -31,11 +6,18 @@ import {
   RentCommunityQueryCondition,
   SortState,
 } from "@/types/query-condition";
-import { calcOffset } from "@/utils/table-utils";
+import {
+  RentCommunityRecord,
+  RentCommunityTask,
+  RentHouse,
+  RentHousePriceChange,
+  RentHouseStatusChange,
+  RentModelUtils,
+} from "@/types/rent";
 import { logger } from "@/utils/log";
-import { squel, sqlify, Resource } from "sqlify";
-import { HouseTaskStatus } from "@/types/lj";
-
+import { calcOffset } from "@/utils/table-utils";
+import { squel } from "sqlify"; // Import squel
+import { getDb, TableNames } from "./sqlite";
 export function KeRentDao() {
   return RentDao.from("ke");
 }
@@ -57,6 +39,7 @@ export class RentDao {
     if (this.#platform === "ke") {
       return TableNames.keRent;
     }
+    // Assuming 5i5j uses the same tables for now, adjust if needed
     return TableNames.keRent;
   }
 
@@ -68,9 +51,10 @@ export class RentDao {
   }
 
   async findCommunityByCid(cid: string) {
-    const sql = select()
+    const sql = squel
+      .select()
       .from(this.#tableName.community)
-      .where({ cid: cid })
+      .where("cid = ?", cid)
       .toString();
     const sqliteDb = await getDb();
     const results = (await sqliteDb.run(sql)) as RentCommunityTask[];
@@ -78,9 +62,11 @@ export class RentDao {
   }
 
   async findFirstCommunityByCid(cid: string) {
-    const sql = select()
+    const sql = squel
+      .select()
       .from(this.#tableName.community)
-      .where({ cid: cid })
+      .where("cid = ?", cid)
+      .limit(1) // Added limit 1 to get only the first
       .toString();
     const sqliteDb = await getDb();
     const results = (await sqliteDb.run(sql)) as RentCommunityTask[];
@@ -88,9 +74,12 @@ export class RentDao {
   }
 
   async findCommunitiesByCids(cidList: string[]) {
-    const sql = select()
+    if (cidList.length === 0) return [];
+
+    const sql = squel
+      .select()
       .from(this.#tableName.community)
-      .where(_in("cid", cidList))
+      .where("cid IN ?", cidList)
       .toString();
     const sqliteDb = await getDb();
     const rs = (await sqliteDb.run(sql)) as RentCommunityTask[];
@@ -99,7 +88,11 @@ export class RentDao {
   }
 
   async insertCommunity(task: RentCommunityTask) {
-    const sql = insert(this.#tableName.community, task).toString();
+    const sql = squel
+      .insert()
+      .into(this.#tableName.community)
+      .setFields(task)
+      .toString();
     const sqliteDb = await getDb();
     await sqliteDb.run(sql);
     return;
@@ -116,42 +109,46 @@ export class RentDao {
     query?: RentCommunityQueryCondition,
     sort?: SortState<RentCommunityTask>
   ) {
-    const whereConditions: WhereExpression[] = [];
+    let builder = squel.select().from(this.#tableName.community);
+    let countBuilder = squel
+      .select()
+      .field("count(*) count")
+      .from(this.#tableName.community);
+
     if (query?.cidLike) {
-      whereConditions.push(like("cid", `%${query.cidLike}%`));
+      const condition = "cid LIKE ?";
+      builder = builder.where(condition, `%${query.cidLike}%`);
+      countBuilder = countBuilder.where(condition, `%${query.cidLike}%`);
     }
     if (query?.nameLike) {
-      whereConditions.push(like("name", `%${query.nameLike}%`));
+      const condition = "name LIKE ?";
+      builder = builder.where(condition, `%${query.nameLike}%`);
+      countBuilder = countBuilder.where(condition, `%${query.nameLike}%`);
     }
     if (query?.city) {
-      whereConditions.push({ city: query.city });
+      const condition = "city = ?";
+      builder = builder.where(condition, query.city);
+      countBuilder = countBuilder.where(condition, query.city);
     }
-
-    const whereCond =
-      whereConditions.length === 0 ? {} : and(...whereConditions);
-
-    logger.log("query", query, whereConditions, whereCond);
-    let builder = select().from(this.#tableName.community).where(whereCond);
-
-    let countBuilder = select("count(*) count")
-      .from(this.#tableName.community)
-      .where(whereCond);
 
     if (sort && sort.field && sort.order) {
-      builder = builder.order(sort.field + " " + sort.order);
+      builder = builder.order(sort.field, sort.order === "asc");
+    } else {
+      // Default sort if not provided or incomplete
+      builder = builder.order("createdAt", false); // false for DESC
     }
-    builder = builder.orderBy("createdAt desc");
 
-    let sql = builder.toString();
     let offset = calcOffset(pagination.pageIndex, pagination.pageSize);
-    sql += ` LIMIT ${pagination.pageSize} OFFSET ${offset}`;
+    builder = builder.limit(pagination.pageSize).offset(offset);
+
+    const sql = builder.toString();
+    const countSql = countBuilder.toString();
     logger.log("sql", sql);
+    logger.log("countSql", countSql);
 
     const sqliteDb = await getDb();
     const results = (await sqliteDb.run(sql)) as RentCommunityTask[];
-    const countResult = (await sqliteDb.run(countBuilder.toString())) as [
-      { count: number }
-    ];
+    const countResult = (await sqliteDb.run(countSql)) as [{ count: number }];
 
     return {
       count: countResult[0].count,
@@ -160,12 +157,13 @@ export class RentDao {
   }
 
   async findLastTwoRecordsByCid(cid: string) {
-    const sql =
-      select()
-        .from(this.#tableName.record)
-        .where({ cid: cid })
-        .order("id desc")
-        .toString() + " LIMIT 2";
+    const sql = squel
+      .select()
+      .from(this.#tableName.record)
+      .where("cid = ?", cid)
+      .order("id", false) // false for DESC
+      .limit(2)
+      .toString();
 
     logger.log("sql", sql);
     const sqliteDb = await getDb();
@@ -177,8 +175,11 @@ export class RentDao {
   }
 
   async deleteTasks(cidList: string[]) {
-    const sql = deleteFrom(this.#tableName.community)
-      .where(_in("cid", cidList))
+    if (cidList.length === 0) return [];
+    const sql = squel
+      .delete()
+      .from(this.#tableName.community)
+      .where("cid IN ?", cidList)
       .toString();
     const sqliteDb = await getDb();
     const rs = await sqliteDb.run(sql);
@@ -188,19 +189,23 @@ export class RentDao {
 
   async incRunningCount(cid: string, at: number) {
     const sqliteDb = await getDb();
-    //同时更新lastRunningAt
+    // squel doesn't directly support 'SET runningCount = runningCount + 1' easily across DBs
+    // Using raw SQL for this specific update remains the simplest approach here.
     const sql = `UPDATE ${
       this.#tableName.community
-    } SET runningCount = runningCount + 1, lastRunningAt = ${at} WHERE cid = '${cid}'`;
-    logger.log("sql", sql);
-    const rs = await sqliteDb.run(sql);
+    } SET runningCount = runningCount + 1, lastRunningAt = ? WHERE cid = ?`;
+    logger.log("sql", sql, [at, cid]);
+    const rs = await sqliteDb.run(sql, [at, cid]);
     return rs;
   }
 
   async countCommunity(option?: { createdAtMin: number }) {
-    let builder = select("count(*) count").from(this.#tableName.community);
+    let builder = squel
+      .select()
+      .field("count(*) count")
+      .from(this.#tableName.community);
     if (option?.createdAtMin) {
-      builder = builder.where(gte("createdAt", option.createdAtMin));
+      builder = builder.where("createdAt >= ?", option.createdAtMin);
     }
     const sql = builder.toString();
     const sqliteDb = await getDb();
@@ -213,16 +218,21 @@ export class RentDao {
   */
 
   async insertHouse(house: RentHouse) {
-    const sql = insert(this.#tableName.house, house).toString();
+    const sql = squel
+      .insert()
+      .into(this.#tableName.house)
+      .setFields(house)
+      .toString();
     const sqliteDb = await getDb();
     await sqliteDb.run(sql);
     return;
   }
 
   async findHouseByRid(rid: string) {
-    const sql = select()
+    const sql = squel
+      .select()
       .from(this.#tableName.house)
-      .where(eq("rid", rid))
+      .where("rid = ?", rid)
       .toString();
     const sqliteDb = await getDb();
     const rs = (await sqliteDb.run(sql)) as RentHouse[];
@@ -231,10 +241,14 @@ export class RentDao {
   }
 
   async findHousesByRid(ridList: string[]) {
-    const sql = select()
+    if (ridList.length === 0) return [];
+    const sql = squel
+      .select()
       .from(this.#tableName.house)
-      .where(_in("rid", ridList))
+      .where("rid IN ?", ridList)
       .toString();
+
+    logger.log(sql);
     const sqliteDb = await getDb();
     const rs = (await sqliteDb.run(sql)) as RentHouse[];
 
@@ -249,50 +263,65 @@ export class RentDao {
     query?: HouseTaskQueryCondition,
     sort?: SortState<RentHouse>
   ) {
-    const whereConditions: WhereExpression[] = [];
-    if (query?.cidInclude)
-      whereConditions.push(like("cid", `%${query.cidInclude}%`));
+    let builder = squel.select().from(this.#tableName.house);
+    let countBuilder = squel
+      .select()
+      .field("count(*) count")
+      .from(this.#tableName.house);
 
-    if (query?.cidEqual) whereConditions.push({ cid: query.cidEqual });
-
-    if (query?.city) whereConditions.push({ city: query.city });
-
-    if (query?.hidInclude)
-      whereConditions.push(like("rid", `%${query.hidInclude}%`));
-
-    if (query?.status) whereConditions.push({ status: query.status });
-
-    if (query?.totalPriceMax)
-      whereConditions.push(lt("price", query.totalPriceMax));
-
-    if (query?.totalPriceMin)
-      whereConditions.push(gt("price", query.totalPriceMin));
-
-    const whereCond =
-      whereConditions.length === 0 ? {} : and(...whereConditions);
-
-    logger.log("query", query, whereConditions, whereCond);
-    let builder = select().from(this.#tableName.house).where(whereCond);
-
-    let countBuilder = select("count(*) count")
-      .from(this.#tableName.house)
-      .where(whereCond);
+    if (query?.cidInclude) {
+      const condition = "cid LIKE ?";
+      builder = builder.where(condition, `%${query.cidInclude}%`);
+      countBuilder = countBuilder.where(condition, `%${query.cidInclude}%`);
+    }
+    if (query?.cidEqual) {
+      const condition = "cid = ?";
+      builder = builder.where(condition, query.cidEqual);
+      countBuilder = countBuilder.where(condition, query.cidEqual);
+    }
+    if (query?.city) {
+      const condition = "city = ?";
+      builder = builder.where(condition, query.city);
+      countBuilder = countBuilder.where(condition, query.city);
+    }
+    if (query?.hidInclude) {
+      const condition = "rid LIKE ?";
+      builder = builder.where(condition, `%${query.hidInclude}%`);
+      countBuilder = countBuilder.where(condition, `%${query.hidInclude}%`);
+    }
+    if (query?.status) {
+      const condition = "status = ?";
+      builder = builder.where(condition, query.status);
+      countBuilder = countBuilder.where(condition, query.status);
+    }
+    if (query?.totalPriceMax) {
+      const condition = "price < ?";
+      builder = builder.where(condition, query.totalPriceMax);
+      countBuilder = countBuilder.where(condition, query.totalPriceMax);
+    }
+    if (query?.totalPriceMin) {
+      const condition = "price > ?";
+      builder = builder.where(condition, query.totalPriceMin);
+      countBuilder = countBuilder.where(condition, query.totalPriceMin);
+    }
 
     if (sort && sort.field && sort.order) {
-      builder = builder.order(sort.field + " " + sort.order);
+      builder = builder.order(sort.field, sort.order === "asc");
+    } else {
+      builder = builder.order("createdAt", false); // false for DESC
     }
-    builder = builder.orderBy("createdAt desc");
 
-    let sql = builder.toString();
     let offset = calcOffset(pagination.pageIndex, pagination.pageSize);
-    sql += ` LIMIT ${pagination.pageSize} OFFSET ${offset}`;
+    builder = builder.limit(pagination.pageSize).offset(offset);
+
+    const sql = builder.toString();
+    const countSql = countBuilder.toString();
     logger.log("sql", sql);
+    logger.log("countSql", countSql);
 
     const sqliteDb = await getDb();
     const results = (await sqliteDb.run(sql)) as RentHouse[];
-    const countResult = (await sqliteDb.run(countBuilder.toString())) as [
-      { count: number }
-    ];
+    const countResult = (await sqliteDb.run(countSql)) as [{ count: number }];
 
     return {
       count: countResult[0].count,
@@ -301,15 +330,22 @@ export class RentDao {
   }
   async updateHouse(rid: string, fields: any) {
     const sqliteDb = await getDb();
-    const sql = update(this.#tableName.house, fields)
-      .where({ rid: rid })
+    const sql = squel
+      .update()
+      .table(this.#tableName.house)
+      .setFields(fields)
+      .where("rid = ?", rid)
       .toString();
     return await sqliteDb.run(sql);
   }
 
   async deleteHouses(ridList: string[]) {
-    const sql = deleteFrom(this.#tableName.house)
-      .where(_in("rid", ridList))
+    if (ridList.length === 0) return [];
+
+    const sql = squel
+      .delete()
+      .from(this.#tableName.house)
+      .where("rid IN ?", ridList)
       .toString();
     const sqliteDb = await getDb();
     const rs = await sqliteDb.run(sql);
@@ -318,9 +354,12 @@ export class RentDao {
   }
 
   async countHoues(option?: { createdAtMin: number }) {
-    let builder = select("count(*) count").from(this.#tableName.house);
+    let builder = squel
+      .select()
+      .field("count(*) count")
+      .from(this.#tableName.house);
     if (option?.createdAtMin) {
-      builder = builder.where(gte("createdAt", option.createdAtMin));
+      builder = builder.where("createdAt >= ?", option.createdAtMin);
     }
     const sql = builder.toString();
     const sqliteDb = await getDb();
@@ -339,7 +378,11 @@ export class RentDao {
       priceDownList: JSON.stringify(record.priceDownList),
       priceUpList: JSON.stringify(record.priceUpList),
     };
-    const sql = insert(this.#tableName.record, flatRecord).toString();
+    const sql = squel
+      .insert()
+      .into(this.#tableName.record)
+      .setFields(flatRecord)
+      .toString();
     const sqliteDb = await getDb();
     await sqliteDb.run(sql);
     return;
@@ -356,40 +399,43 @@ export class RentDao {
       atMax?: number;
     }
   ) {
-    const whereConditions: WhereExpression[] = [];
+    let builder = squel.select().from(this.#tableName.record);
+    let countBuilder = squel
+      .select()
+      .field("count(*) count")
+      .from(this.#tableName.record);
+
     if (query?.cidEqual) {
-      whereConditions.push({ cid: query.cidEqual });
+      const condition = "cid = ?";
+      builder = builder.where(condition, query.cidEqual);
+      countBuilder = countBuilder.where(condition, query.cidEqual);
     }
     if (query?.atMin) {
-      whereConditions.push(gte("at", query.atMin));
+      const condition = "at >= ?";
+      builder = builder.where(condition, query.atMin);
+      countBuilder = countBuilder.where(condition, query.atMin);
     }
     if (query?.atMax) {
-      whereConditions.push(lte("at", query.atMax));
+      const condition = "at <= ?";
+      builder = builder.where(condition, query.atMax);
+      countBuilder = countBuilder.where(condition, query.atMax);
     }
 
-    const whereCond =
-      whereConditions.length === 0 ? {} : and(...whereConditions);
+    builder = builder.order("id", false); // false for DESC
 
-    let builder = select().from(this.#tableName.record).where(whereCond);
-
-    let countBuilder = select("count(*) count")
-      .from(this.#tableName.record)
-      .where(whereCond);
-
-    builder = builder.order("id desc");
-
-    let sql = builder.toString();
     let offset = calcOffset(pagination.pageIndex, pagination.pageSize);
-    sql += ` LIMIT ${pagination.pageSize} OFFSET ${offset}`;
+    builder = builder.limit(pagination.pageSize).offset(offset);
+
+    const sql = builder.toString();
+    const countSql = countBuilder.toString();
     logger.log("sql", sql);
+    logger.log("countSql", countSql);
 
     const sqliteDb = await getDb();
     const results = (await sqliteDb.run(sql)).map(
       RentModelUtils.unserializeRentCommunityRecord
     );
-    const countResult = (await sqliteDb.run(countBuilder.toString())) as [
-      { count: number }
-    ];
+    const countResult = (await sqliteDb.run(countSql)) as [{ count: number }];
 
     return {
       count: countResult[0].count,
@@ -397,37 +443,42 @@ export class RentDao {
     };
   }
   async findFirstRecordByCidAndBefore(cid: string, at: number) {
-    const sql = select()
+    const sql = squel
+      .select()
       .from(this.#tableName.record)
-      .where({ cid: cid })
-      .where(lte("at", at))
-      .order("id desc")
+      .where("cid = ?", cid)
+      .where("at <= ?", at)
+      .order("id", false) // false for DESC
+      .limit(1)
       .toString();
     const sqliteDb = await getDb();
-    const results = await sqliteDb.run(sql + " LIMIT 1");
+    const results = await sqliteDb.run(sql);
     return results.map((item) =>
       RentModelUtils.unserializeRentCommunityRecord(item)
     )[0];
   }
   async findFirstRecordByCidAndAfter(cid: string, at: number) {
-    const sql = select()
+    const sql = squel
+      .select()
       .from(this.#tableName.record)
-      .where({ cid: cid })
-      .where(gte("at", at))
-      .order("id desc")
+      .where("cid = ?", cid)
+      .where("at >= ?", at)
+      .order("id", false) // false for DESC, assuming we want the latest record after 'at'
+      .limit(1)
       .toString();
     const sqliteDb = await getDb();
-    const results = await sqliteDb.run(sql + " LIMIT 1");
+    const results = await sqliteDb.run(sql);
     return results.map((item) =>
       RentModelUtils.unserializeRentCommunityRecord(item)
     )[0];
   }
 
   async findRecordsByCid(cid: string) {
-    const sql = select()
+    const sql = squel
+      .select()
       .from(this.#tableName.record)
-      .where({ cid: cid })
-      .order("id desc")
+      .where("cid = ?", cid)
+      .order("id", false) // false for DESC
       .toString();
     const sqliteDb = await getDb();
     const results = await sqliteDb.run(sql);
@@ -436,10 +487,11 @@ export class RentDao {
     );
   }
   async findRecordsById(id: number) {
-    const sql = select()
+    const sql = squel
+      .select()
       .from(this.#tableName.record)
-      .where({ id: id })
-      .order("id desc")
+      .where("id = ?", id)
+      // .order("id desc") // Ordering by id desc is redundant when selecting by id
       .toString();
     const sqliteDb = await getDb();
     const results = await sqliteDb.run(sql);
@@ -449,16 +501,22 @@ export class RentDao {
   }
 
   async deleteRecordById(id: number) {
-    const sql = `DELETE FROM ${this.#tableName.record} WHERE id = ${id}`;
+    const sql = squel
+      .delete()
+      .from(this.#tableName.record)
+      .where("id = ?", id)
+      .toString();
     const sqliteDb = await getDb();
     await sqliteDb.run(sql);
     return;
   }
 
   async countRecordByCid(cid: string) {
-    const sql = select("count(*) count")
+    const sql = squel
+      .select()
+      .field("count(*) count")
       .from(this.#tableName.record)
-      .where({ cid: cid })
+      .where("cid = ?", cid)
       .toString();
     const sqliteDb = await getDb();
     const results = (await sqliteDb.run(sql)) as [{ count: number }];
@@ -466,9 +524,12 @@ export class RentDao {
   }
 
   async countRecords(option?: { createdAtMin: number }) {
-    let builder = select("count(*) count").from(this.#tableName.record);
+    let builder = squel
+      .select()
+      .field("count(*) count")
+      .from(this.#tableName.record);
     if (option?.createdAtMin) {
-      builder = builder.where(gte("createdAt", option.createdAtMin));
+      builder = builder.where("createdAt >= ?", option.createdAtMin);
     }
     const sql = builder.toString();
     const sqliteDb = await getDb();
@@ -479,14 +540,23 @@ export class RentDao {
    * Changes
    */
   async insertPriceChange(change: RentHousePriceChange) {
-    const sql = insert(this.#tableName.price_change, change).toString();
+    const sql = squel
+      .insert()
+      .into(this.#tableName.price_change)
+      .setFields(change)
+      .toString();
     const sqliteDb = await getDb();
     await sqliteDb.run(sql);
     return;
   }
 
-  async insertStatusChange(change: RentHousePriceChange) {
-    const sql = insert(this.#tableName.status_change, change).toString();
+  async insertStatusChange(change: RentHouseStatusChange) {
+    // Assuming RentHouseStatusChange has compatible fields for insertion
+    const sql = squel
+      .insert()
+      .into(this.#tableName.status_change)
+      .setFields(change)
+      .toString();
     const sqliteDb = await getDb();
     await sqliteDb.run(sql);
     return;
@@ -498,26 +568,34 @@ export class RentDao {
   ): Promise<
     T extends "price" ? RentHousePriceChange[] : RentHouseStatusChange[]
   > {
-    const sql = select()
-      .from(
-        type === "price"
-          ? this.#tableName.price_change
-          : this.#tableName.status_change
-      )
-      .where(_in("rid", ridList))
+    const tableName =
+      type === "price"
+        ? this.#tableName.price_change
+        : this.#tableName.status_change;
+    const sql = squel
+      .select()
+      .from(tableName)
+      .where("rid IN ?", ridList)
       .toString();
     logger.log("sql", sql);
     const sqliteDb = await getDb();
-    if (type === "price")
-      return (await sqliteDb.run(sql)) as RentHousePriceChange[];
-    else return (await sqliteDb.run(sql)) as RentHouseStatusChange[];
+    const results = await sqliteDb.run(sql);
+    // We need to cast based on the type T, the caller expects the correct type.
+    return results as T extends "price"
+      ? RentHousePriceChange[]
+      : RentHouseStatusChange[];
   }
 
   /**
    * delete change by id
    */
-  async deleteChangeById(id: number) {
-    const sql = `DELETE FROM ${this.#tableName.price_change} WHERE id = ${id}`;
+  async deleteChangeById(id: number, type: "price" | "status") {
+    // Need to know which table to delete from
+    const tableName =
+      type === "price"
+        ? this.#tableName.price_change
+        : this.#tableName.status_change;
+    const sql = squel.delete().from(tableName).where("id = ?", id).toString();
     const sqliteDb = await getDb();
     await sqliteDb.run(sql);
     return;
@@ -534,94 +612,124 @@ export class RentDao {
     },
     query?: HouseChangeQueryCondition &
       HouseStatusChangeQueryCondition & { cidEqual?: string },
-    sort?: SortState<RentHousePriceChange>
+    sort?: SortState<RentHousePriceChange | RentHouseStatusChange> // Union type for sort
   ): Promise<{
     count: number;
     data: (T extends "price" ? RentHousePriceChange : RentHouseStatusChange)[];
   }> {
-    const whereConditions: WhereExpression[] = [
-      { 1: 1 },
-      { placeholder: "placeholder" },
-    ];
-
-    if (query?.atMax) {
-      whereConditions.push(lt("at", new Date(query.atMax).getTime()));
-    }
-    if (query?.atMin) {
-      whereConditions.push(gt("at", new Date(query.atMin).getTime()));
-    }
-    if (query?.cidInclude) {
-      whereConditions.push(like("cid", `%${query.cidInclude}%`));
-      whereConditions.push(like("cid", `%${query.cidInclude}%`));
-    }
-    if (query?.cidEqual) {
-      whereConditions.push(eq("cid", query.cidEqual));
-      whereConditions.push(eq("cid", query.cidEqual));
-    }
-    if (query?.hidInclude)
-      whereConditions.push(like("rid", `%${query.hidInclude}%`));
-
-    if (query?.newValue) whereConditions.push(eq("newValue", query.newValue));
-    if (query?.oldValue) whereConditions.push(eq("oldValue", query.oldValue));
-
-    if (query?.newValueMax)
-      whereConditions.push(lt("newValue", query.newValueMax));
-    if (query?.newValueMin)
-      whereConditions.push(gt("newValue", query.newValueMin));
-
-    if (query?.oldValueMax)
-      whereConditions.push(lt("oldValue", query.oldValueMax));
-    if (query?.oldValueMin)
-      whereConditions.push(gt("oldValue", query.oldValueMin));
-
-    const whereCond =
-      whereConditions.length === 0 ? {} : and(...whereConditions);
-
     const tableName =
       type === "price"
         ? this.#tableName.price_change
         : this.#tableName.status_change;
 
-    let builder = select().from(tableName).where(whereCond);
+    let builder = squel.select().from(tableName);
+    let countBuilder = squel.select().field("count(*) count").from(tableName);
 
-    let countBuilder = select("count(*) count")
-      .from(tableName)
-      .where(whereCond);
+    // Apply common filters
+    if (query?.atMax) {
+      const condition = "at < ?";
+      const atMaxTs = new Date(query.atMax).getTime();
+      builder = builder.where(condition, atMaxTs);
+      countBuilder = countBuilder.where(condition, atMaxTs);
+    }
+    if (query?.atMin) {
+      const condition = "at > ?";
+      const atMinTs = new Date(query.atMin).getTime();
+      builder = builder.where(condition, atMinTs);
+      countBuilder = countBuilder.where(condition, atMinTs);
+    }
+    if (query?.cidInclude) {
+      const condition = "cid LIKE ?";
+      builder = builder.where(condition, `%${query.cidInclude}%`);
+      countBuilder = countBuilder.where(condition, `%${query.cidInclude}%`);
+    }
+    if (query?.cidEqual) {
+      const condition = "cid = ?";
+      builder = builder.where(condition, query.cidEqual);
+      countBuilder = countBuilder.where(condition, query.cidEqual);
+    }
+    if (query?.hidInclude) {
+      const condition = "rid LIKE ?";
+      builder = builder.where(condition, `%${query.hidInclude}%`);
+      countBuilder = countBuilder.where(condition, `%${query.hidInclude}%`);
+    }
 
+    // Apply type-specific filters (price or status)
+    if (type === "price") {
+      if (query?.newValue) {
+        const condition = "newValue = ?";
+        builder = builder.where(condition, query.newValue);
+        countBuilder = countBuilder.where(condition, query.newValue);
+      }
+      if (query?.oldValue) {
+        const condition = "oldValue = ?";
+        builder = builder.where(condition, query.oldValue);
+        countBuilder = countBuilder.where(condition, query.oldValue);
+      }
+      if (query?.newValueMax) {
+        const condition = "newValue < ?";
+        builder = builder.where(condition, query.newValueMax);
+        countBuilder = countBuilder.where(condition, query.newValueMax);
+      }
+      if (query?.newValueMin) {
+        const condition = "newValue > ?";
+        builder = builder.where(condition, query.newValueMin);
+        countBuilder = countBuilder.where(condition, query.newValueMin);
+      }
+      if (query?.oldValueMax) {
+        const condition = "oldValue < ?";
+        builder = builder.where(condition, query.oldValueMax);
+        countBuilder = countBuilder.where(condition, query.oldValueMax);
+      }
+      if (query?.oldValueMin) {
+        const condition = "oldValue > ?";
+        builder = builder.where(condition, query.oldValueMin);
+        countBuilder = countBuilder.where(condition, query.oldValueMin);
+      }
+      // Price change type (increase/decrease)
+      if (query?.type === "increase") {
+        const condition = "newValue > oldValue";
+        builder = builder.where(condition);
+        countBuilder = countBuilder.where(condition);
+      } else if (query?.type === "decrease") {
+        const condition = "newValue < oldValue"; // Corrected logic
+        builder = builder.where(condition);
+        countBuilder = countBuilder.where(condition);
+      }
+    } else if (type === "status") {
+      // Status change specific filters (if any in HouseStatusChangeQueryCondition)
+      // Example:
+      // if (query?.newStatus) {
+      //   const condition = "newValue = ?";
+      //   builder = builder.where(condition, query.newStatus);
+      //   countBuilder = countBuilder.where(condition, query.newStatus);
+      // }
+    }
+
+    // Apply sorting
     if (sort && sort.field && sort.order) {
-      builder = builder.order(sort.field + " " + sort.order);
-    }
-
-    builder = builder.order("id desc");
-
-    let sql = builder.toString();
-    let offset = calcOffset(pagination.pageIndex, pagination.pageSize);
-    sql += ` LIMIT ${pagination.pageSize} OFFSET ${offset}`;
-    let countSql = countBuilder.toString();
-
-    //special condition
-    const PLACE_HOLDER = `placeholder = \'placeholder\'`;
-    // !prettier-ignore
-    if (query?.type === "increase") {
-      sql = sql.replace(PLACE_HOLDER, "oldValue < newValue");
-      countSql = countSql.replace(PLACE_HOLDER, "oldValue < newValue");
-    } else if (query?.type === "decrease") {
-      sql = sql.replace(PLACE_HOLDER, "oldValue > newValue");
-      countSql = countSql.replace(PLACE_HOLDER, "oldValue > newValue");
+      builder = builder.order(sort.field, sort.order === "asc");
     } else {
-      sql = sql.replace(PLACE_HOLDER, "1=1");
-      countSql = countSql.replace(PLACE_HOLDER, "1=1");
+      builder = builder.order("id", false); // Default sort: id DESC
     }
+
+    // Apply pagination
+    let offset = calcOffset(pagination.pageIndex, pagination.pageSize);
+    builder = builder.limit(pagination.pageSize).offset(offset);
+
+    const sql = builder.toString();
+    const countSql = countBuilder.toString();
     logger.log("sql", sql);
+    logger.log("countSql", countSql);
 
     const sqliteDb = await getDb();
     const results = await sqliteDb.run(sql);
-    const typedResults =
-      type === "price"
-        ? (results as RentHousePriceChange[])
-        : (results as RentHouseStatusChange[]);
-
     const countResult = (await sqliteDb.run(countSql)) as [{ count: number }];
+
+    // Cast results based on T
+    const typedResults = results as T extends "price"
+      ? RentHousePriceChange[]
+      : RentHouseStatusChange[];
 
     return {
       count: countResult[0].count,
@@ -636,23 +744,30 @@ export class RentDao {
     atMin?: number;
   }) {
     const tableName =
-      option?.type === "price"
-        ? this.#tableName.price_change
-        : this.#tableName.status_change;
+      option?.type === "status" // Corrected: check status first as it's simpler
+        ? this.#tableName.status_change
+        : this.#tableName.price_change; // Default to price change
+
     let builder = squel.select().field("count(*) count").from(tableName);
 
-    if (option?.priceType === "up") {
-      builder = builder.where("newValue > oldValue");
-    } else if (option?.priceType === "down") {
-      builder = builder.where("oldValue > newValue");
-    } else if (option?.statusType === "added") {
-      builder = builder.where(`newValue = '${HouseTaskStatus.running}'`);
-    } else if (option?.statusType === "removed") {
-      builder = builder.where(`newValue = '${HouseTaskStatus.miss}'`);
+    if (option?.type === "price") {
+      if (option?.priceType === "up") {
+        builder = builder.where("newValue > oldValue");
+      } else if (option?.priceType === "down") {
+        builder = builder.where("newValue < oldValue"); // Corrected logic
+      }
+    } else if (option?.type === "status") {
+      if (option?.statusType === "added") {
+        builder = builder.where("newValue = ?", HouseTaskStatus.running);
+      } else if (option?.statusType === "removed") {
+        builder = builder.where("newValue = ?", HouseTaskStatus.miss);
+      }
     }
+
     if (option?.atMin) {
       builder = builder.where("at >= ?", option.atMin);
     }
+
     const sql = builder.toString();
     logger.log(sql);
     const sqliteDb = await getDb();

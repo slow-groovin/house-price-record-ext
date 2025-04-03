@@ -64,19 +64,19 @@ const renderData = computed(() => {
     obj.at = { value: at }
     obj.avgPrice = { value: avgPrice }
     obj.count = { value: count }
-    obj.priceDownList = { value: priceDownList?.length }
-    obj.priceUpList = { value: priceUpList?.length }
+    obj.priceDownList = { value: priceDownList.length }
+    obj.priceUpList = { value: priceUpList.length }
     obj.removed = { value: removed?.length }
-    obj.added = { value: added?.length }
-    obj.list = { value: list?.length }
+    obj.added = { value: added.length }
+    obj.list = { value: list.length }
     if (lastData) {
       obj.avgPrice.diff = tryMinusOrUndefined(avgPrice, lastData.avgPrice)
       obj.count.diff = tryMinusOrUndefined(count, lastData.count)
-      obj.priceUpList.diff = tryMinusOrUndefined(priceUpList?.length, lastData.priceUpList?.length)
-      obj.priceDownList.diff = tryMinusOrUndefined(priceDownList?.length, lastData.priceDownList?.length)
-      obj.removed.diff = tryMinusOrUndefined(removed?.length, lastData.removed?.length)
-      obj.added.diff = tryMinusOrUndefined(added?.length, lastData.added?.length)
-      obj.list.diff = tryMinusOrUndefined(list?.length, lastData.list?.length)
+      obj.priceUpList.diff = tryMinusOrUndefined(priceUpList.length, lastData.priceUpList.length)
+      obj.priceDownList.diff = tryMinusOrUndefined(priceDownList.length, lastData.priceDownList.length)
+      obj.removed.diff = tryMinusOrUndefined(removed.length, lastData.removed.length)
+      obj.added.diff = tryMinusOrUndefined(added.length, lastData.added.length)
+      obj.list.diff = tryMinusOrUndefined(list.length, lastData.list.length)
     }
     result.push(obj as RENDER_DATA_TYPE)
     lastData = data[i]

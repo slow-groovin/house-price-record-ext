@@ -34,10 +34,10 @@ const { data } = defineProps<{
 const onSellCountData = computeDataSequence(toRef(() => data), item => item.count)
 const avgTotalPriceData = computeDataSequence(toRef(() => data), item => item.avgPrice)
 const avgUnitPriceData = computeDataSequence(toRef(() => data), item => item.avgPrice)
-const upCountData = computeDataSequence(toRef(() => data), item => item.priceUpList?.length)
-const downCountData = computeDataSequence(toRef(() => data), item => item.priceDownList?.length)
-const addCountData = computeDataSequence(toRef(() => data), item => item.added?.length)
-const removeCountData = computeDataSequence(toRef(() => data), item => item.removed?.length)
+const upCountData = computeDataSequence(toRef(() => data), item => item.priceUpList.length)
+const downCountData = computeDataSequence(toRef(() => data), item => item.priceDownList.length)
+const addCountData = computeDataSequence(toRef(() => data), item => item.added.length)
+const removeCountData = computeDataSequence(toRef(() => data), item => item.removed.length)
 
 const computedDomain = reactify(expandYDomain)
 

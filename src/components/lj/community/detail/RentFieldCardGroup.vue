@@ -36,10 +36,10 @@ const mainInfo = computed<CardInfo[]>(() => {
 const lastInfo = computed<CardInfo[]>(() => {
   if (!lastRecord) return []
   return [
-    { name: '近期新上架数量', value: lastRecord?.added?.length, type: 'count' },
-    { name: '近期下架数量', value: lastRecord?.removed?.length, type: 'count' },
-    { name: '近期涨价数量', value: lastRecord?.priceUpList?.length, type: 'count' },
-    { name: '近期降价数量', value: lastRecord?.priceDownList?.length, type: 'count' }
+    { name: '近期新上架数量', value: lastRecord?.added.length, type: 'count' },
+    { name: '近期下架数量', value: lastRecord?.removed.length, type: 'count' },
+    { name: '近期涨价数量', value: lastRecord?.priceUpList.length, type: 'count' },
+    { name: '近期降价数量', value: lastRecord?.priceDownList.length, type: 'count' }
   ]
 })
 

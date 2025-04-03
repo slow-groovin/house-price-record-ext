@@ -21,7 +21,7 @@ export async function updateBatchRentCommunityWithPreview(
 ) {
   if (!preview) {
     alert("没有数据!");
-    return { addedItem: [] };
+    return ;
   }
 
   for (let record of preview.records) {

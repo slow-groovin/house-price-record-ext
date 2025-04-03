@@ -54,11 +54,11 @@ export type RentCommunityRecord = {
   avgPrice: number;
   count: number;
 
-  list?: Partial<RentHouse>[];
-  added?: Partial<RentHouse>[];
-  removed?: Partial<RentHouse>[];
-  priceUpList?: RentPriceChangeItem[];
-  priceDownList?: RentPriceChangeItem[];
+  list: Partial<RentHouse>[];
+  added: Partial<RentHouse>[];
+  removed: Partial<RentHouse>[];
+  priceUpList: RentPriceChangeItem[];
+  priceDownList: RentPriceChangeItem[];
 
   at: number;
 };
@@ -122,11 +122,13 @@ export const RentModelUtils = {
   unserializeRentCommunityRecord(item: Record<string, any>) {
     return {
       ...(item as RentCommunityRecord),
-      list: JSON.parse(item.list) as RentHouse[],
-      added: JSON.parse(item.added) as RentHouse[],
-      removed: JSON.parse(item.removed) as RentHouse[],
-      priceUpList: JSON.parse(item.priceUpList) as RentPriceChangeItem[],
-      priceDownList: JSON.parse(item.priceDownList) as RentPriceChangeItem[],
+      list: JSON.parse(item.list ?? "") as RentHouse[],
+      added: JSON.parse(item.added ?? "") as RentHouse[],
+      removed: JSON.parse(item.removed ?? "") as RentHouse[],
+      priceUpList: JSON.parse(item.priceUpList ?? "") as RentPriceChangeItem[],
+      priceDownList: JSON.parse(
+        item.priceDownList ?? ""
+      ) as RentPriceChangeItem[],
     } as RentCommunityRecord;
   },
 };

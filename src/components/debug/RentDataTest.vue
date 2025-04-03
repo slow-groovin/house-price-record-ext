@@ -183,22 +183,22 @@ async function migrateFakeDataFromSell() {
       added: r.addedItem?.map(i => ({
         rid: i.hid,
         price: i.price,
-      }) as Partial<RentHouse>),
+      }) as Partial<RentHouse>) ?? [],
       removed: r.removedItem?.map(i => ({
         rid: i.hid,
         price: i.price,
-      }) as Partial<RentHouse>),
+      }) as Partial<RentHouse>) ?? [],
       priceDownList: r.priceDownList?.map(i => ({
         rid: i.hid,
         price: i.price,
         oldPrice: i.oldPrice
-      }) as RentPriceChangeItem),
+      }) as RentPriceChangeItem) ?? [],
       priceUpList: r.priceUpList?.map(i => ({
         rid: i.hid,
         price: i.price,
         oldPrice: i.oldPrice,
 
-      }) as RentPriceChangeItem),
+      }) as RentPriceChangeItem) ?? [],
       at: r.at,
       count: r.onSellCount ?? 0,
       avgPrice: r.avgTotalPrice ?? 0,

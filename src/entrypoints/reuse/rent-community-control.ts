@@ -144,11 +144,19 @@ function pageItemResults2Record(
     ...mergeResult,
     at: Date.now(),
     count: listWithoutRepeat.length,
-    list: listWithoutRepeat,
     avgPrice: Math.floor(
       listWithoutRepeat.reduce((acc, cur) => acc + cur.price, 0) /
         listWithoutRepeat.length
     ),
+    list: listWithoutRepeat,
+
+    /*
+     * 这四个不能nullish, 所以初始化为空
+     */
+    added: [],
+    removed: [],
+    priceDownList: [],
+    priceUpList: [],
   };
   return record;
 }

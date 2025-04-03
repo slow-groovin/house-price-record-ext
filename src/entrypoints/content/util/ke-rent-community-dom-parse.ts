@@ -1,34 +1,9 @@
-import { CommunityBasic } from "@/types/lj";
 import {
-  extractCidFromHomePageUrl,
   extractCidFromKeRentUrl,
   extractCityFromKeRentUrl,
-  extractCityFromUrl,
   extractPageNumberFromKeRentUrl,
-  extractRidFromKeRentUrl,
+  extractRidFromKeRentUrl
 } from "@/utils/lj-url";
-
-export function parseCommunityHome(): CommunityBasic {
-  const busyBox = document.querySelector(".box--title");
-  if (busyBox) {
-    throw new Error("访问过于频繁提示");
-  }
-  const name = document.querySelector(".detailTitle")?.textContent ?? "";
-  const avgUnitPrice = parseInt(
-    document.querySelector(".xiaoquUnitPrice")?.textContent ?? "0"
-  );
-  const city = extractCityFromUrl(window.location.href) ?? "unknown";
-  const cid = extractCidFromHomePageUrl(window.location.href);
-  if (!cid) {
-    throw new Error("cid is null. url:" + window.location.href);
-  }
-  return {
-    cid,
-    city,
-    name,
-    avgUnitPrice,
-  };
-}
 
 export async function parseAllOfKeRentCommunity() {
   const name = document.querySelector(".sec1")?.textContent ?? undefined;

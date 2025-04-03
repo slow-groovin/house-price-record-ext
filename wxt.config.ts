@@ -21,9 +21,14 @@ export default defineConfig({
       96: "/icon/96.png",
       128: "/icon/128.png",
     },
-    // "web_accessible_resources": [
-    // 	"/*.html"
-    // ],
+    web_accessible_resources: [
+      // { resources: ["wa-sqlite-async.wasm"], matches: ["<all_urls>"] },
+      // {matches:[''],resources:[]}
+    ],
+    content_security_policy: {
+      extension_pages:
+        "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
+    },
     permissions: [
       "storage",
       "declarativeNetRequestWithHostAccess",
@@ -38,7 +43,7 @@ export default defineConfig({
   // @ts-ignore
   vite: (configEnv) => ({
     plugins: [
-      // customStrToUtf8(),
+      customStrToUtf8(),
       vueJsx(),
       // visualizer({
       //   open: true, // 构建完成后自动打开浏览器显示分析图表
