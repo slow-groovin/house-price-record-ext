@@ -47,7 +47,6 @@ export default defineConfig({
       //   brotliSize: true, // 显示 brotli 压缩后的大小
       // }),
     ],
-    // assetsInclude: ["**/node_modules/@subframe7536/sqlite-wasm/dist/*.wasm"],
     server: {
       headers: {
         "Cross-Origin-Opener-Policy": "same-origin",

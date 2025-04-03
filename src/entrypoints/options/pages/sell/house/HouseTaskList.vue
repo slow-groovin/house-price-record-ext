@@ -3,7 +3,7 @@ import { db } from "@/entrypoints/db/Dexie";
 import { HouseTask, HouseTaskStatus } from "@/types/lj";
 import { calcOffset } from "@/utils/table-utils";
 import HouseTasksTable from "@/entrypoints/options/components/sell/HouseTasksTable.vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, useTemplateRef } from "vue";
 import { RowSelectionState } from "@tanstack/vue-table";
 import { Button } from "@/components/ui/button";
 import { browser } from "wxt/browser";
@@ -47,7 +47,8 @@ useExtTitle('房源任务列表')
 route handle BEGIN
  */
 const { pushQuery, removeQuery, pushQueries, removeQueries } = useRouterQuery()
-const { query } = useRoute()
+const route = useRoute()
+const { query } = route
 const { _pageIndex, queryPageSize } = query
 const _pageSize = mergeParams(queryPageSize, localStorage.getItem('house-list-page-size'))
 
@@ -71,6 +72,8 @@ const END
 /*
 ref definition
  */
+const tableRef = useTemplateRef('house-table')
+
 const data = ref<HouseTask[]>([])
 const rowCount = ref(0)
 
@@ -236,6 +239,8 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
     data.value = await query.toArray()
   }
   queryCost.value = Date.now() - beginAt
+
+  await resetPaginationIfNoData()
 }
 
 /*
@@ -247,6 +252,15 @@ async function onPaginationUpdate(pageIndex: number, pageSize: number) {
   await pushQuery('_pageSize', pageSize)
   localStorage.setItem('house-list-page-size', pageSize + '')
   await queryData(pageIndex, pageSize)
+}
+
+/**
+ * 如果变更了查询条件导致当前页码没有数据, 那么重置pageIndex
+ */
+async function resetPaginationIfNoData() {
+  if (route.query.pageIndex !== '1' && data.value.length === 0) {
+    tableRef.value?.resetPageIndex()
+  }
 }
 
 /**更新查询条件*/
@@ -394,7 +408,8 @@ onMounted(() => {
 
   </div>
 
-  <HouseTasksTable :data="data" :row-count="rowCount" :init-page-index="_pageIndex ? Number(_pageIndex) : undefined"
+  <HouseTasksTable ref="house-table" :data="data" :row-count="rowCount"
+    :init-page-index="_pageIndex ? Number(_pageIndex) : undefined"
     :init-page-size="_pageSize ? Number(_pageSize) : undefined" @on-pagination-change="onPaginationUpdate"
     class="overflow-x-hidden" v-model:row-selection="rowSelection" />
 

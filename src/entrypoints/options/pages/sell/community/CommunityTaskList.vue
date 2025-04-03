@@ -210,6 +210,8 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
 
   await queryRelatedData(resultData)
   data.value = resultData // after query related data, trigger render
+
+  await resetPaginationIfNoData()
 }
 
 async function queryRelatedData(communityData: typeof data.value) {
@@ -408,6 +410,18 @@ async function onPaginationUpdate(pageIndex: number, pageSize: number) {
   await pushQuery('_pageIndex', pageIndex)
   await pushQuery('_pageSize', pageSize)
   await queryData(pageIndex, pageSize)
+}
+
+/**
+ * 如果变更了查询条件导致当前页码没有数据, 那么重置pageIndex
+ */
+async function resetPaginationIfNoData() {
+  console.log('pagination.value.pageIndex', pagination.value.pageIndex, data.value.length)
+  if (pagination.value.pageIndex !== 1 && data.value.length === 0) {
+    pagination.value.pageIndex = 1
+    await pushQuery('_pageIndex', 1)
+    await queryData(1)
+  }
 }
 
 

@@ -1,6 +1,10 @@
 import { useTitle, UseTitleOptions } from "@vueuse/core";
 import { MaybeRef, MaybeRefOrGetter } from "vue";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
+import {
+  curVersionChangeLog,
+  historyChangeLog,
+} from "@/entrypoints/reuse/global-variables";
 
 export function useExtInfo() {
   const name = import.meta.env.VITE_EXT_NAME;
@@ -8,6 +12,8 @@ export function useExtInfo() {
   return {
     name,
     version,
+    curVersionChangeLog,
+    historyChangeLog,
   };
 }
 

@@ -3,13 +3,11 @@ import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
 import { Button } from "@/components/ui/button";
 import { useExtTitle } from "@/composables/useExtInfo";
 import { useRouterQuery } from "@/composables/useRouterQuery";
-import { db } from "@/entrypoints/db/Dexie";
 import { KeRentDao } from "@/entrypoints/db/rent-dao";
 import GenericSortDock from "@/entrypoints/options/components/GenericSortDock.vue";
 import RentHouseTasksTable from "@/entrypoints/options/components/rent/RentHouseTasksTable.vue";
 import HouseTaskTableQueryDock from "@/entrypoints/options/components/sell/HouseTaskTableQueryDock.vue";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
-import { goRunHouseTasksStartPage } from "@/entrypoints/reuse/house-control2";
 import { newQueryConditionFromQueryParam } from "@/entrypoints/reuse/query-condition";
 import { HouseTaskStatus } from "@/types/lj";
 import {
@@ -22,7 +20,7 @@ import { RentHouse } from "@/types/rent";
 import { ArgCache } from "@/utils/lib/ArgCache";
 import { mergeParams } from "@/utils/variable";
 import { RowSelectionState } from "@tanstack/vue-table";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, useTemplateRef } from "vue";
 import { useRoute } from "vue-router";
 const { isDebug } = useDevSetting()
 
@@ -32,7 +30,8 @@ useExtTitle('租房房源任务列表')
 route handle BEGIN
  */
 const { pushQuery, removeQuery, pushQueries, removeQueries } = useRouterQuery()
-const { query } = useRoute()
+const route = useRoute()
+const { query } = route
 const { _pageIndex, queryPageSize } = query
 const _pageSize = mergeParams(queryPageSize, localStorage.getItem('rent-house-list-page-size'))
 
@@ -79,7 +78,7 @@ const selectionCount = computed(() => Object.keys(rowSelection.value).length)
 
 const groupForAdd = ref<{ groupId: number, name: string }>()
 
-
+const tableRef = useTemplateRef('house-table')
 /*
 ref definition DONE
  */
@@ -100,6 +99,8 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   rowCount.value = queryRs.count
 
   queryCost.value = Date.now() - beginAt
+
+  await resetPaginationIfNoData()
 }
 
 /*
@@ -111,6 +112,15 @@ async function onPaginationUpdate(pageIndex: number, pageSize: number) {
   await pushQuery('_pageSize', pageSize)
   localStorage.setItem('rent-house-list-page-size', pageSize + '')
   await queryData(pageIndex, pageSize)
+}
+
+/**
+ * 如果变更了查询条件导致当前页码没有数据, 那么重置pageIndex
+ */
+async function resetPaginationIfNoData() {
+  if (route.query.pageIndex !== '1' && data.value.length === 0) {
+    tableRef.value?.resetPageIndex()
+  }
 }
 
 /**更新查询条件*/
@@ -182,7 +192,8 @@ onMounted(() => {
 
   </div>
 
-  <RentHouseTasksTable :data="data" :row-count="rowCount" :init-page-index="_pageIndex ? Number(_pageIndex) : undefined"
+  <RentHouseTasksTable ref="house-table" :data="data" :row-count="rowCount"
+    :init-page-index="_pageIndex ? Number(_pageIndex) : undefined"
     :init-page-size="_pageSize ? Number(_pageSize) : undefined" @on-pagination-change="onPaginationUpdate"
     class="overflow-x-hidden" v-model:row-selection="rowSelection" />
 

@@ -9,6 +9,10 @@ import {
 } from "@/utils/lj-url";
 
 export function parseCommunityHome(): CommunityBasic {
+  const busyBox = document.querySelector(".box--title");
+  if (busyBox) {
+    throw new Error("访问过于频繁提示");
+  }
   const name = document.querySelector(".detailTitle")?.textContent ?? "";
   const avgUnitPrice = parseInt(
     document.querySelector(".xiaoquUnitPrice")?.textContent ?? "0"

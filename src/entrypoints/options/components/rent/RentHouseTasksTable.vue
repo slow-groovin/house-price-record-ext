@@ -45,7 +45,7 @@ const { data, rowCount, initPageSize, initPageIndex, class: _class } = definePro
   data: RentHouse[],
   initPageIndex?: number,
   initPageSize?: number,
-  rowCount: number
+  rowCount: number,
   class?: HTMLAttributes['class'],
 }>()
 const rowSelection = defineModel<RowSelectionState>('rowSelection')
@@ -53,6 +53,10 @@ const rowSelection = defineModel<RowSelectionState>('rowSelection')
 const emit = defineEmits<{
   (e: 'onPaginationChange', pageIndex: number, pageSize: number): void
 }>()
+
+defineExpose({
+  resetPageIndex
+})
 /*
 ref definition
  */
@@ -76,6 +80,9 @@ const pagination = ref({ pageIndex: initPageIndex ?? 1, pageSize: initPageSize ?
 console.log('RentHouseTaskTable.vue init.', pagination.value)
 //初始化默认查询
 emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
+function resetPageIndex() {
+  table.setPageIndex(1)
+}
 /**
  * pagination end
  */

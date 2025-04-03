@@ -113,7 +113,6 @@
 import { HTMLAttributes, ref, watch } from 'vue'
 import { cn } from "@/utils/shadcn-utils"
 import { HouseTaskQueryCondition } from "@/types/query-condition";
-import { Label } from '@/components/ui/label'
 import { HouseTaskStatus, TaskAddedType } from "@/types/lj";
 import SelectButton from "@/components/custom/SelectButton.vue";
 import CommunityQueryBox from "@/components/lj/community/CommunityQueryBox.vue";

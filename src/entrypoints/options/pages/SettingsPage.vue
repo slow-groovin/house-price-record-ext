@@ -60,6 +60,16 @@
       </button>
     </div>
 
+    <h1 class="text-2xl  w-fit font-bold col-span-2 border-b border-black">
+      后台设置
+    </h1>
+    <div class="flex flex-col text-right">
+      <span class="text-base font-medium">模式切换跳过确认</span>
+    </div>
+    <div class="flex flex-col">
+      <Switch v-model:checked="notShowDialog" class="text-right" />
+      <span class="text-sm text-gray-500">在切换 二手房<->租房 时, 不再弹出对话框进行确认 </span>
+    </div>
 
     <h1 class="text-2xl  w-fit font-bold col-span-2 border-b border-black">
       临时数据
@@ -86,6 +96,7 @@ import { useExtTitle } from "@/composables/useExtInfo";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import { db } from "@/entrypoints/db/Dexie";
 import { Button } from "@/components/ui/button";
+import { useLocalStorage } from '@vueuse/core';
 
 const { isDebug } = useDevSetting()
 
@@ -153,6 +164,13 @@ onMounted(async () => {
   // 示例：调用该函数并打印结果
   diskUsage.value = await getIndexedDBUsage()
 })
+
+/*
+ * 后台设置 
+ */
+
+const notShowDialog = useLocalStorage('mode-switch-dialog-not-show', false)
+
 
 async function clearTempData() {
   await db.tempBatchCommunity.clear()

@@ -5,6 +5,7 @@ import { createTables } from "../db/sqlite";
 export function onInstallHook(detail: Browser.runtime.InstalledDetails) {
   onFirstInstall();
   tryInitDB();
+  console.log("detail.previousVersion", detail.previousVersion, detail.reason);
 }
 
 async function onFirstInstall() {

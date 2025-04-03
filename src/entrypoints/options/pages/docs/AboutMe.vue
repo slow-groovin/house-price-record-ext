@@ -38,7 +38,6 @@ const { name, version } = useExtInfo()
     如果喜欢这款插件, 请给一个浏览器插件市场真实的评价 或者 Github Star⭐
   </div>
 
-
 </template>
 
 <style scoped></style>

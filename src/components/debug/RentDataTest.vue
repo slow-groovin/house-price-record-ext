@@ -4,6 +4,7 @@
       <Button @click="deleteAll">deleteAll </Button>
       <Button @click="createTables">createTables </Button>
       <Button @click="migrateFakeDataFromSell">gen from sell </Button>
+      <Button @click="checkDbState">checkDbState </Button>
     </div>
     <Separator />
     <div>
@@ -51,12 +52,21 @@ async function executeSql() {
     // Let's stick with db.run for simplicity as it handles various statement types.
     const result = await db.run(sqlInput.value);
     sqlResult.value = result;
+    console.log("EXEC SQL DONE");
+
   } catch (error: any) {
     console.error("Error executing SQL:", error);
     sqlError.value = error.message || 'An unknown error occurred.';
   }
 }
 
+async function checkDbState() {
+  const db = await getDb()
+  // console.log('db.sqlite.libversion_number()', db.sqlite.libversion_number())
+  // console.log('db', db)
+  // console.log('db.sqlite', db.sqlite)
+  console.log((db.vfs as any)['lastError'])
+}
 
 async function deleteAll() {
   const db = await getDb()

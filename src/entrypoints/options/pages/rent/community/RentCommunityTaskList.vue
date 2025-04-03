@@ -136,6 +136,8 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   await queryRelatedData(results.data)
   data.value = results.data // after query related data, trigger render
   rowCount.value = results.count
+
+  resetPaginationIfNoData()
 }
 
 async function queryRelatedData(communityData: typeof data.value) {
@@ -335,6 +337,16 @@ async function onPaginationUpdate(pageIndex: number, pageSize: number) {
   await queryData(pageIndex, pageSize)
 }
 
+/**
+ * 如果变更了查询条件导致当前页码没有数据, 那么重置pageIndex
+ */
+async function resetPaginationIfNoData() {
+  if (pagination.value.pageIndex !== 1 && data.value.length === 0) {
+    pagination.value.pageIndex = 1
+    await pushQuery('_pageIndex', 1)
+    await queryData(1)
+  }
+}
 
 /**更新查询条件*/
 async function onQueryConditionUpdate() {

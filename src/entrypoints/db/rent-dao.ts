@@ -33,6 +33,9 @@ import {
 } from "@/types/query-condition";
 import { calcOffset } from "@/utils/table-utils";
 import { logger } from "@/utils/log";
+import { squel, sqlify, Resource } from "sqlify";
+import { HouseTaskStatus } from "@/types/lj";
+
 export function KeRentDao() {
   return RentDao.from("ke");
 }
@@ -193,6 +196,18 @@ export class RentDao {
     const rs = await sqliteDb.run(sql);
     return rs;
   }
+
+  async countCommunity(option?: { createdAtMin: number }) {
+    let builder = select("count(*) count").from(this.#tableName.community);
+    if (option?.createdAtMin) {
+      builder = builder.where(gte("createdAt", option.createdAtMin));
+    }
+    const sql = builder.toString();
+    const sqliteDb = await getDb();
+    const rs = (await sqliteDb.run(sql)) as [{ count: number }];
+    return rs[0].count;
+  }
+
   /*
   Houses
   */
@@ -300,6 +315,17 @@ export class RentDao {
     const rs = await sqliteDb.run(sql);
     logger.log("deleteTasks result:", rs);
     return;
+  }
+
+  async countHoues(option?: { createdAtMin: number }) {
+    let builder = select("count(*) count").from(this.#tableName.house);
+    if (option?.createdAtMin) {
+      builder = builder.where(gte("createdAt", option.createdAtMin));
+    }
+    const sql = builder.toString();
+    const sqliteDb = await getDb();
+    const rs = (await sqliteDb.run(sql)) as [{ count: number }];
+    return rs[0].count;
   }
   /*
    * Records
@@ -439,6 +465,16 @@ export class RentDao {
     return results[0].count;
   }
 
+  async countRecords(option?: { createdAtMin: number }) {
+    let builder = select("count(*) count").from(this.#tableName.record);
+    if (option?.createdAtMin) {
+      builder = builder.where(gte("createdAt", option.createdAtMin));
+    }
+    const sql = builder.toString();
+    const sqliteDb = await getDb();
+    const rs = (await sqliteDb.run(sql)) as [{ count: number }];
+    return rs[0].count;
+  }
   /*
    * Changes
    */
@@ -591,5 +627,36 @@ export class RentDao {
       count: countResult[0].count,
       data: typedResults,
     };
+  }
+
+  async countChanges(option?: {
+    type?: "price" | "status";
+    priceType?: "up" | "down";
+    statusType?: "added" | "removed";
+    atMin?: number;
+  }) {
+    const tableName =
+      option?.type === "price"
+        ? this.#tableName.price_change
+        : this.#tableName.status_change;
+    let builder = squel.select().field("count(*) count").from(tableName);
+
+    if (option?.priceType === "up") {
+      builder = builder.where("newValue > oldValue");
+    } else if (option?.priceType === "down") {
+      builder = builder.where("oldValue > newValue");
+    } else if (option?.statusType === "added") {
+      builder = builder.where(`newValue = '${HouseTaskStatus.running}'`);
+    } else if (option?.statusType === "removed") {
+      builder = builder.where(`newValue = '${HouseTaskStatus.miss}'`);
+    }
+    if (option?.atMin) {
+      builder = builder.where("at >= ?", option.atMin);
+    }
+    const sql = builder.toString();
+    logger.log(sql);
+    const sqliteDb = await getDb();
+    const rs = (await sqliteDb.run(sql)) as [{ count: number }];
+    return rs[0].count;
   }
 }

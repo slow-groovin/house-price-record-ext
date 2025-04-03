@@ -5,7 +5,7 @@ import App from "./App.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 import OptionDebugEntry from "@/entrypoints/options/pages/OptionDebugEntry.vue";
 import MainLayout from "@/entrypoints/options/components/layout/MainLayout.vue";
-import HomePage from "@/entrypoints/options/pages/HomePage.vue";
+import HomePage from "@/entrypoints/options/pages/sell/HomePage.vue";
 
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import CommunityUpdatePreview from "@/entrypoints/options/pages/sell/community/CommunityUpdatePreview.vue";
@@ -35,6 +35,8 @@ import BlocksPage from "@/entrypoints/options/pages/BlocksPage.vue";
 import IFrameDocSite from "@/entrypoints/options/pages/IFrameDocSite.vue";
 import StartupIntro from "@/entrypoints/options/pages/docs/StartupIntro.vue";
 import AboutMe from "@/entrypoints/options/pages/docs/AboutMe.vue";
+import Feedback from "@/entrypoints/options/pages/docs/Feedback.vue";
+import CHANGELOG from "@/entrypoints/options/pages/docs/CHANGELOG.vue";
 import ExportImport from "@/entrypoints/options/pages/ExportImport.vue";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import StartupIntroDetail from "./pages/docs/StartupIntroDetail.vue";
@@ -43,6 +45,9 @@ import RentHousePriceChangeList from "@/entrypoints/options/pages/rent/house/Ren
 import RentHouseStatusChangeList from "@/entrypoints/options/pages/rent/house/RentHouseStatusChangeList.vue";
 import RentHouseTaskList from "@/entrypoints/options/pages/rent/house/RentHouseTaskList.vue";
 import RentHouseDetailPage from "./pages/rent/house/RentHouseDetailPage.vue";
+import RentHomePage from "./pages/rent/RentHomePage.vue";
+import Index from "./pages/Index.vue";
+
 const { isDisguise } = useDevSetting();
 
 const router = createRouter({
@@ -52,12 +57,14 @@ const router = createRouter({
       path: "/",
       component: MainLayout,
       children: [
-        { path: "/", component: HomePage },
+        { path: "/", component: Index },
         { path: "/doc", component: IFrameDocSite },
         { path: "/startup", component: StartupIntro },
         { path: "/startup-detail", component: StartupIntroDetail },
         { path: "/not-support", component: NotSupport },
         { path: "/about", component: AboutMe },
+        { path: "/feedback", component: Feedback },
+        { path: "/CHANGELOG", component: CHANGELOG },
         { path: "/debug", component: OptionDebugEntry },
         { path: "/settings", component: SettingsPage },
         { path: "/blocks", component: BlocksPage },
@@ -103,7 +110,7 @@ const router = createRouter({
     },
     { path: "/h/running/notice", component: HouseBatchRunningNotice },
     { path: "/c/running/notice", component: BatchRunningNotice },
-    { path: "/ke/rent/c/running/notice", component: RentBatchRunningNotice },
+    { path: "/rent/c/running/notice", component: RentBatchRunningNotice },
   ],
 });
 console.log("init options vue");

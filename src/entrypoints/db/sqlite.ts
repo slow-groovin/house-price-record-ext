@@ -97,7 +97,7 @@ export const TableNames = {
   },
 } as const;
 
-let sqliteDb: SQLiteDB;
+let sqliteDb: SQLiteDB | undefined;
 
 export async function createTables() {
   await (await getDb()).run(schemas);
@@ -110,6 +110,13 @@ export async function getDb() {
   // console.log("[getDb]", number);
   await lock.acquire();
 
+  if (sqliteDb && (sqliteDb.vfs as any)["lastError"]) {
+    console.debug(
+      "Sqlite DB instance has error, recreate instance",
+      (sqliteDb.vfs as any)["lastError"]
+    );
+    sqliteDb = undefined;
+  }
   if (sqliteDb) {
     // console.log("[getDb]already created.", number);
     lock.release();

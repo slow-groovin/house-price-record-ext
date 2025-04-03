@@ -11,6 +11,7 @@ import { tryGreaterThanOrFalse } from "@/utils/operator";
 import { startOfWeek } from "date-fns";
 import { objectify } from "radash";
 import { KeRentDao } from "../db/rent-dao";
+import { getDb } from "../db/sqlite";
 
 /**
  * 批量更新community和新增record入口
@@ -25,7 +26,10 @@ export async function updateBatchRentCommunityWithPreview(
 
   for (let record of preview.records) {
     record.at = preview.at;
+    const sqliteDb = await getDb();
+    await sqliteDb.run("BEGIN TRANSACTION;");
     await updateOneRentCommunityWithRecord(record);
+    await sqliteDb.run("COMMIT;");
   }
   // await db.tempBatchCommunity.delete(preview.tempListId);
   // await db.tempCommunityUpdatePreview.delete(preview.batchId);

@@ -10,9 +10,10 @@ import { browser } from "wxt/browser";
 import { ljMetricRules } from "@/entrypoints/reuse/block";
 import InfoHover from "@/components/information/InfoHover.vue";
 import { HouseTask, HouseTaskStatus } from "@/types/lj";
+import UpdateHint from "../../components/description/UpdateHint.vue";
 
 useExtTitle('首页')
-const { name, version } = useExtInfo()
+
 
 
 const totalCount = reactive({
@@ -21,7 +22,6 @@ const totalCount = reactive({
   pChangeCount: 0,
   sChangeCount: 0,
   cRecordCount: 0,
-  usedMb: 0,
 })
 const thisWeekCount = reactive({
   cTaskCount: 0,
@@ -126,27 +126,21 @@ const display = {
   },
 
   cRecordCount: { label: '小区运行记录', icon: Archive, color: 'purple', link: '#', postfix: '个' },
-  usedMb: { label: '数据总量', icon: HardDrive, color: 'gray', link: '#', postfix: 'MB' }
 }
 
 onMounted(() => {
   loadRules()
   queryOverviewData()
-  getIndexedDBUsage().then(rs => {
-    totalCount.usedMb = Number(rs.usage.toPrecision(2))
-  })
 })
 </script>
 
 <template>
 
 
-  <h1 class="w-full flex items-center justify-center my-8 font-bold text-2xl text-center">
-    欢迎使用
-    <span class="bg-gradient-to-r from-primary via-lime-500 to-blue-500 text-transparent bg-clip-text w-fit">
-      {{ name }}{{ version }}
-    </span> <img src="/icon/24.png" alt="icon" class="inline">
+  <h1 class=" my-8 font-bold text-4xl ">
+    二手房
   </h1>
+
   <div v-if="isEmptyUsage" class="flex flex-col gap-2">
     首次使用? 请查看
     <!--    使用入门-->
@@ -162,7 +156,8 @@ onMounted(() => {
     </div>
   </div>
 
-  <div v-if="!isEmptyUsage" class="grid grid-cols-9 grid-rows-9 auto-rows-auto grid-flow-row gap-9">
+
+  <div v-if="!isEmptyUsage" class="grid grid-cols-9 auto-rows-auto grid-flow-row gap-9">
     <div class="flex flex-row flex-wrap gap-2 col-span-full row-span-1 h-fit">
       <!--    上次运行-->
       <div v-if="lastAt" class=" h-fit outline rounded  min-w-fit p-2 ">
@@ -170,15 +165,6 @@ onMounted(() => {
         <span class="text-green-500"> {{ new Date(lastAt).toLocaleString() }}</span>
         已过去 <span class="text-green-500"> {{ formatDistanceToNow(lastAt, { locale: zhCN }) }}</span>
       </div>
-
-      <div class="outline   w-fit h-fit outline-green-500 rounded p-2">
-        当前已经激活 <span class="font-extrabold text-green-500">{{ enableRulesCount }}</span>/{{ allRulesCount }}
-        条请求过滤规则
-        <a class="link" href="/options.html#/blocks">去查看></a>
-        <InfoHover>如果您在访问本插件目标站点时遇到了无法排查的网络访问问题, 请尝试关闭规则进行排查</InfoHover>
-      </div>
-
-
       <!--    使用入门-->
       <div class="outline h-fit   outline-green-500 rounded p-2">
         使用详情
@@ -199,8 +185,10 @@ onMounted(() => {
             </div>
             <div>
               <p class="text-sm text-gray-600">{{ display[key].label }}</p>
-              <p class="text-2xl font-semibold text-gray-800">{{ value }}<span>{{ display[key]?.postfix }}</span></p>
-
+              <a class="text-2xl font-semibold text-gray-800" :href="display[key].link">
+                {{ value }}
+                <span>{{ display[key]?.postfix }}</span>
+              </a>
             </div>
           </div>
         </div>
@@ -228,7 +216,10 @@ onMounted(() => {
       </div>
     </div>
 
+
   </div>
+
+  <UpdateHint id="update-hint" />
 
 </template>
 

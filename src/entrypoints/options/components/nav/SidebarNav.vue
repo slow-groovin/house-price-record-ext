@@ -60,6 +60,13 @@ const menuGroups = computed<MenuGroup[]>(() => {
   } else {
     _menuGroups = [
       {
+        name: '',
+        menus: [
+          { name: '📇首页', link: '/' }
+        ]
+      },
+
+      {
         name: '💸租房',
         menus: [
           { name: '小区列表📋', link: '/rent/c/task/list' },
@@ -87,7 +94,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
       menus: [
         { name: '操作指南', link: '/startup' },
         { name: '使用详情', link: '/startup-detail' },
-        { name: '更新记录', link: 'https://github.com/slow-groovin/house-price-record-ext/blob/main/CHANGELOG.md' },
+        { name: '更新记录', link: '/CHANGELOG' },
         { name: '关于', link: '/about' },
       ]
     }

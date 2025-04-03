@@ -24,6 +24,11 @@
         </DialogDescription>
       </DialogHeader>
 
+      <div>
+        <label>
+          <input type="checkbox" v-model="notShowDialog"> 不再显示此对话框
+        </label>
+      </div>
       <DialogFooter>
         <Button type="submit" @click="updateValue">
           确认
@@ -49,9 +54,10 @@ import {
 } from '@/components/ui/dialog'
 import { useLocalStorage } from '@vueuse/core'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 interface Option {
   label: string
@@ -62,6 +68,8 @@ const options: Option[] = [ // Default options if not provided
   { label: '二手房', value: 'sell' },
   { label: '租房', value: 'rent' },
 ]
+
+const notShowDialog = useLocalStorage('mode-switch-dialog-not-show', false)
 /**
  * 选择值
  */
@@ -81,7 +89,13 @@ function tryUpdateValue(newValue: 'sell' | 'rent') {
   if (newValue === selectOption.value) {
     return
   }
+
   preparedSelectOption.value = newValue
+
+  if (notShowDialog.value) {
+    updateValue()
+    return
+  }
 }
 
 // Function to update the value and emit the event
@@ -93,14 +107,48 @@ const updateValue = () => {
   emits('update:modelValue', preparedSelectOption.value)
   preparedSelectOption.value = undefined
 
+  updateRoute()
 }
 
-// The v-if in the template provides runtime safety for options length.
-// The console error below is removed as it might conflict with linters/formatters
-// and is redundant with the v-if check.
-// if (props.options.length < 2) {
-//   console.error('ModeSwitch component requires at least two options.')
-// }
+async function updateRoute() {
+  const curPath = route.path
+
+  //white list
+  if (
+    !(
+      (curPath.includes('/list') || curPath.includes('/change'))
+      &&
+      (curPath.includes('/c/') || curPath.includes('/h/'))
+    )
+  ) {
+    return
+  }
+
+  const sellPrefix = '/'
+  const rentPrefix = '/rent/'
+  const changedPath = curPath.replace(selectOption.value === 'rent' ? sellPrefix : rentPrefix, selectOption.value === 'rent' ? rentPrefix : sellPrefix)
+  console.log(curPath, '--->', changedPath)
+
+  if (checkPathExists(changedPath)) {
+    router.push({ path: changedPath })
+  } else {
+    router.push({ path: '/' })
+  }
+
+
+}
+
+// 检查路径是否存在
+const checkPathExists = (path: string) => {
+  try {
+    const resolvedRoute = router.resolve(path);
+    // 如果 resolvedRoute.matched 数组为空，则路径不存在
+    return resolvedRoute.matched.length > 0;
+  } catch (e) {
+    // 如果解析失败，也说明路径不存在
+    return false;
+  }
+};
 </script>
 
 <style scoped>
