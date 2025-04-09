@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS ke_rent_house (
       rid TEXT PRIMARY KEY NOT NULL,
       name TEXT,
       cid TEXT NOT NULL,
+      city TEXT NOT NULL,
       desc TEXT,
       area REAL,
       source TEXT,

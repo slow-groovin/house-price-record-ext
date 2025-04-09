@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import Code from "@/components/information/Code.vue";
+import { useMode } from "../../composables/useMode";
+import { onMounted } from "#imports";
+const { mode } = useMode()
+
 
 </script>
 
@@ -8,74 +12,88 @@ import Code from "@/components/information/Code.vue";
     操作指南
     <div class="flex gap-4">
       <a href="https://real-price.api2o.com/" class="link text-lg" target="_blank">官方网站</a>
-      <a href="/options.html#/startup-detail" class="link text-lg">查看使用详情</a>
+      <a href="/options.html#/about" class="link text-lg">更多详情</a>
     </div>
 
   </h1>
+  <details :open="mode === 'sell'">
+    <summary>二手房操作指南</summary>
+    <div>
+      <ol>
+        <li>
+          登录lianjia(目前列表页仅能在登录状态下访问)
+          <img src="/desc/sell.1.login.webp" alt="" class="max-w-[900px]">
+        </li>
+
+        <li>
+          打开一个<Code>二手房小区页面</Code>, 从右侧的插件浮窗页面中点击添加任务
+          <img src="/desc/sell.2.add-task.webp" alt="">
+        </li>
+
+        <li>
+          进入插件后台页, 插件图标(右键) -> 选项 -> 小区-列表
+          <img src="/desc/sell.3.open-option.webp" alt="">
+        </li>
+
+        <li>
+          选中刚才添加的小区任务, 点击<Code>运行任务(选中)</Code>打开运行任务窗口, 运行任务, 最终<Code>确认数据</Code>
+          <img src="/desc/sell.4.run-task.webp" alt="">
+        </li>
 
 
-  <div>
-
-    <ol>
-      <li>打开一个 <Code>小区页面</Code> 或者 <Code>小区的在售列表网页</Code>
-        <div class="flex gap-4">
-          <img src="/desc/community-home-page-jump.jpg" alt="">
-          <img src="/desc/community-login.jpg" alt="">
-
-        </div>
-
-      </li>
-
-      <li>在页面内右侧, 点击 <Code>添加任务按钮</Code>
-        <img src="/desc/community-list-create.jpg" alt="">
-      </li>
-
-      <li>打开插件的 <Code>         后台页面       </Code>
-        <div class="flex gap-2 max-w-[100vw]">
-          <img src="/desc/click-plugin.jpg" alt="" class="flex-1 object-contain">
-          <img src="/desc/click-plugin-popup.jpg" alt="" class="flex-1  object-contain">
-        </div>
-      </li>
-
-      <li>
-        进入 <Code>小区任务列表</Code>
-        <img src="/desc/enter-homepage.jpg" alt="" class="flex-1 object-contain">
-      </li>
-
-
-      <li>
-        <Code>选中任务, 点击运行任务</Code>
-        <img src="/desc/enter-c-list-page.jpg" alt="" class="flex-1 object-contain">
-      </li>
-
-      <li> 跟随指引进行操作 <Code>运行任务</Code>
-        <img src="/desc/batch-start-page.jpg" alt="" class="">
-      </li>
-
-      <li> 等待运行结束后, <Code>确认结果进行保存</Code>
-        <img src="/desc/batch-result-preview.jpg" alt="" class="flex-1 object-contain">
-      </li>
-
-
-      <li>在列表中, <Code>点开查看</Code>任务运行结果
-        <img src="/desc/list-click-into.jpg" alt="" class="flex-1 object-contain">
-      </li>
-    </ol>
-
-    <a href="/options.html#/startup-detail" class="link">查看详细使用入门信息</a>
-
-    <div>后续操作:
-      <ul class="">
-        <li>对您关注的的小区, 添加至任务, 然后每隔一段时间(几天/几周)运行一次</li>
-        <li>房源任务的使用过程与小区任务操作类似, 您可以针对房源进行操作</li>
-        <li>把任务添加至分组, 提升操作效率</li>
-        <li>随时查看历史数据和图表, 为您的交易决策提供有效支撑</li>
-      </ul>
+        <li>
+          后续操作:
+          <div class="border p-2 w-fit">
+            <div>0. 在后台页面探索各种功能</div>
+            <div>1. 每隔一段时间(几天/几周)运行一次, 价格/状态变更信息会被记录</div>
+            <div>2. 查看历史数据和图表, 为您的交易决策提供有效支撑</div>
+            <div>3. 把任务添加至分组, 提升操作效率</div>
+            <div>4. 房源任务的使用过程与小区任务操作类似, 您可以针对房源进行操作</div>
+          </div>
+        </li>
+      </ol>
     </div>
 
-  </div>
+  </details>
+
+  <details :open="mode === 'rent'">
+    <summary>租房操作指南</summary>
+    <div>
+      <ol>
+        <li>
+          打开并登录贝壳租房 <a href="https://sh.zu.ke.com/zufang" class="link">https://sh.zu.ke.com/zufang</a>
+          <br>
+          (为什么需要登录? 避免频繁拒绝访问/出现验证码)
+          <br>
+          (为什么从贝壳而不是链家? 链家没有合租房源)
+
+        </li>
+
+        <li>
+          打开一个<Code>租房小区列表页面</Code>, 从右侧的插件浮窗页面中点击添加任务
+          <img src="/desc/rent.2.add-task.webp" alt="">
+        </li>
+
+        <li>
+          进入插件后台页, 选中小区任务, 点击<Code>运行任务(选中)</Code>打开运行任务窗口, 运行任务, 最终<Code>确认数据</Code>
+          <img src="/desc/rent.3.run-task.webp" alt="">
+        </li>
 
 
+
+
+        <li>
+          后续操作:
+          <div class="border p-2 w-fit">
+            <div>0. 在后台页面探索各种功能</div>
+            <div>1. 每隔一段时间(几天/几周)运行一次, 价格/状态变更信息会被记录</div>
+            <div>2. 查看历史数据和图表</div>
+            <div>3. 把任务添加至分组, 提升操作效率</div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </details>
 </template>
 
 <style scoped lang="postcss">
@@ -92,6 +110,6 @@ ul {
 }
 
 li {
-  @apply my-16 font-bold text-lg border p-2 rounded-lg
+  @apply my-16 font-bold text-lg border p-2 rounded-lg w-fit
 }
 </style>

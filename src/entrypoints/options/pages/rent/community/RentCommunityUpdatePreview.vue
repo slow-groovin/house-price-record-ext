@@ -63,7 +63,7 @@
               <InfoHover>该项任务在本次批量运行中,运行失败,没有结果数据, 确认数据时不会处理此项</InfoHover>
               运行失败
             </div>
-            <a class="link" :href="`options.html#/c/task/detail?id=${item.cid}`">{{ item.cid }}</a>
+            <a class="link" :href="`options.html#/rent/c/task/detail?id=${item.cid}`">{{ item.cid }}</a>
             <a class="link flex items-center" :href="genCommunityPageUrl(item.city ?? '', item.cid, 1)">{{ item.name }}
               <Icon icon="tdesign:jump" />
             </a>
@@ -102,13 +102,14 @@
 import InfoHover from "@/components/information/InfoHover.vue";
 import { Button } from "@/components/ui/button";
 import { useExtTitle } from "@/composables/useExtInfo";
-import CommunityRecordCard from "@/entrypoints/options/components/sell/CommunityRecordCard.vue";
-import { updateBatchCommunityWithPreview } from "@/entrypoints/reuse/community-update";
-import { goRunHouseTasksStartPage } from '@/entrypoints/reuse/house-control2';
-import { CommunityTask } from "@/types/lj";
-import { CommunityUpdatePreview } from "@/types/LjUpdatePreview";
-import { usePreventUnload } from '@/utils/browser';
 import { db } from "@/entrypoints/db/Dexie";
+import HouseFieldsLackDesc from '@/entrypoints/options/components/description/HouseFieldsLackDesc.vue';
+import RentCommunityRecordCard from "@/entrypoints/options/components/rent/RentCommunityRecordCard.vue";
+import { goRunHouseTasksStartPage } from '@/entrypoints/reuse/house-control2';
+import { updateBatchRentCommunityWithPreview } from "@/entrypoints/reuse/rent-community-update";
+import { HousePriceItem } from '@/types/lj';
+import { RentCommunityTask, RentCommunityUpdatePreview } from "@/types/rent";
+import { usePreventUnload } from '@/utils/browser';
 import { genCommunityPageUrl } from "@/utils/lj-url";
 import { cn } from "@/utils/shadcn-utils";
 import { Icon } from "@iconify/vue";
@@ -116,11 +117,6 @@ import { useMutation } from "@tanstack/vue-query";
 import { HTMLAttributes, onMounted, ref, toRaw } from 'vue';
 import { useRoute } from "vue-router";
 import { browser } from "wxt/browser";
-import { HousePriceItem } from '@/types/lj';
-import HouseFieldsLackDesc from '@/entrypoints/options/components/description/HouseFieldsLackDesc.vue';
-import { RentCommunityTask, RentCommunityUpdatePreview } from "@/types/rent";
-import RentCommunityRecordCard from "@/entrypoints/options/components/rent/RentCommunityRecordCard.vue";
-import { updateBatchRentCommunityWithPreview } from "@/entrypoints/reuse/rent-community-update";
 
 interface Props {
   class?: HTMLAttributes['class']

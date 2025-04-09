@@ -73,8 +73,8 @@ export default defineContentScript({
       isKeRentCommunityListPage(url)
     ) {
       console.log("zufang", url);
-      await keRentCommunityPageUIInject(ctx);
       keRentCommunityListPageOnMessages();
+      await keRentCommunityPageUIInject(ctx);
     }
     // prettier-ignore
     /**

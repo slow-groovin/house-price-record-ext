@@ -21,6 +21,10 @@
         class="px-3 py-2 max-w-24 rounded border focus:outline-none focus:ring-2" placeholder="请输入关键词" />
     </div>
 
+    <div class="flex flex-col">
+      <label class="text-sm mb-2">分组</label>
+      <TaskGroupQueryBox v-model="groupQueryValue" :initial-group-id="queryCondition._groupId" />
+    </div>
 
 
     <!-- 操作按钮区块 -->
@@ -38,11 +42,16 @@
 </template>
 
 <script setup lang="ts">
+import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
 import { RentCommunityQueryCondition } from "@/types/query-condition";
 import { cn } from "@/utils/shadcn-utils";
-import type { HTMLAttributes } from 'vue';
+import { ref, watch, type HTMLAttributes } from 'vue';
 
 
+const groupQueryValue = ref<{ groupId: number, name: string }>()
+watch(groupQueryValue, (newValue) => {
+  queryCondition.value._groupId = newValue?.groupId
+})
 
 // Props定义
 interface Props {

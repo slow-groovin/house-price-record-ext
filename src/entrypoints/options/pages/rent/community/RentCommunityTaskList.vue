@@ -19,6 +19,16 @@ import { goRunCommunityTasksStartPage } from "@/entrypoints/reuse/community-cont
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import { newQueryConditionFromQueryParam } from "@/entrypoints/reuse/query-condition";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import {
   communityQueryConditionTemplate,
   frequentFieldZhMap,
   rentCommunityQueryConditionTemplate,
@@ -50,6 +60,11 @@ import { useRoute } from "vue-router";
 import { RentCommunityQueryCondition } from '../../../../../types/query-condition';
 import { RentCommunityTask } from '../../../../../types/rent';
 import { goRunRentCommunityTasksStartPage } from "@/entrypoints/reuse/rent-community-control";
+import { db } from "@/entrypoints/db/Dexie";
+import { toast } from "vue-sonner";
+import { sendMessage } from "@@/messaging";
+import TaskGroupQueryBox from "@/components/lj/TaskGroupQueryBox.vue";
+import HowToAddLjTask from "@/entrypoints/options/components/description/HowToAddLjTask.vue";
 
 const { isDebug } = useDevSetting()
 useExtTitle('租房小区任务列表')
@@ -76,6 +91,7 @@ const isPending = ref(false)
 const selectionCount = computed(() => Object.keys(rowSelection.value).length)
 const queryScopeLabel = ref('')
 
+const groupForAdd = ref<{ groupId: number, name: string }>()
 
 if (query.groupId) {
   queryScopeLabel.value = `分组:[${query.groupId}]`
@@ -378,6 +394,29 @@ async function deleteSelectedTasks() {
 }
 
 
+async function addToGroup() {
+  if (!groupForAdd.value) return
+  const group = await db.taskGroups.get(groupForAdd.value.groupId)
+  if (!group) {
+    toast.error('没有找到分组')
+    return
+  }
+  const selectedIdList = Object.keys(rowSelection.value)
+    .map(s => Number(s))
+    .map(i => data.value[i].cid)
+  group.keRentCidList = Array.from(new Set<string>([...group.keRentCidList ?? [], ...selectedIdList]))
+  await db.taskGroups.update(groupForAdd.value.groupId, {
+    keRentCidList: group.keRentCidList
+  })
+  toast.success('添加成功', {
+    action: {
+      label: '去查看', onClick: () => {
+        sendMessage('openOptionPage', '/options.html#/group/detail?id=' + group.id)
+      }
+    }
+  })
+}
+
 onMounted(() => {
   queryData(pagination.value.pageIndex, pagination.value.pageSize)
 })
@@ -420,6 +459,37 @@ onMounted(() => {
         确认要删除选中的 {{ selectionCount }} 个任务吗?
       </span>
     </ConfirmDialog>
+
+    <Dialog>
+      <DialogTrigger as-child>
+        <Button class="p-1 h-fit" :disabled="!selectionCount">添加到分组(选中)</Button>
+      </DialogTrigger>
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>加入分组</DialogTitle>
+          <DialogDescription>
+            <a href="/options.html#/group/list" class="link">去创建分组</a>
+          </DialogDescription>
+        </DialogHeader>
+
+        <TaskGroupQueryBox v-model="groupForAdd" />
+
+        <DialogFooter class="sm:justify-start">
+          <DialogClose as-child>
+            <Button type="button" variant="default" @click="addToGroup()">
+              添加
+            </Button>
+          </DialogClose>
+          <DialogClose as-child>
+            <Button type="button" variant="destructive">
+              取消
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <HowToAddLjTask type="keRentCid" />
 
     <LoadingOverlay v-if="isPending" disable-anim />
   </div>

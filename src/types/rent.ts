@@ -20,6 +20,7 @@ export type RentHouse = {
   rid: string; //rent id
   name?: string;
   cid: string;
+  city: string;
   desc?: string;
   status: HouseTaskStatus;
   area?: number;

@@ -110,6 +110,7 @@ export type RentCommunityQueryCondition = {
   cidLike?: string;
   nameLike?: string;
   city?: string;
+  _groupId?: number; //仅用以页面参数, 不作为查询参数
 };
 
 export const rentCommunityQueryConditionTemplate: RentCommunityQueryCondition =
@@ -117,4 +118,5 @@ export const rentCommunityQueryConditionTemplate: RentCommunityQueryCondition =
     city: "",
     cidLike: "",
     nameLike: "",
+    _groupId: 3,
   };

@@ -8,8 +8,9 @@ import HomePage from './sell/HomePage.vue';
 import RentHomePage from './rent/RentHomePage.vue';
 import InfoHover from '@/components/information/InfoHover.vue';
 import { HardDrive } from 'lucide-vue-next';
+import { useMode } from '../composables/useMode';
 
-const selectOption = useLocalStorage<'sell' | 'rent'>('select-mode', 'sell')
+const { mode } = useMode()
 const { name, version } = useExtInfo()
 const enableRulesCount = ref(0)
 const allRulesCount = ref(0)
@@ -50,9 +51,9 @@ onMounted(() => {
   </div>
 
 
-  <HomePage v-if="selectOption === 'sell'"></HomePage>
+  <HomePage v-if="mode === 'sell'"></HomePage>
 
-  <RentHomePage v-if="selectOption === 'rent'" />
+  <RentHomePage v-if="mode === 'rent'" />
 
 
   <div class="outline col-span-3  w-fit h-fit outline-green-500 rounded p-2 my-2">

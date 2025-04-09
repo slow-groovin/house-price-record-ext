@@ -18,9 +18,6 @@ import RentCommunityUpdatePreview from "@/entrypoints/options/pages/rent/communi
 import RentCommunityDetailPage from "@/entrypoints/options/pages/rent/community/RentCommunityDetailPage.vue";
 import RentCommunityRecordPage from "@/entrypoints/options/pages/rent/community/RentCommunityRecordPage.vue";
 import RentCommunityTaskList from "@/entrypoints/options/pages/rent/community/RentCommunityTaskList.vue";
-import RentBatchRunningNotice from "@/entrypoints/options/pages/rent/community/RentBatchRunningNotice.vue";
-
-import CommunityGroupList from "@/entrypoints/options/pages/sell/community/CommunityGroupList.vue";
 
 import SettingsPage from "@/entrypoints/options/pages/SettingsPage.vue";
 import HouseTaskList from "@/entrypoints/options/pages/sell/house/HouseTaskList.vue";
@@ -29,7 +26,6 @@ import HouseStatusChangeList from "@/entrypoints/options/pages/sell/house/HouseS
 import HouseDetailPage from "@/entrypoints/options/pages/sell/house/HouseDetailPage.vue";
 import HouseUpdatePreview from "@/entrypoints/options/pages/sell/house/HouseUpdatePreview.vue";
 import TaskGroupDetail from "@/entrypoints/options/pages/TaskGroupDetail.vue";
-import HouseGroupList from "@/entrypoints/options/pages/sell/house/HouseGroupList.vue";
 import HouseBatchRunningNotice from "@/entrypoints/options/pages/sell/house/BatchRunningNotice.vue";
 import BlocksPage from "@/entrypoints/options/pages/BlocksPage.vue";
 import IFrameDocSite from "@/entrypoints/options/pages/IFrameDocSite.vue";
@@ -39,14 +35,15 @@ import Feedback from "@/entrypoints/options/pages/docs/Feedback.vue";
 import CHANGELOG from "@/entrypoints/options/pages/docs/CHANGELOG.vue";
 import ExportImport from "@/entrypoints/options/pages/ExportImport.vue";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
-import StartupIntroDetail from "./pages/docs/StartupIntroDetail.vue";
 import NotSupport from "./pages/docs/NotSupport.vue";
 import RentHousePriceChangeList from "@/entrypoints/options/pages/rent/house/RentHousePriceChangeList.vue";
 import RentHouseStatusChangeList from "@/entrypoints/options/pages/rent/house/RentHouseStatusChangeList.vue";
 import RentHouseTaskList from "@/entrypoints/options/pages/rent/house/RentHouseTaskList.vue";
 import RentHouseDetailPage from "./pages/rent/house/RentHouseDetailPage.vue";
-import RentHomePage from "./pages/rent/RentHomePage.vue";
+
 import Index from "./pages/Index.vue";
+import RunningRentNotice from "./pages/rent/community/RunningRentNotice.vue";
+import GroupList from "./pages/GroupList.vue";
 
 const { isDisguise } = useDevSetting();
 
@@ -60,7 +57,6 @@ const router = createRouter({
         { path: "/", component: Index },
         { path: "/doc", component: IFrameDocSite },
         { path: "/startup", component: StartupIntro },
-        { path: "/startup-detail", component: StartupIntroDetail },
         { path: "/not-support", component: NotSupport },
         { path: "/about", component: AboutMe },
         { path: "/feedback", component: Feedback },
@@ -74,17 +70,19 @@ const router = createRouter({
         { path: "/h/task/change", component: HouseChangeList },
         { path: "/h/task/status/change", component: HouseStatusChangeList },
         { path: "/h/task/detail", component: HouseDetailPage },
-        { path: "/h/group/list", component: HouseGroupList },
-        { path: "/h/group/detail", component: TaskGroupDetail },
 
         { path: "/c/task/list", component: CommunityTaskList },
-        { path: "/c/group/list", component: CommunityGroupList },
         { path: "/c/task/detail", component: CommunityDetailPage },
-        { path: "/c/group/detail", component: TaskGroupDetail },
         { path: "/c/record", component: CommunityRecordPage },
 
         { path: "h/update/preview", component: HouseUpdatePreview },
         { path: "c/update/preview", component: CommunityUpdatePreview },
+
+        /**
+         * group
+         */
+        { path: "/group/list", component: GroupList },
+        { path: "/group/detail", component: TaskGroupDetail },
 
         /**
          * ke rent
@@ -110,7 +108,7 @@ const router = createRouter({
     },
     { path: "/h/running/notice", component: HouseBatchRunningNotice },
     { path: "/c/running/notice", component: BatchRunningNotice },
-    { path: "/rent/c/running/notice", component: RentBatchRunningNotice },
+    { path: "/rent/c/running/notice", component: RunningRentNotice },
   ],
 });
 console.log("init options vue");

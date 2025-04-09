@@ -2,7 +2,7 @@ import {
   extractCidFromKeRentUrl,
   extractCityFromKeRentUrl,
   extractPageNumberFromKeRentUrl,
-  extractRidFromKeRentUrl
+  extractRidFromKeRentUrl,
 } from "@/utils/lj-url";
 
 export async function parseAllOfKeRentCommunity() {
@@ -25,6 +25,7 @@ export async function parseAllOfKeRentCommunity() {
     area: number;
     desc: string;
     price: number;
+    city: string;
     rid: string;
     source?: string;
   }[] = [];
@@ -52,7 +53,14 @@ export async function parseAllOfKeRentCommunity() {
 
       const source =
         element.querySelector(".brand")?.textContent?.trim() ?? undefined;
-      list.push({ name, rid, area, desc, price, source });
+
+      const cidUrl = element
+        .querySelector(".content__list--item--des >  a:nth-child(3)")
+        ?.getAttribute("href");
+      const cidInUrl = extractCidFromKeRentUrl(cidUrl);
+      if (cidInUrl === cid) {
+        list.push({ name, rid, area, desc, price, source, city });
+      }
     });
   return { name, maxPageNo, count, cid, city, pageNo, list };
 }

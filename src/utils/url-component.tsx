@@ -34,6 +34,21 @@ export const CommunityRecordUrl = (id: string) => {
   );
 };
 
+export const RentCommunityDetailUrl = (cid?: string) => {
+  if (!cid) {
+    return <a>-</a>;
+  }
+  return (
+    <a
+      href={`/options.html#/rent/c/task/detail?id=${cid}`}
+      target="_blank"
+      class="text-blue-500 underline cursor-pointer hover:bg-gray-200 "
+    >
+      {cid}
+    </a>
+  );
+};
+
 export const RentHouseDetailUrl = (rid?: string) => {
   if (!rid) {
     return <a>-</a>;

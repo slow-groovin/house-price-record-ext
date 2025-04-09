@@ -18,6 +18,7 @@ import { logger } from "@/utils/log";
 import { calcOffset } from "@/utils/table-utils";
 import { squel } from "sqlify"; // Import squel
 import { getDb, TableNames } from "./sqlite";
+import { db } from "./Dexie";
 export function KeRentDao() {
   return RentDao.from("ke");
 }
@@ -129,6 +130,16 @@ export class RentDao {
       const condition = "city = ?";
       builder = builder.where(condition, query.city);
       countBuilder = countBuilder.where(condition, query.city);
+    }
+    if (query?._groupId) {
+      const cidList = (await db.taskGroups.get(query._groupId))?.keRentCidList;
+      if (cidList) {
+        if (!cidList.length) cidList.push("");
+        if (cidList) {
+          builder = builder.where("cid IN ?", cidList);
+          countBuilder = countBuilder.where("cid IN ?", cidList);
+        }
+      }
     }
 
     if (sort && sort.field && sort.order) {
@@ -773,5 +784,82 @@ export class RentDao {
     const sqliteDb = await getDb();
     const rs = (await sqliteDb.run(sql)) as [{ count: number }];
     return rs[0].count;
+  }
+
+  /**
+   * Export/Import
+   */
+  async exportAll() {
+    const sqliteDb = await getDb();
+    const communities = (await sqliteDb.run(
+      `SELECT * FROM ${this.#tableName.community}`
+    )) as RentCommunityTask[];
+    const houses = (await sqliteDb.run(
+      `SELECT * FROM ${this.#tableName.house}`
+    )) as RentHouse[];
+    const records = (await sqliteDb.run(
+      `SELECT * FROM ${this.#tableName.record}`
+    )) as RentCommunityRecord[];
+    const priceChanges = (await sqliteDb.run(
+      `SELECT * FROM ${this.#tableName.price_change}`
+    )) as RentHousePriceChange[];
+    const statusChanges = (await sqliteDb.run(
+      `SELECT * FROM ${this.#tableName.status_change}`
+    )) as RentHouseStatusChange[];
+    return {
+      communities,
+      houses,
+      records,
+      priceChanges,
+      statusChanges,
+    };
+  }
+  async importAll(data: Awaited<ReturnType<typeof this.exportAll>>) {
+    const sqliteDb = await getDb();
+    const { communities, houses, priceChanges, records, statusChanges } = data;
+    await sqliteDb.run("BEGIN TRANSACTION");
+    const sql1 = squel
+      .insert()
+      .into(this.#tableName.community)
+      .setFieldsRows(communities)
+      .onConflict()
+      .returning("cid")
+      .toString();
+    const sql2 = squel
+      .insert()
+      .into(this.#tableName.house)
+      .setFieldsRows(houses)
+      .onConflict()
+      .returning("rid")
+      .toString();
+    const sql3 = squel
+      .insert()
+      .into(this.#tableName.record)
+      .setFieldsRows(records)
+      .onConflict()
+      .returning("id")
+      .toString();
+    const sql4 = squel
+      .insert()
+      .into(this.#tableName.price_change)
+      .setFieldsRows(priceChanges)
+      .onConflict()
+      .returning("id")
+      .toString();
+    const sql5 = squel
+      .insert()
+      .into(this.#tableName.status_change)
+      .setFieldsRows(statusChanges)
+      .onConflict()
+      .returning("id")
+      .toString();
+    const rs1 = (await sqliteDb.run(sql1)).length;
+    const rs2 = (await sqliteDb.run(sql2)).length;
+    const rs3 = (await sqliteDb.run(sql3)).length;
+    const rs4 = (await sqliteDb.run(sql4)).length;
+    const rs5 = (await sqliteDb.run(sql5)).length;
+    await sqliteDb.run("COMMIT;");
+
+    return [rs1, rs2, rs3, rs4, rs5];
   }
 }

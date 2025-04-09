@@ -9,6 +9,7 @@ import SimpleDrawer from "@/components/layout/SimpleDrawer.vue";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import ModeSwitch from './ModeSwitch.vue'
 import { useLocalStorage } from '@vueuse/core'
+import { useMode } from '../../composables/useMode'
 
 const { isDisguise, isDebug } = useDevSetting()
 
@@ -26,45 +27,32 @@ interface MenuGroup {
   menus: MenuItem[]
 }
 
-const selectOption = useLocalStorage<'sell' | 'rent'>('select-mode', 'sell')
+const { mode } = useMode()
 const menuGroups = computed<MenuGroup[]>(() => {
-  let _menuGroups: MenuGroup[] = []
-  if (selectOption.value === 'sell') {
-    _menuGroups = [
+  let _menuGroups: MenuGroup[] = [
+    {
+      name: '',
+      menus: [
+        { name: '📇首页', link: '/' }
+      ]
+    }
+  ]
+  if (mode.value === 'sell') {
+    _menuGroups.push(
       {
-        name: '',
+        name: '二手房',
         menus: [
-          { name: '📇首页', link: '/' }
-        ]
-      },
-      {
-        name: '🏙️小区',
-        menus: [
-          { name: '列表', link: '/c/task/list' },
-          { name: '任务分组', link: '/c/group/list' },
-        ]
-      },
-      {
-        emoji: '🏠',
-        name: '房源',
-        menus: [
-          { name: '列表', link: '/h/task/list' },
+          { name: '🏙️小区列表', link: '/c/task/list' },
+          { name: '🏠房源列表', link: '/h/task/list' },
           { name: '价格变更', link: '/h/task/change' },
           { name: '状态变更', link: '/h/task/status/change' },
-          { name: '任务分组', link: '/h/group/list' },
-
         ]
       }
-    ]
+
+    )
 
   } else {
-    _menuGroups = [
-      {
-        name: '',
-        menus: [
-          { name: '📇首页', link: '/' }
-        ]
-      },
+    _menuGroups.push(
 
       {
         name: '💸租房',
@@ -74,11 +62,18 @@ const menuGroups = computed<MenuGroup[]>(() => {
           { name: '价格变更✏️', link: '/rent/h/task/price/change' },
           { name: '状态变更✏️', link: '/rent/h/task/status/change' },
         ]
-      },
-    ]
+      }
+    )
   }
 
   _menuGroups.push(
+    {
+      emoji: '🗂️',
+      name: '',
+      menus: [
+        { name: '任务分组', link: '/group/list' },
+      ]
+    },
     {
       emoji: '⚙️',
       name: '️设置',
@@ -93,7 +88,6 @@ const menuGroups = computed<MenuGroup[]>(() => {
       name: '️说明',
       menus: [
         { name: '操作指南', link: '/startup' },
-        { name: '使用详情', link: '/startup-detail' },
         { name: '更新记录', link: '/CHANGELOG' },
         { name: '关于', link: '/about' },
       ]
@@ -120,7 +114,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
 
 const route = useRoute();
 
-const modeColor = computed(() => selectOption.value === 'sell' ? 'hsl(var(--primary) / 0.4)' : '#0085f230')
+const modeColor = computed(() => mode.value === 'sell' ? 'hsl(var(--primary) / 0.4)' : '#0085f230')
 
 </script>
 

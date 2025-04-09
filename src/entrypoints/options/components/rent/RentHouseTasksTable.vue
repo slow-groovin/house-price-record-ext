@@ -62,10 +62,9 @@ ref definition
  */
 const sorting = ref<SortingState>([])
 const columnFilters = ref<ColumnFiltersState>([])
-const columnVisibility = useLocalStorage<VisibilityState>('house-tasks-column-visibility', { '初始价格': false, '上次价格': false, '最高价': false, '最低价': false })
+const columnVisibility = useLocalStorage<VisibilityState>('ren-house-tasks-column-visibility', { '初始价格': false, '上次价格': false, '最高价': false, '最低价': false, '价格变更次数': false })
 const relatedCommunity = ref(new Map<string, RentCommunityTask>())
 const relatedData = ref(new Map<string, RelatedData>())
-const priceRelatedShowType = ref<undefined | 'last' | 'max' | 'min' | 'init' | 'count'>()
 /*
 ref definition DONE
  */
@@ -138,7 +137,7 @@ const columnDef: (ColumnDef<RentHouse>)[] = [
     header: '名称',
     id: '名称',
     accessorFn(originalRow: RentHouse, index: number) {
-      return { name: originalRow.name, rid: originalRow.rid, city: relatedCommunity.value.get(originalRow.cid)?.city };
+      return { name: originalRow.name, rid: originalRow.rid, city: originalRow.city };
     },
     cell: ({ cell }) => {
       const { name, rid, city } = cell.getValue() as { name?: string, rid?: string, city?: string }
@@ -199,7 +198,12 @@ const columnDef: (ColumnDef<RentHouse>)[] = [
     id: '价格变更次数',
     cell: ({ cell, }) => relatedData.value.get(cell.getValue() as string)?.priceChangeCount
   },
-
+  {
+    accessorKey: "source",
+    header: '来源',
+    id: '来源',
+    cell: ({ cell, row }) => cell.getValue()
+  },
 
   {
     accessorKey: "desc",
@@ -207,7 +211,12 @@ const columnDef: (ColumnDef<RentHouse>)[] = [
     id: '简介',
     cell: ({ cell, row }) => cell.getValue()
   },
-
+  {
+    accessorKey: 'releasedAt',
+    header: '上架/维护时间',
+    id: '上架/维护时间',
+    cell: ({ cell }) => cell.getValue() ? new Date(cell.getValue() as string).toLocaleDateString() : '-'
+  },
   {
     accessorKey: "createdAt",
     header: '任务创建',
@@ -233,12 +242,7 @@ const columnDef: (ColumnDef<RentHouse>)[] = [
       </div>
     }
   },
-  {
-    accessorKey: 'releasedAt',
-    header: '上架/维护时间',
-    id: '上架/维护时间',
-    cell: ({ cell }) => cell.getValue() ? new Date(cell.getValue() as string).toLocaleDateString() : '-'
-  },
+
 
 
 

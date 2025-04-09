@@ -1,15 +1,15 @@
-import { sendMessage } from "@@/messaging";
 import { db } from "@/entrypoints/db/Dexie";
-import { stabilizeFields } from "@/utils/variable";
-import { removeRepeat } from "@/utils/array";
-import { list, retry } from "radash";
-import { genKeRentCommunityPageUrl } from "@/utils/lj-url";
-import { browser } from "wxt/browser";
 import {
   ParsedRentCommunity,
   RentCommunityRecord,
   RentCommunityTask,
 } from "@/types/rent";
+import { removeRepeat } from "@/utils/array";
+import { genKeRentCommunityPageUrl } from "@/utils/lj-url";
+import { stabilizeFields } from "@/utils/variable";
+import { sendMessage } from "@@/messaging";
+import { list, retry } from "radash";
+import { browser } from "wxt/browser";
 
 const PREFIX = "[oneRentCommunityEntry]";
 
@@ -28,6 +28,7 @@ export async function goRunRentCommunityTasksStartPage(
   await chrome.sidePanel.open({ windowId: newWindow.id as number });
   await chrome.sidePanel.setOptions({
     path: "/sidepanel.html#/rent/c/batch?id=" + id,
+    // tabId: newWindow?.tabs?.[0]?.id,
   });
 }
 
@@ -47,28 +48,32 @@ export async function oneRentCommunityEntry(communityTask: RentCommunityTask) {
   console.debug(PREFIX, "start url: ", url, tab.id);
 
   let pageItem: ParsedRentCommunity | undefined = undefined;
-  //重试多次
-  await retry({ times: 10, delay: 1000 }, async () => {
-    //首先爬取总页数等信息
-    pageItem = await sendMessage(
-      "parseKeCommunityListOnePage",
-      undefined,
-      tab.id
-    );
-    if (!pageItem.maxPageNo || !pageItem.city) {
-      throw new Error("pageItem.maxPageNo|city not exist! " + pageItem);
-    }
-  });
-  //pageItem必不为空, 因为retry失败会抛出异常
-  console.log("pageItem", pageItem);
-  await browser.tabs.remove([tab.id as number]);
-  let oneRecord = await crawlOneCommunityListPages({
-    cid: pageItem!.cid!,
-    city: pageItem!.city!,
-    maxPage: pageItem!.maxPageNo,
-  });
+  try {
+    //重试多次
+    await retry({ times: 10, delay: 1000 }, async () => {
+      //首先爬取总页数等信息
+      pageItem = await sendMessage(
+        "parseKeCommunityListOnePage",
+        undefined,
+        tab.id
+      );
+      if (!pageItem.maxPageNo || !pageItem.city) {
+        throw new Error("pageItem.maxPageNo|city not exist! " + pageItem);
+      }
+    });
+    //pageItem必不为空, 因为retry失败会抛出异常
+    console.log("pageItem", pageItem);
+    let oneRecord = await crawlOneCommunityListPages({
+      cid: pageItem!.cid!,
+      city: pageItem!.city!,
+      maxPage: pageItem!.maxPageNo,
+    });
 
-  return oneRecord;
+    return oneRecord;
+  } finally {
+    console.debug("exit oneRentCommunityEntry", communityTask.cid);
+    await browser.tabs.remove([tab.id as number]);
+  }
 }
 
 /**
@@ -82,7 +87,6 @@ export async function crawlOneCommunityListPages(input: {
   maxPage: number;
 }) {
   const { city, cid, maxPage } = input;
-  const promises: Promise<ParsedRentCommunity>[] = [];
   const urlList = list(1, maxPage).map((page) =>
     genKeRentCommunityPageUrl(city, cid, page)
   );
@@ -90,26 +94,26 @@ export async function crawlOneCommunityListPages(input: {
   const parsedResultOfAllPage: ParsedRentCommunity[] = [];
   //依次打开所有参数中的所有url
   for (const url of urlList) {
-    const tab = await browser.tabs.create({ url, active: false });
-    console.debug("[execOneCommunity] open:", url, tab.id, tab.status);
-    let parsedPageItem: ParsedRentCommunity | undefined = undefined;
-
     //打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
     await retry({ times: 10, delay: 1000 }, async () => {
-      parsedPageItem = await sendMessage(
-        "parseKeCommunityListOnePage",
-        undefined,
-        tab.id
+      const tab = await browser.tabs.create({ url, active: false });
+      let parsedPageItem: ParsedRentCommunity | undefined = undefined;
+
+      try {
+        console.debug("[rent][page]open:", url, tab.id, tab.status);
+        parsedPageItem = await retry({ times: 10, delay: 1000 }, () =>
+          sendMessage("parseKeCommunityListOnePage", undefined, tab.id)
+        );
+      } finally {
+        console.debug("[rent][page]close:", url, tab.id, tab.status);
+        await browser.tabs.remove([tab.id as number]);
+      }
+      console.debug(
+        `[execOneCommunity] one tab[${url}] record resp:`,
+        parsedPageItem
       );
+      parsedResultOfAllPage.push(parsedPageItem!);
     });
-
-    console.debug(
-      `[execOneCommunity] one tab[${url}] record resp:`,
-      parsedPageItem
-    );
-    await browser.tabs.remove([tab.id as number]);
-
-    parsedResultOfAllPage.push(parsedPageItem!);
   }
 
   verifyDiffPagesItem(parsedResultOfAllPage);

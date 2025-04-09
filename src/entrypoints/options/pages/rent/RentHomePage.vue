@@ -153,8 +153,8 @@ onMounted(() => {
 
       <!--    使用入门-->
       <div class="outline h-fit   outline-green-500 rounded p-2">
-        使用详情
-        <a class="link" href="/options.html#/startup-detail">去查看></a>
+        操作指南
+        <a class="link" href="/options.html#/startup">去查看></a>
       </div>
 
     </div>

@@ -32,7 +32,7 @@ route handle BEGIN
 const { pushQuery, removeQuery, pushQueries, removeQueries } = useRouterQuery()
 const route = useRoute()
 const { query } = route
-const { _pageIndex, queryPageSize } = query
+const { _pageIndex, _pageSize: queryPageSize } = query
 const _pageSize = mergeParams(queryPageSize, localStorage.getItem('rent-house-list-page-size'))
 
 const queryScopeLabel = ref('')
@@ -96,6 +96,8 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   const queryRs = await KeRentDao().findManyHouses(pagiCond, queryCondition.value, sortCondition.value)
   data.value = queryRs.data
 
+  // console.log('data.value', data.value)
+
   rowCount.value = queryRs.count
 
   queryCost.value = Date.now() - beginAt
@@ -118,7 +120,7 @@ async function onPaginationUpdate(pageIndex: number, pageSize: number) {
  * 如果变更了查询条件导致当前页码没有数据, 那么重置pageIndex
  */
 async function resetPaginationIfNoData() {
-  if (route.query.pageIndex !== '1' && data.value.length === 0) {
+  if (route.query._pageIndex !== '1' && data.value.length === 0) {
     tableRef.value?.resetPageIndex()
   }
 }

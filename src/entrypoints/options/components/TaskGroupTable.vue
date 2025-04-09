@@ -1,6 +1,12 @@
 <script setup lang="tsx">
 //
+import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { db } from "@/entrypoints/db/Dexie";
+import { calcGroupSize, TaskGroup2 } from "@/types/group";
+import { formatDistanceToNowHoursOrDays } from "@/utils/date";
+import { valueUpdater } from "@/utils/shadcn-utils";
+import { Icon } from "@iconify/vue";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,16 +19,8 @@ import {
   SortingState,
   TableOptions,
   useVueTable,
-} from '@tanstack/vue-table'
-import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
-import { valueUpdater } from "@/utils/shadcn-utils";
+} from '@tanstack/vue-table';
 import { onMounted, ref, watch } from "vue";
-import { formatDistanceToNowHoursOrDays } from "@/utils/date";
-import { TaskGroup } from "@/types/group";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@iconify/vue";
-import ConfirmDialog from "@/components/custom/ConfirmDialog.vue";
-import { db } from "@/entrypoints/db/Dexie";
 import { toast } from "vue-sonner";
 
 
@@ -33,42 +31,30 @@ const sorting = ref<SortingState>([])
 const columnFilters = ref<ColumnFiltersState>([])
 const deletedIds = ref<number[]>([])
 const rowSelection = defineModel<RowSelectionState>('rowSelection')
-const { data, type } = defineProps<{
-  data: TaskGroup[],
-  type: 'community' | 'house',
+const { data } = defineProps<{
+  data: TaskGroup2[],
 }>()
 /*
 ref definition DONE
  */
 
-function detailUrl(id?: number) {
-  const prefix = type === 'community' ? 'c' : 'h'
-  return `#/${prefix}/group/detail?id=${id}`
-}
 
-/**
- * pagination
- */
+
 const emit = defineEmits<{
-  (e: 'onPaginationChange', pageIndex: number, pageSize: number): void
   (e: 'onRunGroup', index: number): void
 }>()
-// const pagination = defineModel<PageState>('pagination')
-const pagination = ref({ pageIndex: 1, pageSize: 10 })
 
-//初始化默认查询
-emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
-/**
- * pagination end
- */
 
+function detailUrl(id?: number) {
+  return `#/group/detail?id=${id}`
+}
 
 
 /*
 column BEGIN
  */
 
-const columnDef: (ColumnDef<TaskGroup>)[] = [
+const columnDef: (ColumnDef<TaskGroup2>)[] = [
   {
     accessorKey: 'id',
     id: 'id',
@@ -76,13 +62,13 @@ const columnDef: (ColumnDef<TaskGroup>)[] = [
     cell: ({ cell }) =>
       <div class="text-xs">
         <div class="flex">
-          <a href={detailUrl(cell.getValue())} class="link " target="_blank">
+          <a href={detailUrl(cell.getValue() as number)} class="link " target="_blank">
             <div>{cell.getValue()}</div>
           </a> &nbsp;&nbsp;&nbsp;
         </div>
       </div>
 
-  } as ColumnDef<TaskGroup>,
+  } as ColumnDef<TaskGroup2>,
 
 
   {
@@ -95,10 +81,10 @@ const columnDef: (ColumnDef<TaskGroup>)[] = [
     }
   },
   {
-    accessorKey: 'idList', header: '数量', id: '数量',
+    accessorKey: 'keRentCidList', header: '数量', id: '数量',
     cell: ({ cell, row }) => {
-      return <a href={detailUrl(row.getValue('id'))} class="hover-link"
-        target="_blank">{cell.getValue()?.length}</a>
+
+      return <div>{calcGroupSize(row.original)}</div>
     }
   },
 
@@ -149,7 +135,7 @@ column END
 /*
 table BEGIN
  */
-let options: TableOptions<TaskGroup> = {
+let options: TableOptions<TaskGroup2> = {
   get data() {
     return data
   },
@@ -175,23 +161,12 @@ let options: TableOptions<TaskGroup> = {
     get rowSelection() {
       return rowSelection.value
     },
-    get pagination() {
-      return pagination.value
-    },
-
   },
   // enableRowSelection: true, //enable row selection for all rows
   autoResetPageIndex: true,
-  // manualPagination: true,
-  // pageCount:30,
-  // rowCount: rowCount,
 
-  onPaginationChange: updaterOrValue => {
-    // console.log('updaterOrValue',updaterOrValue ,'before:',pagination.value)
-    valueUpdater(updaterOrValue, pagination)
-    // console.log('after:',pagination.value)
-    emit('onPaginationChange', pagination.value.pageIndex, pagination.value.pageSize)
-  }
+
+
 }
 const table = useVueTable(options)
 
@@ -218,7 +193,7 @@ async function deleteGroup(id?: number) {
     toast.error('参数错误:' + id)
     return
   }
-  await db.communityTaskGroups.delete(id)
+  await db.taskGroups.delete(id)
   deletedIds.value.push(id)
   toast.success('删除成功')
 }
@@ -290,8 +265,6 @@ onMounted(() => {
     </TableBody>
   </Table>
 
-  <PaginationComponent zero-based :set-page-index="table.setPageIndex" :set-page-size="table.setPageSize"
-    :pagination="pagination" :row-count="table.getRowCount()" />
 
 
 </template>

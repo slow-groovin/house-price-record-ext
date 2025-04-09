@@ -189,7 +189,7 @@ export function extractPageNumberFromKeRentUrl(str: string): number {
 }
 
 /**
- * 从  https://city.zu.ke.com/zufang/*****c<cid>.html 中提取cid
+ * 从  'https://city.zu.ke.com/zufang/*****c<cid>.html'  '/zufang/c<cid>/' 中提取cid
  * @param url
  */
 export function extractCidFromKeRentUrl(url?: string | null): string | null {

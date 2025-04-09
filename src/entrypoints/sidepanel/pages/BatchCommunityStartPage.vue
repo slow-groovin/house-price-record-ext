@@ -139,7 +139,7 @@ async function startBathCommunity() {
 <template>
   <div class="flex flex-col gap-4 p-2">
 
-    <h1 class="mt-2 text-primary font-bold text-xl">▶︎ 批量小区任务运行</h1>
+    <h1 class="mt-2 text-primary font-bold text-xl">▶︎ (二手房)批量小区任务运行</h1>
 
     <!--  init hint-->
     <div v-if="isInit && communityList"

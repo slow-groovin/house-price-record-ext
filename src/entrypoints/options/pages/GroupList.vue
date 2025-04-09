@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import { TaskGroup } from '@/types/group'
-import TaskGroupTable from "@/entrypoints/options/components/sell/TaskGroupTable.vue";
-import { onMounted, ref, toRaw } from "vue";
-import { db } from "@/entrypoints/db/Dexie";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@iconify/vue";
 import {
   Dialog,
   DialogClose,
@@ -15,38 +10,37 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { toast } from "vue-sonner";
-import { browser } from "wxt/browser";
+import { Label } from "@/components/ui/label";
 import { useExtTitle } from "@/composables/useExtInfo";
-import { goRunCommunityTasksStartPage } from "@/entrypoints/reuse/community-control"
-useExtTitle('小区任务分组')
+import { db } from "@/entrypoints/db/Dexie";
+import TaskGroupTable from "@/entrypoints/options/components/TaskGroupTable.vue";
+import { goRunGroupTask } from '@/entrypoints/reuse/group-control';
+import { TaskGroup2 } from '@/types/group';
+import { Icon } from "@iconify/vue";
+import { onMounted, ref, toRaw } from "vue";
+import { toast } from "vue-sonner";
+useExtTitle('任务分组')
 
-const data = ref<TaskGroup[]>([])
+const data = ref<TaskGroup2[]>([])
 
 const inputName = ref('')
 
 
 async function queryData() {
-  data.value = await db.communityTaskGroups.toArray()
+  data.value = await db.taskGroups.toArray()
 }
 
 async function createGroup() {
-  await db.communityTaskGroups.add({
-    name: inputName.value, createdAt: Date.now(), idList: []
+  await db.taskGroups.add({
+    name: inputName.value, createdAt: Date.now(), keRentCidList: [], ljSellCidList: [], ljSellHidList: []
   })
   toast.success('创建成功')
   queryData()
 }
 
 async function goBeginGroupTasks(index: number) {
-  const cidList = toRaw(data.value[index].idList)
-  const communityList = await db.communityTasks.where('cid').anyOf(cidList).toArray()
-  await goRunCommunityTasksStartPage(communityList)
-  db.communityTaskGroups.update(data.value[index].id, {
-    lastRunningAt: Date.now()
-  })
+  goRunGroupTask(toRaw(data.value[index]))
 }
 
 onMounted(() => {
@@ -56,14 +50,14 @@ onMounted(() => {
 
 
 <template>
-  <h1>小区任务组</h1>
+  <h1 class="text-2xl font-bold my-4">任务分组</h1>
   <div class="flex">
 
     <Dialog>
       <DialogTrigger as-child>
-        <div class="flex flex-row items-center hover:bg-gray-200 rounded p-2">
+        <div class="flex flex-row items-center border hover:bg-gray-200 rounded-lg p-2 cursor-pointer">
           <Icon icon="icon-park-outline:add" class="text-green-500 w-8 h-8 " />
-          添加任务
+          创建分组
         </div>
 
       </DialogTrigger>
@@ -96,7 +90,7 @@ onMounted(() => {
 
 
   </div>
-  <TaskGroupTable :data="data" type="community" @on-run-group="goBeginGroupTasks" />
+  <TaskGroupTable :data="data" @on-run-group="goBeginGroupTasks" />
 
 </template>
 

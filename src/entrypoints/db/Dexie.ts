@@ -12,7 +12,7 @@ import {
   CommunityUpdatePreview,
   HousesUpdatePreview,
 } from "@/types/LjUpdatePreview";
-import { TaskGroup } from "@/types/group";
+import { TaskGroup, TaskGroup2 } from "@/types/group";
 import { RentCommunityTask, RentCommunityUpdatePreview } from "@/types/rent";
 
 const db = new Dexie("ext-Default") as Dexie & {
@@ -30,6 +30,7 @@ const db = new Dexie("ext-Default") as Dexie & {
 
   communityTaskGroups: EntityTable<TaskGroup, "id">;
   houseTaskGroups: EntityTable<TaskGroup, "id">;
+  taskGroups: EntityTable<TaskGroup2, "id">; //新版group, 包含所有类型的任务
 
   tempBatchHouse: EntityTable<{ id?: number; hidList: string[] }, "id">; //batch house时, 通过此表options页面向sidebar页面传递hidList
   tempBatchCommunity: EntityTable<
@@ -49,7 +50,7 @@ const db = new Dexie("ext-Default") as Dexie & {
   >;
 };
 
-db.version(106).stores({
+db.version(110).stores({
   items: "++id, name, price, createdAt", // Auto-increment id, and indexes for queries
   debugInfo: "++id",
   houseChanges: "++id,  hid, cid, at,newValue",
@@ -60,6 +61,7 @@ db.version(106).stores({
   communityTasks: "++id, &cid, city, status,name, createdAt, lastRunningAt",
   communityTaskGroups: "++id, name, createdAt",
   houseTaskGroups: "++id, name, createdAt",
+  taskGroups: "++id, name, createdAt",
   communityRecords: "++id, cid, city, at",
   tempBatchHouse: "++id",
   tempBatchCommunity: "++id",

@@ -63,6 +63,7 @@ import TwoLineAt from "@/components/lj/column/TwoLineAt.vue";
 import { useExtTitle } from "@/composables/useExtInfo";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import { mergeParams } from "@/utils/variable";
+import HowToAddLjTask from '@/entrypoints/options/components/description/HowToAddLjTask.vue';
 
 const { isDebug } = useDevSetting()
 useExtTitle('小区任务列表')
@@ -92,7 +93,7 @@ const queryScopeLabel = ref('')
 
 
 if (query.groupId) {
-  queryScopeLabel.value = `分组:[${query.groupId}]`
+  queryScopeLabel.value = `分组:[${query.name}]`
 }
 
 /*
@@ -149,8 +150,8 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
   const { field, order } = sortCondition.value
   let groupIdList: string[] = []
   if (groupId) {
-    const group = await db.communityTaskGroups.get(groupId)
-    groupIdList = group?.idList ?? []
+    const group = await db.taskGroups.get(groupId)
+    groupIdList = group?.ljSellCidList ?? []
   }
 
   if (order && field) {
@@ -456,7 +457,7 @@ async function deleteSelectedTasks() {
 
 async function addToGroup() {
   if (!groupForAdd.value) return
-  const group = await db.communityTaskGroups.get(groupForAdd.value.groupId)
+  const group = await db.taskGroups.get(groupForAdd.value.groupId)
   if (!group) {
     toast.error('没有找到分组')
     return
@@ -464,14 +465,14 @@ async function addToGroup() {
   const selectedIdList = Object.keys(rowSelection.value)
     .map(s => Number(s))
     .map(i => data.value[i].cid)
-  group.idList = Array.from(new Set<string>([...group?.idList ?? [], ...selectedIdList]))
-  await db.communityTaskGroups.update(groupForAdd.value.groupId, {
-    idList: group.idList
+  group.ljSellCidList = Array.from(new Set<string>([...group?.ljSellCidList ?? [], ...selectedIdList]))
+  await db.taskGroups.update(groupForAdd.value.groupId, {
+    ljSellCidList: group.ljSellCidList
   })
   toast.success('添加成功', {
     action: {
       label: '去查看', onClick: () => {
-        sendMessage('openOptionPage', '/options.html#/c/group/list')
+        sendMessage('openOptionPage', '/options.html#/group/detail?id=' + group.id)
       }
     }
   })
@@ -571,7 +572,7 @@ onMounted(() => {
         <DialogHeader>
           <DialogTitle>加入分组</DialogTitle>
           <DialogDescription>
-            <a href="/options.html#/c/group/list" class="link">去创建分组</a>
+            <a href="/options.html#/group/list" class="link">去创建分组</a>
           </DialogDescription>
         </DialogHeader>
 
@@ -593,6 +594,9 @@ onMounted(() => {
     </Dialog>
 
     <Button @click="exportToCSV" class="p-1 h-fit" :disabled="!selectionCount">导出CSV(选中)</Button>
+
+    <HowToAddLjTask />
+
     <LoadingOverlay v-if="isPending" disable-anim />
   </div>
 
@@ -603,7 +607,9 @@ onMounted(() => {
     <div> {{ sortCondition }}</div>
   </div>
 
-  <ColumnVisibleOption :columns="table.getAllColumns()" />
+  <div class="flex items-center gap-4">
+    <ColumnVisibleOption :columns="table.getAllColumns()" />
+  </div>
 
   <div class=" overflow-x-auto text-nowrap">
     <Table>

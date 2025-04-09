@@ -11,26 +11,22 @@ import { cn } from "@/utils/shadcn-utils";
 import { debounce } from "radash";
 import { Icon } from "@iconify/vue";
 import { useRoute } from "vue-router";
-import { TaskGroup } from "@/types/group";
+import { TaskGroup2 } from "@/types/group";
 import { db } from "@/entrypoints/db/Dexie";
 
 const value = defineModel<{ groupId: number, name: string }>()
 const props = defineProps<{
-  type?: 'community' | 'house',
   initialGroupId?: number
 }>()
-const data = ref<TaskGroup[]>([])
+const data = ref<TaskGroup2[]>([])
 const open = ref(false)
 const searchNameStr = ref('')
 
 async function queryInitialData() {
   //console.log(props.initialGroupId)
   if (!props.initialGroupId) return
-  if (props.type === 'house') {
-    data.value = await db.houseTaskGroups.where({ 'id': props.initialGroupId }).toArray()
-  } else {
-    data.value = await db.communityTaskGroups.where({ 'id': props.initialGroupId }).toArray()
-  }
+  data.value = await db.taskGroups.where({ 'id': props.initialGroupId }).toArray()
+
   value.value = {
     groupId: props.initialGroupId,
     name: data.value[0]?.name,
@@ -38,13 +34,7 @@ async function queryInitialData() {
 }
 
 async function queryData() {
-  if (props.type === 'house') {
-    data.value = await db.houseTaskGroups.toArray()
-  } else {
-    data.value = await db.communityTaskGroups.toArray()
-  }
-
-
+  data.value = await db.taskGroups.toArray()
 }
 
 const searchData = computed(() => {
@@ -98,7 +88,7 @@ const onSearchTermChange = debounce({ delay: 1000 }, (v) => searchNameStr.value 
                   'mr-2 h-4 w-4',
                   value?.name === item?.name ? 'opacity-100' : 'opacity-0',
                 )" />
-                {{ item?.name }} ({{ item?.idList?.length }}个)
+                {{ item?.name }}
               </CommandItem>
             </template>
           </CommandGroup>

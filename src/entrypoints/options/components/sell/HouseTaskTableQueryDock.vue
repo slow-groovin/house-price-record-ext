@@ -37,7 +37,7 @@
 
     <div class="flex flex-col">
       <label class="text-sm mb-2">分组</label>
-      <TaskGroupQueryBox v-model="groupQueryValue" type="house" :initial-group-id="queryCondition.groupId" />
+      <TaskGroupQueryBox v-model="groupQueryValue" :initial-group-id="queryCondition.groupId" />
     </div>
 
     <!-- 数值范围输入区块 -->
@@ -146,10 +146,6 @@ watch(communityQueryValue, (newValue) => {
   queryCondition.value.cidEqual = newValue?.cid
 })
 
-watch(groupQueryValue, (newValue) => {
-  console.log(newValue)
-  queryCondition.value.groupId = newValue?.groupId
-})
 
 // 定义更新事件
 const emit = defineEmits<{

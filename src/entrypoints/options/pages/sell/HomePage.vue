@@ -149,11 +149,6 @@ onMounted(() => {
       <a class="link" href="/options.html#/startup">去查看></a>
     </div>
 
-    <div class="outline col-span-3  w-fit h-fit outline-green-500 rounded p-2">
-      当前已经激活 <span class="font-extrabold text-green-500">{{ enableRulesCount }}</span>/{{ allRulesCount }} 条请求过滤规则
-      <a class="link" href="/options.html#/blocks">去查看></a>
-      <InfoHover>如果您在访问本插件目标站点时遇到了无法排查的网络访问问题, 请尝试关闭规则进行排查</InfoHover>
-    </div>
   </div>
 
 
@@ -167,8 +162,8 @@ onMounted(() => {
       </div>
       <!--    使用入门-->
       <div class="outline h-fit   outline-green-500 rounded p-2">
-        使用详情
-        <a class="link" href="/options.html#/startup-detail">去查看></a>
+        操作指南
+        <a class="link" href="/options.html#/startup">去查看</a>
       </div>
 
     </div>

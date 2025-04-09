@@ -55,6 +55,7 @@ import {
 import { useLocalStorage } from '@vueuse/core'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useMode } from '../../composables/useMode'
 
 const router = useRouter()
 const route = useRoute()
@@ -70,10 +71,9 @@ const options: Option[] = [ // Default options if not provided
 ]
 
 const notShowDialog = useLocalStorage('mode-switch-dialog-not-show', false)
-/**
- * 选择值
- */
-const selectOption = useLocalStorage('select-mode', 'sell')
+
+
+const { mode: selectOption } = useMode()
 /**
  * 未确认的选择值
  */

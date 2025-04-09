@@ -49,7 +49,7 @@ route handle BEGIN
 const { pushQuery, removeQuery, pushQueries, removeQueries } = useRouterQuery()
 const route = useRoute()
 const { query } = route
-const { _pageIndex, queryPageSize } = query
+const { _pageIndex, _pageSize: queryPageSize } = query
 const _pageSize = mergeParams(queryPageSize, localStorage.getItem('house-list-page-size'))
 
 const queryScopeLabel = ref('')
@@ -127,8 +127,8 @@ async function queryData(_pageIndex?: number, _pageSize?: number) {
 
   let groupIdList: string[] = []
   if (groupId) {
-    const group = await db.houseTaskGroups.get(groupId)
-    groupIdList = group?.idList ?? []
+    const group = await db.taskGroups.get(groupId)
+    groupIdList = group?.ljSellHidList ?? []
   }
 
   let query: Collection<HouseTask, number | undefined, InsertType<HouseTask, "id">>
@@ -258,7 +258,7 @@ async function onPaginationUpdate(pageIndex: number, pageSize: number) {
  * 如果变更了查询条件导致当前页码没有数据, 那么重置pageIndex
  */
 async function resetPaginationIfNoData() {
-  if (route.query.pageIndex !== '1' && data.value.length === 0) {
+  if (route.query._pageIndex !== '1' && data.value.length === 0) {
     tableRef.value?.resetPageIndex()
   }
 }
@@ -314,19 +314,19 @@ async function addToGroup() {
     toast.error('请选择分组')
     return
   }
-  const group = await db.houseTaskGroups.get(groupForAdd.value.groupId)
+  const group = await db.taskGroups.get(groupForAdd.value.groupId)
   if (!group) return
-  const before = group.idList
+  const before = group.ljSellHidList
   const selectedIdList = Object.keys(rowSelection.value)
     .map(s => Number(s))
     .map(i => data.value[i].hid)
-  group.idList = [...new Set<string>([...before, ...selectedIdList])]
+  group.ljSellHidList = [...new Set<string>([...before, ...selectedIdList])]
 
-  await db.houseTaskGroups.update(groupForAdd.value.groupId, group)
+  await db.taskGroups.update(groupForAdd.value.groupId, group)
   toast.success('添加成功', {
     action: {
       label: '去查看', onClick: () => {
-        sendMessage('openOptionPage', '/options.html#/h/group/list')
+        sendMessage('openOptionPage', '/options.html#/group/detail?id=' + group.id)
       }
     }
   }
@@ -385,7 +385,7 @@ onMounted(() => {
         <DialogHeader>
           <DialogTitle>加入分组</DialogTitle>
           <DialogDescription>
-            <a href="/options.html#/h/group/list/" class="link">去创建分组</a>
+            <a href="/options.html#/group/list/" class="link">去创建分组</a>
           </DialogDescription>
         </DialogHeader>
 
