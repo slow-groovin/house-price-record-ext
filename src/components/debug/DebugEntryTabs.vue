@@ -7,7 +7,6 @@ import UnovisSamples from "@/components/debug/UnovisSamples.vue";
 import WxtStorage from "@/components/debug/WxtStorage.vue";
 import CalendarGraphSample from "@/components/debug/CalendarGraphSample.vue";
 import CommunityDebug from "@/components/debug/CommunityDebug.vue";
-import FakeDataInsert from "@/components/debug/FakeDataInsert.vue";
 import TanstackTable from "@/components/debug/TanstackTable.vue";
 import { useLocalStorage, useTitle } from "@vueuse/core";
 import UncategorizedDebugFunctions from "@/components/debug/UncategorizedDebugFunctions.vue";
@@ -35,7 +34,7 @@ function queryTab() {// 获取当前活动的标签页信息
 const title = useTitle()
 
 const components = [UncategorizedDebugFunctions, TabsManage, NetRuleTest, DexieIndexedDB, UnovisSamples, WxtStorage,
-  CalendarGraphSample, CommunityDebug, FakeDataInsert, TanstackTable, DialogSample,
+  CalendarGraphSample, CommunityDebug, TanstackTable, DialogSample,
   VueSonnerToast, MessageTest, SqliteWasm3rd, RentDataTest,
 ]
 </script>

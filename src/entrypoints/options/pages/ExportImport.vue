@@ -17,6 +17,7 @@ import { exportDatabase, importDatabaseToIdb, initSQLite } from '@subframe7536/s
 import { useIdbStorage } from '@subframe7536/sqlite-wasm/idb';
 import { KeRentDao } from '@/entrypoints/db/rent-dao';
 import Code from '@/components/information/Code.vue';
+import { TaskGroup2 } from '@/types/group';
 
 // Compatibility version from reference code
 const compatibilityVersion = 20250402;
@@ -40,7 +41,8 @@ type ExportDataStructure = {
     records: any[],
     priceChanges: any[],
     statusChanges: any[],
-  }
+  },
+  groups: TaskGroup2[]
 }
 
 // Verify fields schema from reference code
@@ -65,6 +67,19 @@ const importSchema = z.object({
     priceChanges: z.array(z.any()),
     statusChanges: z.array(z.any()),
   }),
+  groups: z.array(
+    z.object({
+      id: z.number().optional(),
+      name: z.string(),
+      ljSellCidList: z.array(z.string()),
+      ljSellHidList: z.array(z.string()),
+      keRentCidList: z.array(z.string()),
+      createdAt: z.number(),
+      lastRunningAt: z.number().optional(),
+      notification: z.boolean().optional(),
+      notifyInterval: z.number().optional(),
+    })
+  )
 
 });
 
@@ -89,6 +104,7 @@ const usedMb = ref(0)
 type ImportResult = Record<string, { suc: number, fail: number }>
 const ljSellImportResult = ref<ImportResult>()
 const keRentImportResult = ref<ImportResult>()
+const groupImportResult = ref<ImportResult>()
 
 async function importData() {
   isLoading.value = true;
@@ -111,9 +127,10 @@ async function importData() {
       return;
     }
 
-    const { lj, "ke-rent": keRent } = parsedResult.data;
+    const { lj, "ke-rent": keRent, groups } = parsedResult.data;
     ljSellImportResult.value = await insertLjSellData(lj)
     keRentImportResult.value = await insertKeRentData(keRent)
+    groupImportResult.value = await insertGroup(groups)
   } catch (e: any) {
 
     if (e.name === 'AbortError') { // Handle user cancelling file picker
@@ -129,7 +146,7 @@ async function importData() {
 
   }
 
-  alertAndToast({ title: 'Success', description: 'Successfully imported!', variant: 'success' });
+  alertAndToast({ title: '导入成功!', description: '导入成功, 请查看导入结果!', variant: 'success' });
 }
 
 /**
@@ -148,6 +165,7 @@ async function exportData() {
       exportDate: new Date().toLocaleString(),
       'lj': await retrieveData(),
       "ke-rent": await KeRentDao().exportAll(),
+      groups: await db.taskGroups.toArray(),
     };
 
     // Use extension name and version in filename
@@ -223,6 +241,8 @@ async function handleFileSelect(event: Event) {
           Object.fromEntries(
             Object.entries(dataObj['ke-rent']).map(([key, arr]) => [key, (arr as Array<unknown>).length + '条'])
           ),
+        'groups': dataObj.groups
+
       }
     } catch (e: any) {
       console.error('Failed to parse selected file for view:', e);
@@ -329,6 +349,20 @@ async function insertKeRentData(data: ExportDataStructure['ke-rent']) {
   return _importResult
 }
 
+async function insertGroup(data: ExportDataStructure['groups']) {
+
+  const _importResult: ImportResult = {}
+  let suc = 0, fail = 0
+  try {
+    suc = await db.taskGroups.bulkPut(data) ?? 0
+  } catch (_e: any) {
+    if (_e.name !== 'BulkError') throw _e
+    const e = _e as BulkError
+    fail = e.failures.length
+  }
+  _importResult['分组'] = { fail, suc }
+  return _importResult
+}
 
 
 // Helper for showing alert and toast notification
@@ -447,6 +481,14 @@ async function testImportSqlite(event: Event) {
             <div class="rounded text-xs overflow-auto">{{ value }}</div>
           </div>
         </template>
+
+        <h4 class="font-semibold mt-3 mb-1">任务分组:</h4>
+        <template v-if="importPreview['groups'] && (importPreview['groups'] as any[]).length > 0">
+          <div class="mb-1 flex items-center">
+            <div class=" hover:bg-gray-200 p-1 rounded text-sm font-medium"> 数量:</div>
+            <div class="rounded text-xs overflow-auto">{{ (importPreview['groups'] as any[]).length }}</div>
+          </div>
+        </template>
       </div>
       <p v-else-if="fileInput?.files?.length" class="text-sm text-gray-500 mt-2">无法预览文件中数据.</p>
 
@@ -488,7 +530,27 @@ async function testImportSqlite(event: Event) {
           </span>
         </div>
       </template>
+
+      <div class="text-lg font-semibold text-green-600 dark:text-green-400">分组:</div>
+      <template v-for="(item, key) in groupImportResult" :key="key">
+        <div class="flex items-center space-x-2">
+          <span
+            class="inline-block bg-blue-100 text-blue-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">
+            {{ key }}
+          </span>
+          <span class="font-semibold text-green-700 mr-8">成功
+            <span class="font-bold text-green-600"> {{ item.suc }}</span> 条
+          </span>
+          <span class="font-semibold text-gray-500">
+            失败 <span class="font-bold text-black">{{ item.fail }}</span> 条
+          </span>
+        </div>
+      </template>
+
+
     </div>
+
+
   </div>
 </template>
 

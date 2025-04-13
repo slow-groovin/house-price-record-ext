@@ -8,7 +8,6 @@ import { random } from "radash";
 import SimpleDrawer from "@/components/layout/SimpleDrawer.vue";
 import { useDevSetting } from "@/entrypoints/reuse/global-variables";
 import ModeSwitch from './ModeSwitch.vue'
-import { useLocalStorage } from '@vueuse/core'
 import { useMode } from '../../composables/useMode'
 
 const { isDisguise, isDebug } = useDevSetting()
@@ -55,12 +54,12 @@ const menuGroups = computed<MenuGroup[]>(() => {
     _menuGroups.push(
 
       {
-        name: '💸租房',
+        name: '租房',
         menus: [
-          { name: '小区列表📋', link: '/rent/c/task/list' },
-          { name: '房源列表📋', link: '/rent/h/task/list' },
-          { name: '价格变更✏️', link: '/rent/h/task/price/change' },
-          { name: '状态变更✏️', link: '/rent/h/task/status/change' },
+          { name: '📋小区列表', link: '/rent/c/task/list' },
+          { name: '📋房源列表', link: '/rent/h/task/list' },
+          { name: '价格变更', link: '/rent/h/task/price/change' },
+          { name: '状态变更', link: '/rent/h/task/status/change' },
         ]
       }
     )
@@ -68,10 +67,9 @@ const menuGroups = computed<MenuGroup[]>(() => {
 
   _menuGroups.push(
     {
-      emoji: '🗂️',
       name: '',
       menus: [
-        { name: '任务分组', link: '/group/list' },
+        { name: '📦任务分组', link: '/group/list' },
       ]
     },
     {

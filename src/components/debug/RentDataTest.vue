@@ -117,6 +117,7 @@ async function migrateFakeDataFromSell() {
       await dao.insertHouse({
         rid: h.hid,
         cid: h.cid,
+        city: h.city,
         name: h.name,
         area: h.area,
         status: h.status,

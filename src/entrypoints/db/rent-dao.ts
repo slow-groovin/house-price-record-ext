@@ -665,18 +665,19 @@ export class RentDao {
       countBuilder = countBuilder.where(condition, `%${query.hidInclude}%`);
     }
 
+    if (query?.newValue) {
+      const condition = "newValue = ?";
+      builder = builder.where(condition, query.newValue);
+      countBuilder = countBuilder.where(condition, query.newValue);
+    }
+    if (query?.oldValue) {
+      const condition = "oldValue = ?";
+      builder = builder.where(condition, query.oldValue);
+      countBuilder = countBuilder.where(condition, query.oldValue);
+    }
+
     // Apply type-specific filters (price or status)
     if (type === "price") {
-      if (query?.newValue) {
-        const condition = "newValue = ?";
-        builder = builder.where(condition, query.newValue);
-        countBuilder = countBuilder.where(condition, query.newValue);
-      }
-      if (query?.oldValue) {
-        const condition = "oldValue = ?";
-        builder = builder.where(condition, query.oldValue);
-        countBuilder = countBuilder.where(condition, query.oldValue);
-      }
       if (query?.newValueMax) {
         const condition = "newValue < ?";
         builder = builder.where(condition, query.newValueMax);

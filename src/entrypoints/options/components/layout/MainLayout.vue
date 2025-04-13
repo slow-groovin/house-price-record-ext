@@ -19,7 +19,7 @@ const _name = isDisguise ? 'Open Search' : name
     <!--    header 位置-->
     <HeaderNav :title="_name" :version="version" :links="[{ text: 'about', href: '/options.html#/doc?q=about' }]">
       <template #logo>
-        <img alt="logo" src="/icon/24.png" />
+        <img alt="logo" src="/icon/24.png" class="contrast-200 brightness-200" />
       </template>
       <template #navigation>
         <div class="flex flex-nowrap gap-4 text-white">

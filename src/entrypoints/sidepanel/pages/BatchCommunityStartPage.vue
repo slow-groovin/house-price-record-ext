@@ -40,9 +40,9 @@ const isFinished = ref(false)
 const pausedContext = ref<JobContext>()
 const pausedError = ref<PauseError>()
 
-const interval = useLocalStorage('batch-community-setting-interval', 500)
-const retryTime = useLocalStorage('batch-community-setting-retryTime', 5)
-const maxConcurrent = useLocalStorage('batch-community-setting-maxConcurrent', 5)
+const interval = useLocalStorage('batch-community-setting-interval', 1000)
+const retryTime = useLocalStorage('batch-community-setting-retryTime', 1)
+const maxConcurrent = useLocalStorage('batch-community-setting-maxConcurrent', 3)
 
 const DEFAULT_SETTING = {
   interval: 1000,

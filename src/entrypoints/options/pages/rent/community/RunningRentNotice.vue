@@ -9,6 +9,7 @@ import { genCommunityPageUrl } from "@/utils/lj-url";
 import { ref } from 'vue'
 import { useExtTitle } from "@/composables/useExtInfo";
 import QuickLoginDesc from "../../../components/description/QuickLoginDesc.vue";
+import Code from "@/components/information/Code.vue";
 useExtTitle('运行前确认 | 批量运行小区任务')
 
 const lastRunningTask = ref<CommunityTask>()
@@ -24,30 +25,28 @@ queryOne()
     <div class="flex flex-wrap gap-4">
       <div class="p-2 border rounded w-fit ">
         <h1 class="text-2xl font-bold border-b">运行前确认</h1>
-        <InfoHover>
-          <template #trigger>
-            <span class="bg-gray-200 border inline-flex  items-center">
-              登录beike(避免频繁拒绝访问/出现验证码导致失败)
-              <Icon icon="icon-park-outline:point" />
-            </span>
-          </template>
-          <template #default>
-            <img src="/desc/sell.1.login.webp" alt="" class="max-w-[900px]">
-          </template>
-        </InfoHover>
+        登录beike(避免频繁拒绝访问/出现验证码导致失败)
 
 
       </div>
       <div class="p-2 border rounded w-fit">
         <h1 class="text-2xl font-bold border-b">任务运行说明</h1>
-        <ol class="pl-4 list-decimal flex flex-col gap-4">
+        <ol class="pl-4 mb-4 list-decimal flex flex-col gap-4">
           <li>点击侧边栏的"START"按钮, 开始批量运行任务</li>
           <li>标签页会依次自动打开, 自动记录信息后自动关闭页面</li>
           <li>全部运行完毕后,
             在结果页面进行<span class="text-green-500 font-bold">确认</span>数据才会存入浏览器数据库
           </li>
-        </ol>
 
+        </ol>
+        <InfoHover>
+          <template #trigger>
+            <Code>运行过程示例</Code>
+          </template>
+          <template #default>
+            <img src="/desc/rent.3.run-task.webp">
+          </template>
+        </InfoHover>
       </div>
     </div>
 

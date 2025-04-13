@@ -1,5 +1,5 @@
-export const isDisguise = import.meta.env.MODE === "development" && false;
-export const isDebug = import.meta.env.MODE === "development" && false;
+export const isDisguise = import.meta.env.MODE === "development" && true;
+export const isDebug = import.meta.env.MODE === "development" && true;
 export function useDevSetting() {
   return { isDisguise, isDebug };
 }
@@ -9,12 +9,15 @@ export const curVersionChangeLog = `
 
 **2025-04-06**
 
-1. 新增: 租房✨
-2. 小区列表导出选中记录到csv
-3. 切换筛选条件后如果当前页没有数据自动跳转到第一页
-4. 增加公共反馈入口
-5. 功能变更: 之前的分组弃用, 新的分组可以包含不同类型的任务
-6. 若干交互体验优化
+1. 新增: 租房 🆕
+2. 新增: 运行二手房小区任务增加成交信息
+3. 小区列表导出选中记录到 csv
+4. 切换筛选条件后如果当前页没有数据自动跳转到第一页
+5. 增加公共反馈入口
+6. 功能变更: 之前的分组弃用, 新的分组可以包含不同类型的任务
+7. 若干交互体验优化
+
+(更新后的首次运行, 显示的统计数据中近期(当前周)成交数量可能比实际的数量更多)
 `;
 export const historyChangeLog = `
 ## 1.0.4

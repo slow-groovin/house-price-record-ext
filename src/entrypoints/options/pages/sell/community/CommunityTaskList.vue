@@ -19,7 +19,7 @@ import {
   VisibilityState,
 } from '@tanstack/vue-table'
 import { db } from "@/entrypoints/db/Dexie";
-import { CommunityTask } from "@/types/lj";
+import { CommunityTask, HouseTaskStatus } from "@/types/lj";
 import PaginationComponent from "@/entrypoints/options/components/PaginationComponent.vue";
 import { valueUpdater } from "@/utils/shadcn-utils";
 import { calcOffset, PageState } from "@/utils/table-utils";
@@ -125,6 +125,7 @@ type RelatedData = {
   priceDownCount?: number,
   addedCount?: number,
   removedCount?: number,
+  soldCount?: number
 }
 const data = ref<CommunityTask[]>([])
 const rowCount = ref(0)
@@ -226,6 +227,7 @@ async function queryRelatedData(communityData: typeof data.value) {
       relatedData.value[cid].removedCount = lastTwoRecords[0].removedItem?.length
       relatedData.value[cid].priceUpCount = lastTwoRecords[0].priceUpList?.length
       relatedData.value[cid].priceDownCount = lastTwoRecords[0].priceDownList?.length
+      relatedData.value[cid].soldCount = await db.houseStatusChanges.where('at').equals(lastTwoRecords[0].at).filter(item => item.newValue === HouseTaskStatus.sold && item.cid === cid).count()
     }
     if (lastTwoRecords[0] && lastTwoRecords[1]) {
       relatedData.value[cid].totalPriceChange = tryMinusOrUndefined(lastTwoRecords[0]?.avgTotalPrice, lastTwoRecords[1]?.avgTotalPrice)
@@ -301,7 +303,7 @@ const columnDef: (ColumnDef<CommunityTask>)[] = [
     accessorFn: (originalRow, index) => {
       return relatedData.value[originalRow.cid]?.priceUpCount
     },
-    cell: ({ cell }) => <div class='text-red-500 font-bold'>{cell.getValue()}</div>
+    cell: ({ cell }) => <div class='text-red-500 font-bold text-lg'>{cell.getValue()}</div>
   },
   {
     accessorKey: 'cid',
@@ -310,7 +312,7 @@ const columnDef: (ColumnDef<CommunityTask>)[] = [
     accessorFn: (originalRow, index) => {
       return relatedData.value[originalRow.cid]?.priceDownCount
     },
-    cell: ({ cell }) => <div class='text-green-500 font-bold'>{cell.getValue()}</div>
+    cell: ({ cell }) => <div class='text-green-400 font-bold text-lg'>{cell.getValue()}</div>
   },
   {
     accessorKey: 'cid',
@@ -319,7 +321,7 @@ const columnDef: (ColumnDef<CommunityTask>)[] = [
     accessorFn: (originalRow, index) => {
       return relatedData.value[originalRow.cid]?.addedCount
     },
-    cell: ({ cell }) => <div class='text-blue-500 font-bold'>{cell.getValue()}</div>
+    cell: ({ cell }) => <div class='text-green-600 font-bold text-lg'>{cell.getValue()}</div>
   },
   {
     accessorKey: 'cid',
@@ -328,16 +330,16 @@ const columnDef: (ColumnDef<CommunityTask>)[] = [
     accessorFn: (originalRow, index) => {
       return relatedData.value[originalRow.cid]?.removedCount
     },
-    cell: ({ cell }) => <div class='text-neutral-500 font-bold'>{cell.getValue()}</div>
+    cell: ({ cell }) => <div class='text-yellow-500 font-bold text-lg'>{cell.getValue()}</div>
   },
-  { accessorKey: 'visitCountIn90Days', header: '过去90天带看数', id: '过去90天带看数' },
-  { accessorKey: 'doneCountIn90Days', header: '过去90天成交量', id: '过去90天成交量' },
-  { accessorKey: 'runningCount', header: '运行次数', id: '运行次数' },
   {
-    accessorKey: 'createdAt',
-    header: '创建时间',
-    id: '创建时间',
-    cell: ({ cell }) => <TwoLineAt at={cell.getValue() as number} />
+    accessorKey: 'cid',
+    header: '近期成交🤝',
+    id: '近期成交',
+    accessorFn: (originalRow, index) => {
+      return relatedData.value[originalRow.cid]?.soldCount
+    },
+    cell: ({ cell }) => <div class='text-blue-500 font-bold text-lg'>{cell.getValue()}</div>
   },
   {
     accessorKey: 'lastRunningAt',
@@ -345,6 +347,17 @@ const columnDef: (ColumnDef<CommunityTask>)[] = [
     id: '最后运行时间',
     cell: ({ cell }) => <TwoLineAt at={cell.getValue() as number} />
   },
+  {
+    accessorKey: 'createdAt',
+    header: '创建时间',
+    id: '创建时间',
+    cell: ({ cell }) => <TwoLineAt at={cell.getValue() as number} />
+  },
+
+  { accessorKey: 'visitCountIn90Days', header: '过去90天带看数', id: '过去90天带看数' },
+  { accessorKey: 'doneCountIn90Days', header: '过去90天成交量', id: '过去90天成交量' },
+  { accessorKey: 'runningCount', header: '运行次数', id: '运行次数' },
+
 ]
 /*
 column END

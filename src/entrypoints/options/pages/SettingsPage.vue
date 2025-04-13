@@ -30,7 +30,7 @@
     </div>
     <div class="flex flex-col">
       <Switch v-model:checked="settings.autoRunHouseTask" class="text-right" />
-      <span class="text-sm text-gray-500">每次打开房源页面时自动运行任务更新信息</span>
+      <span class="text-sm text-gray-500">每次打开房源页面时自动运行任务更新信息(仅二手房)</span>
     </div>
 
 

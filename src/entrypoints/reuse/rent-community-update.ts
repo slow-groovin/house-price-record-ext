@@ -21,7 +21,7 @@ export async function updateBatchRentCommunityWithPreview(
 ) {
   if (!preview) {
     alert("没有数据!");
-    return ;
+    return;
   }
 
   for (let record of preview.records) {
@@ -31,8 +31,8 @@ export async function updateBatchRentCommunityWithPreview(
     await updateOneRentCommunityWithRecord(record);
     await sqliteDb.run("COMMIT;");
   }
-  // await db.tempBatchCommunity.delete(preview.tempListId);
-  // await db.tempCommunityUpdatePreview.delete(preview.batchId);
+  await db.tempBatchCommunity.delete(preview.tempListId);
+  await db.tempCommunityUpdatePreview.delete(preview.batchId);
 }
 
 /**

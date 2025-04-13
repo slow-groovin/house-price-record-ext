@@ -32,6 +32,7 @@ import { boil, group } from "radash";
 import { HTMLAttributes, onMounted, ref, watch, Component } from "vue";
 import PriceWithTime from "./PriceWithTime.vue";
 import { RentHouseDetailUrl } from "@/utils/url-component";
+import { HouseTaskStatus } from "@/types/lj";
 
 
 type RelatedData = {
@@ -160,6 +161,13 @@ const columnDef: (ColumnDef<RentHouse>)[] = [
     header: '价格(元/月)',
     id: '价格',
     cell: ({ cell, row }) => cell.getValue() + ''
+  },
+
+  {
+    accessorKey: "area",
+    header: '面积',
+    id: '面积',
+    cell: ({ cell, row }) => cell.getValue() + '㎡'
   },
   {
     accessorKey: "price", header: '单价(元/月/㎡)', id: '单价',
@@ -378,7 +386,7 @@ onMounted(() => {
 <template>
   <div :class="cn(_class)">
     <div class="flex gap-2 items-center">
-      <StatusDesc />
+      <StatusDesc :exclude="[HouseTaskStatus.sold]" />
       <ColumnVisibleOption :columns="table.getAllColumns()" />
       <div class="flex">
       </div>

@@ -22,6 +22,8 @@ import {
 } from '@tanstack/vue-table';
 import { onMounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
+import GroupRunButton from "./GroupRunButton.vue";
+import { goRunGroupTask } from "@/entrypoints/reuse/group-control";
 
 
 /*
@@ -114,15 +116,21 @@ const columnDef: (ColumnDef<TaskGroup2>)[] = [
     }
   },
   {
-    header: '操作',
-    id: '操作',
+    header: '查看',
+    id: '查看',
     cell: ({ cell, row }) => <div class="flex gap-2 items-center">
       <a href={detailUrl(row.getValue('id'))} class="link" target="_blank">查看</a>
-      <button onClick={() => emit('onRunGroup', row.index)}
-        class="flex items-center border rounded gap-0 p-0.5 text-sm bg-green-500 text-white hover:outline  outline-neutral-300 cursor-pointer">
-        <Icon icon="solar:play-bold" class="w-4 h-4" />运行
-      </button>
 
+
+
+    </div>,
+    enableSorting: false,
+  },
+  {
+    header: '运行',
+    id: '运行',
+    cell: ({ cell, row }) => <div class="flex gap-2 items-center">
+      <GroupRunButton group={row.original} />
     </div>,
     enableSorting: false,
   },

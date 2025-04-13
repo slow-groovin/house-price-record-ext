@@ -66,7 +66,7 @@ onMounted(() => {
   </div>
   <div v-else>
     <h1 class="font-bold my-4 mx-2 text-2xl flex items-center">
-      🗂️任务组详情
+      📦任务组详情
       <span class="ml-8 text-green-500">{{ data.name }}</span>
     </h1>
 

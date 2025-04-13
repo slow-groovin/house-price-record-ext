@@ -42,14 +42,14 @@ const isFinished = ref(false)
 const pausedContext = ref<JobContext>()
 const pausedError = ref<PauseError>()
 
-const interval = useLocalStorage('batch-rent-community-setting-interval', 500)
+const interval = useLocalStorage('batch-rent-community-setting-interval', 2500)
 const retryTime = useLocalStorage('batch-rent-community-setting-retryTime', 5)
-const maxConcurrent = useLocalStorage('batch-rent-community-setting-maxConcurrent', 5)
+const maxConcurrent = useLocalStorage('batch-rent-community-setting-maxConcurrent', 1)
 
 const DEFAULT_SETTING = {
-  interval: 1000,
-  retryTime: 1,
-  maxConcurrent: 3
+  interval: 2500,
+  retryTime: 5,
+  maxConcurrent: 1
 }
 
 function resetSetting() {

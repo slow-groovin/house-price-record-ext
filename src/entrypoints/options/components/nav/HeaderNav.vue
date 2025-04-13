@@ -5,8 +5,9 @@
         <slot name="logo" />
 
         <h1 class="text-white text-xl font-medium"> <a href="/options.html#/">{{ title }}</a></h1>
+        <span class="text-gray-100 text-sm self-end">v{{ version }}</span>
+
       </div>
-      <span class="text-gray-400 text-sm">v{{ version }}</span>
     </div>
 
 

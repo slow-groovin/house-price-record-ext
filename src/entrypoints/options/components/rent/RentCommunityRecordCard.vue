@@ -11,7 +11,7 @@ const { record } = defineProps<{ record: RentCommunityRecord }>()
 
   <div class="flex flex-col gap-1 border p-1">
     <div class="flex flex-row justify-between gap-3">
-      <a :href="'/options.html#/c/task/detail?id=' + record.cid" target="_blank"
+      <a :href="'/options.html#/rent/c/task/detail?id=' + record.cid" target="_blank"
         class="text-green-500 underline">{{ record.cid }}</a>
       <span>
         <label class="text-neutral-600 font-light">城市:</label>

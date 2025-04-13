@@ -4,6 +4,7 @@
 import SimpleTabsContainer from "@/components/layout/SimpleTabsContainer.vue";
 import { Button } from "@/components/ui/button";
 import { db } from "@/entrypoints/db/Dexie";
+import GroupRunButton from "@/entrypoints/options/components/GroupRunButton.vue";
 import { goRunGroupTask } from "@/entrypoints/reuse/group-control";
 import { calcGroupSize, TaskGroup2 } from "@/types/group";
 import { sendMessage } from "@@/messaging";
@@ -56,16 +57,15 @@ onMounted(() => {
         </template>
         <template #group>
           <div class="w-fit">
-            <h2 class="text-xl font-bold text-neutral-500">🟢一键运行任务分组:</h2>
+            <h2 class="text-xl font-bold text-neutral-500">📦一键运行任务分组:</h2>
             <div v-if="groups.length" class="mt-8">
-              <h3 class="font-bold text-neutral-500">任务组:</h3>
-              <div class="flex flex-wrap gap-2">
+              <!-- <h3 class="font-bold text-neutral-500">任务组:</h3> -->
+              <div class="flex flex-col gap-2">
                 <template v-for="(cGroup, index) in groups" :key="index">
-                  <Button @click="goRunGroupTask(toRaw(cGroup))" :disabled="calcGroupSize(cGroup) === 0"
-                    variant="outline" class="border-2 border-green-500">
-                    <Icon icon="solar:play-bold" class="w-4 h-4" />
-                    {{ cGroup.name }} ({{ calcGroupSize(cGroup) }}个)
-                  </Button>
+                  <div class="border rounded-lg p-1">
+                    <div class="text-primary font-bold">{{ cGroup.name }}:</div>
+                    <GroupRunButton :group="toRaw(cGroup)" />
+                  </div>
                 </template>
               </div>
             </div>

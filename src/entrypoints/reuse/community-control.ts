@@ -153,11 +153,10 @@ export async function crawlOneCommunitySoldListPages(input: {
    * 全部所需的成交记录, 所有日期>lastRunningAt 的
    */
   let items: HouseSoldItem[] = [];
-  let itemsOfOnePage: HouseSoldItem[] = [];
   let page = 1;
 
   while (true) {
-    itemsOfOnePage = await visitPage(page);
+    let itemsOfOnePage = await visitPage(page);
     items.push(...itemsOfOnePage);
     if (
       !itemsOfOnePage.length ||

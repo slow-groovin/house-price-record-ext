@@ -101,7 +101,7 @@ async function updateOneCommunityWithRecord(record: CommunityRecord) {
 
   // record 入库
   record.houseList = record.houseList.map(({ price, hid }) => ({ hid, price }));
-  delete record["soldItem"];
+  delete record["soldItem"]; //由于soldItem没有和list同步的状态, 所以直接删除不记录
   const insertId = await db.communityRecords.add(record);
   console.log("[execManualRunCrawlOne]record insertId:", insertId);
 
@@ -224,6 +224,12 @@ async function updateAddedRemovedSoldItems(
   at: number
 ) {
   const soldItemIds = new Set(soldItem.map((i) => i.hid));
+  // 使用 reduce 转换为以 id 为键的 Map
+  const soldItemMap = soldItem.reduce((acc, item) => {
+    acc[item.hid] = item;
+    return acc;
+  }, {} as Record<string, HouseSoldItem>);
+
   for (let item of removedItem) {
     const task = await db.houseTasks.where("hid").equals(item.hid).first();
     let newStatus = soldItemIds.has(item.hid)
@@ -283,6 +289,7 @@ async function updateAddedRemovedSoldItems(
     await db.houseTasks.update(task.id, {
       status: HouseTaskStatus.sold,
       lastRunningAt: at,
+      soldDate: new Date(soldItemMap[task.hid].soldAt).toLocaleDateString(),
     });
   }
 }

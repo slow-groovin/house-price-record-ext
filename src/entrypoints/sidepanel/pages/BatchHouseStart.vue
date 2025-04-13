@@ -38,8 +38,8 @@ const isFinished = ref(false)
 const pausedContext = ref<JobContext>()
 const pausedError = ref<PauseError>()
 
-const interval = useLocalStorage('batch-house-setting-interval', 500)
-const retryTime = useLocalStorage('batch-house-setting-retryTime', 5)
+const interval = useLocalStorage('batch-house-setting-interval', 1000)
+const retryTime = useLocalStorage('batch-house-setting-retryTime', 2)
 const maxConcurrent = useLocalStorage('batch-house-setting-maxConcurrent', 5)
 
 const DEFAULT_SETTING = {

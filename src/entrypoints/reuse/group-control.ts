@@ -1,39 +1,42 @@
-import { TaskGroup2 } from "@/types/group";
+import { GroupIdType, TaskGroup2 } from "@/types/group";
 import { db } from "../db/Dexie";
 import { KeRentDao } from "../db/rent-dao";
 import { goRunCommunityTasksStartPage } from "./community-control";
 import { goRunHouseTasksStartPage } from "./house-control2";
 import { goRunRentCommunityTasksStartPage } from "./rent-community-control";
-import { sleep } from "radash";
 
-export async function goRunGroupTask(group: TaskGroup2) {
+export async function goRunGroupTask(group: TaskGroup2, type: GroupIdType) {
   if (!group) {
+    console.warn("group is null");
     return;
   }
-  const ljSellCidList = group.ljSellCidList;
-  if (ljSellCidList.length) {
-    const ljSellCommunityList = await db.communityTasks
-      .where("cid")
-      .anyOf(ljSellCidList)
-      .toArray();
-    await goRunCommunityTasksStartPage(ljSellCommunityList);
+  if (type === "ljSellCid") {
+    const ljSellCidList = group.ljSellCidList;
+    if (ljSellCidList.length) {
+      const ljSellCommunityList = await db.communityTasks
+        .where("cid")
+        .anyOf(ljSellCidList)
+        .toArray();
+      await goRunCommunityTasksStartPage(ljSellCommunityList);
+    }
   }
 
-  const ljSellHidList = group.ljSellHidList;
-  if (ljSellHidList.length) {
-    await sleep(5000);
-    await goRunHouseTasksStartPage(ljSellHidList);
+  if (type === "ljSellHid") {
+    const ljSellHidList = group.ljSellHidList;
+    if (ljSellHidList.length) {
+      await goRunHouseTasksStartPage(ljSellHidList);
+    }
   }
 
-  const keRentCidList = group.keRentCidList;
-  if (keRentCidList.length) {
-    await sleep(5000);
-    const keRentCommunityList = await KeRentDao().findCommunitiesByCids(
-      keRentCidList
-    );
-    await goRunRentCommunityTasksStartPage(keRentCommunityList);
+  if (type === "keRentCid") {
+    const keRentCidList = group.keRentCidList;
+    if (keRentCidList.length) {
+      const keRentCommunityList = await KeRentDao().findCommunitiesByCids(
+        keRentCidList
+      );
+      await goRunRentCommunityTasksStartPage(keRentCommunityList);
+    }
   }
-
   db.taskGroups.update(group.id, {
     lastRunningAt: Date.now(),
   });

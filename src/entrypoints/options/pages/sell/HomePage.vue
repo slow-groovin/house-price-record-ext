@@ -5,7 +5,7 @@ import { formatDistanceToNow, startOfWeek } from 'date-fns'
 import { getIndexedDBUsage } from "@/utils/browser";
 import { zhCN } from "date-fns/locale/zh-CN";
 import { useExtInfo, useExtTitle } from "@/composables/useExtInfo";
-import { Archive, Building2, EyeOffIcon, HardDrive, HouseIcon, ShoppingCartIcon, TrendingDownIcon, TrendingUpIcon } from 'lucide-vue-next'
+import { Archive, Building2, EyeOffIcon, HandshakeIcon, HardDrive, HouseIcon, ShoppingCartIcon, TrendingDownIcon, TrendingUpIcon } from 'lucide-vue-next'
 import { browser } from "wxt/browser";
 import { ljMetricRules } from "@/entrypoints/reuse/block";
 import InfoHover from "@/components/information/InfoHover.vue";
@@ -33,6 +33,7 @@ const thisWeekCount = reactive({
   // sChangeCount: 0,
   sAddedCount: 0,
   sRemovedCount: 0,
+  sSoldCount: 0,
   cRecordCount: 0,
 })
 const enableRulesCount = ref(0)
@@ -62,7 +63,9 @@ async function queryOverviewData() {
 
   // thisWeekCount.sChangeCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).count()
   thisWeekCount.sAddedCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).and(item => item.newValue === HouseTaskStatus.running).count()
-  thisWeekCount.sRemovedCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).and(item => item.newValue === HouseTaskStatus.miss || item.newValue === HouseTaskStatus.sold).count()
+  //下架数量
+  thisWeekCount.sRemovedCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).and(item => item.newValue === HouseTaskStatus.miss).count()
+  thisWeekCount.sSoldCount = await db.houseStatusChanges.where('at').above(weekStartAt.value).and(item => item.newValue === HouseTaskStatus.sold).count()
   thisWeekCount.cRecordCount = await db.communityRecords.where('at').above(weekStartAt.value).count()
 }
 
@@ -118,12 +121,21 @@ const display = {
     postfix: '条'
   },
   sRemovedCount: {
-    label: '房源下架/成交记录',
+    label: '房源下架记录',
     icon: EyeOffIcon,
     color: 'gray',
     link: '/options.html#/h/task/status/change',
     postfix: '条'
   },
+  sSoldCount: {
+    label: '房源成交记录',
+    icon: HandshakeIcon,
+    color: 'blue',
+    link: '/options.html#/h/task/status/change',
+    postfix: '条'
+  },
+
+
 
   cRecordCount: { label: '小区运行记录', icon: Archive, color: 'purple', link: '#', postfix: '个' },
 }
