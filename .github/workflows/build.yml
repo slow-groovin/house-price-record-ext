@@ -1,12 +1,13 @@
 name: Release
 
 on:
-    
   push:
     tags:
       - "*"
-  
-permissions: 
+    branches:
+      - "dev"
+
+permissions:
   contents: write
 jobs:
   submit:
@@ -14,24 +15,16 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
-
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-  
+      - uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: npm install
-        
+        run: bun install
 
       - name: Zip extensions
         run: |
-          npm run zip
-          npm run zip:edge
-        
-  
+          bun run zip
+          bun run zip:edge
+
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
@@ -40,4 +33,3 @@ jobs:
           files: |
             .output/*-chrome.zip
             .output/*-edge.zip
-
