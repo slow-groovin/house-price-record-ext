@@ -5,6 +5,13 @@ export function useDevSetting() {
 }
 
 export const curVersionChangeLog = `
+## 1.1.1
+
+**2025-04-30**
+修复导入租房数据时错误
+`;
+export const historyChangeLog = `
+
 ## 1.1.0
 
 **2025-04-06**
@@ -18,8 +25,8 @@ export const curVersionChangeLog = `
 7. 若干交互体验优化
 
 (更新后的首次运行, 显示的统计数据中近期(当前周)成交数量可能比实际的数量更多)
-`;
-export const historyChangeLog = `
+
+
 ## 1.0.4
 **2025-03-09**
 
