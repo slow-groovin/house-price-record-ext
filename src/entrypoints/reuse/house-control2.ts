@@ -82,7 +82,7 @@ export async function oneHouseEntry(
     if (isHouseSoldPage(fetchRs.url)) {
       //sold
       console.log(LOG_PREFIX, "house sold");
-      return await openTabAndRun({ url }, async (tab) => {
+      return await openTabAndRun({ url, active: false }, async (tab) => {
         return handleSoldPage(tab.id as number, task);
       });
     }
@@ -94,7 +94,7 @@ export async function oneHouseEntry(
     // normal, still running
     console.log(LOG_PREFIX, "house status is normal ");
 
-    return await openTabAndRun({ url }, async (tab) => {
+    return await openTabAndRun({ url, active: false }, async (tab) => {
       return handleNormalPage(tab.id as number, task);
     });
   }

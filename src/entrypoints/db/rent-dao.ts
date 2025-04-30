@@ -202,9 +202,8 @@ export class RentDao {
     const sqliteDb = await getDb();
     // squel doesn't directly support 'SET runningCount = runningCount + 1' easily across DBs
     // Using raw SQL for this specific update remains the simplest approach here.
-    const sql = `UPDATE ${
-      this.#tableName.community
-    } SET runningCount = runningCount + 1, lastRunningAt = ? WHERE cid = ?`;
+    const sql = `UPDATE ${this.#tableName.community
+      } SET runningCount = runningCount + 1, lastRunningAt = ? WHERE cid = ?`;
     logger.log("sql", sql, [at, cid]);
     const rs = await sqliteDb.run(sql, [at, cid]);
     return rs;
@@ -818,7 +817,6 @@ export class RentDao {
   async importAll(data: Awaited<ReturnType<typeof this.exportAll>>) {
     const sqliteDb = await getDb();
     const { communities, houses, priceChanges, records, statusChanges } = data;
-    await sqliteDb.run("BEGIN TRANSACTION");
     const sql1 = squel
       .insert()
       .into(this.#tableName.community)
@@ -854,12 +852,42 @@ export class RentDao {
       .onConflict()
       .returning("id")
       .toString();
-    const rs1 = (await sqliteDb.run(sql1)).length;
-    const rs2 = (await sqliteDb.run(sql2)).length;
-    const rs3 = (await sqliteDb.run(sql3)).length;
-    const rs4 = (await sqliteDb.run(sql4)).length;
-    const rs5 = (await sqliteDb.run(sql5)).length;
-    await sqliteDb.run("COMMIT;");
+
+    let rs1 = 0, rs2 = 0, rs3 = 3, rs4 = 0, rs5 = 0
+    if (communities.length) {
+      await sqliteDb.run("BEGIN TRANSACTION");
+      rs1 = (await sqliteDb.run(sql1)).length;
+      console.log('import communities suc.')
+      await sqliteDb.run('COMMIT;')
+    }
+
+    if (houses.length) {
+      await sqliteDb.run("BEGIN TRANSACTION");
+      rs2 = (await sqliteDb.run(sql2)).length;
+      console.log('import houses suc.')
+      await sqliteDb.run('COMMIT;')
+    }
+
+    if (records.length) {
+      await sqliteDb.run("BEGIN TRANSACTION");
+      rs3 = (await sqliteDb.run(sql3)).length;
+      console.log('import records suc.')
+      await sqliteDb.run('COMMIT;')
+    }
+
+    if (priceChanges.length) {
+      await sqliteDb.run("BEGIN TRANSACTION");
+      rs4 = (await sqliteDb.run(sql4)).length;
+      console.log('import price changes suc.')
+      await sqliteDb.run('COMMIT;')
+    }
+
+    if (statusChanges.length) {
+      await sqliteDb.run("BEGIN TRANSACTION");
+      rs5 = (await sqliteDb.run(sql5)).length;
+      console.log('import status changes suc.')
+      await sqliteDb.run('COMMIT;')
+    }
 
     return [rs1, rs2, rs3, rs4, rs5];
   }
