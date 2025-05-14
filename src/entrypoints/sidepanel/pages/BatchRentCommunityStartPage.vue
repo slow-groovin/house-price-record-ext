@@ -1,26 +1,22 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { Button } from "@/components/ui/button";
-import { useRoute } from "vue-router";
-import { db } from "@/entrypoints/db/Dexie";
-import { toInt, uid } from "radash";
-import { goSidePanelHome, openUrlForHid } from "@/entrypoints/sidepanel/pages/reuse";
-import { BatchQueueExecutor, Job, JobContext, PauseError } from "@/utils/lib/BatchQueueExecutor";
-import { oneCommunityEntry } from "@/entrypoints/reuse/community-control"
-import { useLocalStorage } from "@vueuse/core";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Icon } from "@iconify/vue";
+import InfoHover from "@/components/information/InfoHover.vue";
 import BatchJobRunningStatusBar from "@/components/lj/BatchJobRunningStatusBar.vue";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CommunityUpdatePreview } from "@/types/LjUpdatePreview";
-import { CommunityTask } from "@/types/lj";
-import { browser } from "wxt/browser";
-import { removeRepeat } from "@/utils/array";
-import InfoHover from "@/components/information/InfoHover.vue";
-import { EyeIcon } from "lucide-vue-next";
-import { RentCommunityTask, RentCommunityUpdatePreview } from "@/types/rent";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { db } from "@/entrypoints/db/Dexie";
 import { oneRentCommunityEntry } from "@/entrypoints/reuse/rent-community-control";
+import { goSidePanelHome, openUrlForHid } from "@/entrypoints/sidepanel/pages/reuse";
+import { CommunityTask } from "@/types/lj";
+import { RentCommunityTask, RentCommunityUpdatePreview } from "@/types/rent";
+import { BatchQueueExecutor, Job, JobContext, PauseError } from "@/utils/lib/BatchQueueExecutor";
+import { Icon } from "@iconify/vue";
+import { useLocalStorage } from "@vueuse/core";
+import { EyeIcon } from "lucide-vue-next";
+import { toInt, uid } from "radash";
+import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import { browser } from "wxt/browser";
 
 
 const { query: { id } } = useRoute()
@@ -77,7 +73,7 @@ let preview: RentCommunityUpdatePreview = {
 function* jobIter(): IterableIterator<Job> {
   for (let community of communityList.value as CommunityTask[]) {
     yield {
-      promiseGetter: () => oneRentCommunityEntry(community).then(rs => {
+      promiseGetter: () => oneRentCommunityEntry(community, { interval: interval.value }).then(rs => {
         preview.records.push(rs)
       }),
       context: {

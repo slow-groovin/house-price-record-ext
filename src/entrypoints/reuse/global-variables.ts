@@ -1,4 +1,4 @@
-export const isDisguise = import.meta.env.MODE === "development" && true;
+export const isDisguise = import.meta.env.MODE === "development" && false;
 export const isDebug = import.meta.env.MODE === "development" && true;
 export function useDevSetting() {
   return { isDisguise, isDebug };
@@ -7,8 +7,11 @@ export function useDevSetting() {
 export const curVersionChangeLog = `
 ## 1.1.1
 
-**2025-04-30**
-修复导入租房数据时错误
+**2025-05-14**
+
+1. 修复导入租房数据时错误
+2. 导入逻辑从 insert on conflict do nothing 改为 upsert
+3. 任务设置界面的 interval 现在会应用到 community 中的多个页面
 `;
 export const historyChangeLog = `
 

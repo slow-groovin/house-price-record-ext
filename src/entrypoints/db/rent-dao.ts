@@ -821,37 +821,37 @@ export class RentDao {
       .insert()
       .into(this.#tableName.community)
       .setFieldsRows(communities)
-      .onConflict()
       .returning("cid")
-      .toString();
+      .toString()
+      .replace("INSERT INTO", "INSERT OR REPLACE INTO");
     const sql2 = squel
       .insert()
       .into(this.#tableName.house)
       .setFieldsRows(houses)
-      .onConflict()
       .returning("rid")
-      .toString();
+      .toString()
+      .replace("INSERT INTO", "INSERT OR REPLACE INTO");
     const sql3 = squel
       .insert()
       .into(this.#tableName.record)
       .setFieldsRows(records)
-      .onConflict()
       .returning("id")
-      .toString();
+      .toString()
+      .replace("INSERT INTO", "INSERT OR REPLACE INTO");
     const sql4 = squel
       .insert()
       .into(this.#tableName.price_change)
       .setFieldsRows(priceChanges)
-      .onConflict()
       .returning("id")
-      .toString();
+      .toString()
+      .replace("INSERT INTO", "INSERT OR REPLACE INTO");
     const sql5 = squel
       .insert()
       .into(this.#tableName.status_change)
       .setFieldsRows(statusChanges)
-      .onConflict()
       .returning("id")
-      .toString();
+      .toString()
+      .replace("INSERT INTO", "INSERT OR REPLACE INTO");
 
     let rs1 = 0, rs2 = 0, rs3 = 3, rs4 = 0, rs5 = 0
     if (communities.length) {

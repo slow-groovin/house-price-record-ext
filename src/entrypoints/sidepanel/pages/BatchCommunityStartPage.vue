@@ -45,7 +45,7 @@ const retryTime = useLocalStorage('batch-community-setting-retryTime', 1)
 const maxConcurrent = useLocalStorage('batch-community-setting-maxConcurrent', 3)
 
 const DEFAULT_SETTING = {
-  interval: 1000,
+  interval: 3000,
   retryTime: 1,
   maxConcurrent: 3
 }
@@ -75,7 +75,7 @@ let preview: CommunityUpdatePreview = {
 function* jobIter(): IterableIterator<Job> {
   for (let community of communityList.value as CommunityTask[]) {
     yield {
-      promiseGetter: () => oneCommunityEntry(community).then(rs => {
+      promiseGetter: () => oneCommunityEntry(community, { interval: interval.value }).then(rs => {
         //idList去重
         rs.houseList = removeRepeat(rs.houseList, item => item.hid)
 

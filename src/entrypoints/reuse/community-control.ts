@@ -8,7 +8,7 @@ import { sendMessage } from "@@/messaging";
 import { db } from "@/entrypoints/db/Dexie";
 import { stabilizeFields } from "@/utils/variable";
 import { removeRepeat } from "@/utils/array";
-import { list, retry } from "radash";
+import { list, retry, sleep } from "radash";
 import { genCommunityPageUrl, genCommunitySoldPageUrl } from "@/utils/lj-url";
 import { browser } from "wxt/browser";
 
@@ -37,9 +37,9 @@ export async function goRunCommunityTasksStartPage(
  * @param communityTask
  * @returns
  */
-export async function oneCommunityEntry(communityTask: CommunityTask) {
+export async function oneCommunityEntry(communityTask: CommunityTask, opts: { interval: number }) {
   const { cid, city, lastRunningAt } = communityTask;
-
+  const { interval } = opts
   /**
    * step 1. 获取页面页数
    */
@@ -66,13 +66,13 @@ export async function oneCommunityEntry(communityTask: CommunityTask) {
     cid: pageItem!.cid,
     city: pageItem!.city!,
     maxPage: pageItem!.maxPageNo,
-  });
+  }, opts);
   //爬取上次运行至今的所有成交记录
   oneRecord.soldItem = await crawlOneCommunitySoldListPages({
     cid,
     city: city as string,
     lastRunningAt,
-  });
+  }, opts);
   return oneRecord;
 }
 
@@ -85,9 +85,11 @@ export async function crawlOneCommunityListPages(input: {
   city: string;
   cid: string;
   maxPage: number;
-}) {
+},
+  opts: { interval: number }
+) {
   const { city, cid, maxPage } = input;
-  const promises: Promise<CommunityListPageItem>[] = [];
+  const { interval } = opts
   const urlList = list(1, maxPage).map((page) =>
     genCommunityPageUrl(city, cid, page)
   );
@@ -95,26 +97,30 @@ export async function crawlOneCommunityListPages(input: {
   const recordsOfAllPage: CommunityListPageItem[] = [];
   //依次打开所有参数中的所有url
   for (const url of urlList) {
-    const tab = await browser.tabs.create({ url, active: false });
-    console.debug("[execOneCommunity] open:", url, tab.id, tab.status);
-    let parsedPageItem: CommunityListPageItem | undefined = undefined;
+    await retry({ times: 2, delay: interval }, async () => {
 
-    //打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
-    await retry({ times: 10, delay: 1000 }, async () => {
-      parsedPageItem = await sendMessage(
-        "parseOneCommunityListOnePage",
-        undefined,
-        tab.id
+      const tab = await browser.tabs.create({ url, active: false });
+      console.debug("[execOneCommunity] open:", url, tab.id, tab.status);
+      let parsedPageItem: CommunityListPageItem | undefined = undefined;
+
+      //打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
+      await retry({ times: 10, delay: 1000 }, async () => {
+        parsedPageItem = await sendMessage(
+          "parseOneCommunityListOnePage",
+          undefined,
+          tab.id
+        );
+      });
+
+      console.debug(
+        `[execOneCommunity] one tab[${url}] record resp:`,
+        parsedPageItem
       );
-    });
+      await browser.tabs.remove([tab.id as number]);
 
-    console.debug(
-      `[execOneCommunity] one tab[${url}] record resp:`,
-      parsedPageItem
-    );
-    await browser.tabs.remove([tab.id as number]);
-
-    recordsOfAllPage.push(parsedPageItem!);
+      recordsOfAllPage.push(parsedPageItem!);
+    })
+    await sleep(interval)
   }
 
   verifyDiffPagesItem(recordsOfAllPage);
@@ -124,6 +130,8 @@ export async function crawlOneCommunityListPages(input: {
 }
 
 /**
+ * TODO: 传入间隔时间
+ * TODO: 和租房一样  ,完善重试逻辑, 优化代码
  * 访问单个小区的近期成交页面, 直到发现一个遭遇lastRunningAt的列表项为止
  * @param input
  * @returns
@@ -132,9 +140,11 @@ export async function crawlOneCommunitySoldListPages(input: {
   city: string;
   cid: string;
   lastRunningAt: number;
-}) {
+},
+  opts: { interval: number }
+) {
   const { city, cid, lastRunningAt } = input;
-
+  const { interval } = opts
   async function visitPage(pageNo: number) {
     const url = genCommunitySoldPageUrl(city, cid, pageNo);
     const tab = await browser.tabs.create({ url, active: false });
@@ -156,7 +166,11 @@ export async function crawlOneCommunitySoldListPages(input: {
   let page = 1;
 
   while (true) {
-    let itemsOfOnePage = await visitPage(page);
+    let itemsOfOnePage: HouseSoldItem[] = []
+    await retry({ times: 2, delay: interval }, async () => {
+      itemsOfOnePage = await visitPage(page);
+    })
+      .catch()//ignore error
     items.push(...itemsOfOnePage);
     if (
       !itemsOfOnePage.length ||
@@ -198,8 +212,15 @@ function pageItemResults2Record(
   //计算数值
   record.avgTotalPrice = Math.floor(
     record.houseList.reduce((acc, cur) => acc + cur.price, 0) /
-      record.houseList.length
+    record.houseList.length
   );
+  //
+  if (record.onSellCount === undefined) {
+    record.onSellCount = record.houseList.length
+  }
+  if (record.avgTotalPrice === undefined) {
+    record.avgTotalPrice = record.houseList.reduce((acc, cur) => acc + cur.price, 0)
+  }
   record.calcOnSellCount = record.houseList.length;
 
   return record;

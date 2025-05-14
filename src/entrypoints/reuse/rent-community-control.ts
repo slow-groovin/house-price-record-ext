@@ -8,7 +8,7 @@ import { removeRepeat } from "@/utils/array";
 import { genKeRentCommunityPageUrl } from "@/utils/lj-url";
 import { stabilizeFields } from "@/utils/variable";
 import { sendMessage } from "@@/messaging";
-import { list, retry } from "radash";
+import { list, retry, sleep } from "radash";
 import { browser } from "wxt/browser";
 
 const PREFIX = "[oneRentCommunityEntry]";
@@ -37,9 +37,9 @@ export async function goRunRentCommunityTasksStartPage(
  * @param communityTask
  * @returns
  */
-export async function oneRentCommunityEntry(communityTask: RentCommunityTask) {
-  const { cid, city, lastRunningAt } = communityTask;
 
+export async function oneRentCommunityEntry(communityTask: RentCommunityTask, opts: { interval: number }) {
+  const { cid, city, lastRunningAt } = communityTask;
   /**
    * step 1. 获取页面页数
    */
@@ -67,7 +67,7 @@ export async function oneRentCommunityEntry(communityTask: RentCommunityTask) {
       cid: pageItem!.cid!,
       city: pageItem!.city!,
       maxPage: pageItem!.maxPageNo,
-    });
+    }, opts);
 
     return oneRecord;
   } finally {
@@ -85,7 +85,7 @@ export async function crawlOneCommunityListPages(input: {
   city: string;
   cid: string;
   maxPage: number;
-}) {
+}, opts: { interval: number }) {
   const { city, cid, maxPage } = input;
   const urlList = list(1, maxPage).map((page) =>
     genKeRentCommunityPageUrl(city, cid, page)
@@ -95,7 +95,7 @@ export async function crawlOneCommunityListPages(input: {
   //依次打开所有参数中的所有url
   for (const url of urlList) {
     //打开之后, 通过message发送命令, 让页面进行页面信息解析并返回解析结果, 等待爬取结果
-    await retry({ times: 10, delay: 1000 }, async () => {
+    await retry({ times: 5, delay: opts.interval }, async () => {
       const tab = await browser.tabs.create({ url, active: false });
       let parsedPageItem: ParsedRentCommunity | undefined = undefined;
 
@@ -114,6 +114,7 @@ export async function crawlOneCommunityListPages(input: {
       );
       parsedResultOfAllPage.push(parsedPageItem!);
     });
+    await sleep(opts.interval)
   }
 
   verifyDiffPagesItem(parsedResultOfAllPage);
@@ -150,7 +151,7 @@ function pageItemResults2Record(
     count: listWithoutRepeat.length,
     avgPrice: Math.floor(
       listWithoutRepeat.reduce((acc, cur) => acc + cur.price, 0) /
-        listWithoutRepeat.length
+      listWithoutRepeat.length
     ),
     list: listWithoutRepeat,
 
