@@ -25,7 +25,7 @@ queryOne()
     <div class="flex flex-wrap gap-4">
       <div class="p-2 border rounded w-fit ">
         <h1 class="text-2xl font-bold border-b">运行前确认</h1>
-        登录beike(避免频繁拒绝访问/出现验证码导致失败)
+        登录<a href="https://ke.com" target="_blank" rel="noreferrer">beike</a>(避免频繁拒绝访问/出现验证码导致失败)
 
 
       </div>

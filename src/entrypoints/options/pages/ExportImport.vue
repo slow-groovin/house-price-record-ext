@@ -300,7 +300,7 @@ async function insertLjSellData(data: ExportDataStructure['lj']) {
     let fail = 0, suc = records.length
     for (let i = 0; i < records.length; i += BATCH_SIZE) {
       try {
-        await entityTable.bulkAdd(records.slice(i, i + BATCH_SIZE))
+        await entityTable.bulkPut(records.slice(i, i + BATCH_SIZE))
       } catch (_e: any) {
         if (_e.name !== 'BulkError') throw _e
         const e = _e as BulkError

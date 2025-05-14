@@ -85,7 +85,8 @@
     <Button v-if="!isUpdateDone && data?.records?.length" @click="mutate" :disabled="status !== 'idle'"
       class="my-4 sticky bottom-12 ">
       <div v-if="status === 'pending'"
-        class="w-4 h-4 rounded-full animate-spin  border-2 border-t-transparent border-green-500"></div>
+        class="w-4 h-4 rounded-full animate-spin  border-2 border-t-transparent border-green-500 disabled:opacity-65 disabled:cursor-not-allowed">
+      </div>
       确认数据
     </Button>
     <div v-else-if="!data?.records?.length">

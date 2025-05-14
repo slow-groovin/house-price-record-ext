@@ -120,6 +120,7 @@ data
  */
 type RelatedData = {
   totalPriceChange?: number, //相比之前一次记录的总价变化
+  unitPriceChange?: number, //相比之前一次记录的总价变化
   onSellCountChange?: number//相比之前一次记录的售卖数量变化,
   priceUpCount?: number,
   priceDownCount?: number,
@@ -231,6 +232,7 @@ async function queryRelatedData(communityData: typeof data.value) {
     }
     if (lastTwoRecords[0] && lastTwoRecords[1]) {
       relatedData.value[cid].totalPriceChange = tryMinusOrUndefined(lastTwoRecords[0]?.avgTotalPrice, lastTwoRecords[1]?.avgTotalPrice)
+      relatedData.value[cid].unitPriceChange = tryMinusOrUndefined(lastTwoRecords[0]?.avgUnitPrice, lastTwoRecords[1]?.avgUnitPrice)
       relatedData.value[cid].onSellCountChange = tryMinusOrUndefined(lastTwoRecords[0]?.onSellCount, lastTwoRecords[1]?.onSellCount)
     }
   }
@@ -295,7 +297,12 @@ const columnDef: (ColumnDef<CommunityTask>)[] = [
       change={relatedData.value[cell.row.original.cid]?.totalPriceChange} />
 
   },
-  { accessorKey: 'avgUnitPrice', header: '平均单价', id: '平米单价' },
+  {
+    accessorKey: 'avgUnitPrice', header: '平均单价', id: '平米单价',
+    cell: ({ cell }) => <AvgTotalPrice value={Number(cell.getValue())} unit="元"
+      change={relatedData.value[cell.row.original.cid]?.unitPriceChange} />
+
+  },
   {
     accessorKey: 'cid',
     header: '近期涨价↗',
